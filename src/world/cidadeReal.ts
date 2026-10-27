@@ -10,7 +10,8 @@ import type { RoadGraph } from './roads';
 import { arquetipo, Zone } from '../sim/catalog';
 import { DENSIDADE_MATA, waterDistance, type Heightmap } from './terrain';
 
-/** Relevo real: alturas de 16 m interpoladas para a grade de 8 m do jogo, água rebaixada, verde do OSM. */
+/** Relevo real: alturas do arquivo interpoladas para a grade do jogo, água rebaixada, verde do OSM. O arquivo cobre
+ * a própria extensão ((res − 1) × passo, centrada na origem); fora dela vale a borda. */
 export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed: number): Heightmap {
   const bytes = deBase64(c.alturas);
   const alt = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
@@ -20,23 +21,34 @@ export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed:
   const forest = new Uint8Array(HM_VERTS * HM_VERTS);
   const half = MAP_SIZE / 2;
   const R = c.res, P = c.passo;
-  const amostra = (i: number, j: number) => alt[Math.min(R - 1, j) * R + Math.min(R - 1, i)] / 10;
+  const meiaArq = ((R - 1) * P) / 2, ladoArq = meiaArq * 2;
+  const amostra = (i: number, j: number) => alt[Math.max(0, Math.min(R - 1, j)) * R + Math.max(0, Math.min(R - 1, i))] / 10;
   const fundo = DENSIDADE_MATA[bioma] ?? 0.5;
   for (let j = 0; j < HM_VERTS; j++) {
     const z = -half + j * HM_STEP;
     for (let i = 0; i < HM_VERTS; i++) {
       const x = -half + i * HM_STEP;
-      const fx = (x + half) / P, fz = (z + half) / P;
+      const fx = (x + meiaArq) / P, fz = (z + meiaArq) / P;
       const i0 = Math.floor(fx), j0 = Math.floor(fz), tx = fx - i0, tz = fz - j0;
       const v = (amostra(i0, j0) * (1 - tx) + amostra(i0 + 1, j0) * tx) * (1 - tz) + (amostra(i0, j0 + 1) * (1 - tx) + amostra(i0 + 1, j0 + 1) * tx) * tz;
       const k = j * HM_VERTS + i;
       h[k] = v;
       if (v < 1.2) continue;
-      const vi = Math.min(vRes - 1, Math.floor(((x + half) / MAP_SIZE) * vRes)), vj = Math.min(vRes - 1, Math.floor(((z + half) / MAP_SIZE) * vRes));
+      const vi = Math.max(0, Math.min(vRes - 1, Math.floor(((x + meiaArq) / ladoArq) * vRes))), vj = Math.max(0, Math.min(vRes - 1, Math.floor(((z + meiaArq) / ladoArq) * vRes)));
       let f = verde[vj * vRes + vi];
       // fora da área construível, campo e mata do bioma onde o OSM não mapeou nada
       if (Math.abs(x) > BUILD_HALF || Math.abs(z) > BUILD_HALF) f = Math.max(f, Math.round(90 * fundo));
       forest[k] = f;
+    }
+  }
+  // Fase 13: no litoral, praia em rampa e mar que aprofunda com a distância da costa (o relevo de 16 m
+  // deixava um degrau na orla e um fundo raso e chapado, que a água transparente mostrava em degraus)
+  if (c.litoral) {
+    const ateTerra = waterDistance(h.map((v) => -v));
+    const ateAgua = waterDistance(h);
+    for (let k = 0; k < h.length; k++) {
+      if (h[k] < 0) h[k] = Math.min(h[k], -0.8 - ateTerra[k] * 0.035);
+      else if (ateAgua[k] < 64 && h[k] < 8) h[k] = Math.min(h[k], 0.5 + ateAgua[k] * 0.07);
     }
   }
   return { h, forest, waterDist: waterDistance(h), bioma, terreno, seed };
@@ -87,11 +99,17 @@ export function arquetipoReal(tipo: number, andares: number, area: number): { zo
   return { zone: Zone.ResAlta, arch: arquetipo(Zone.ResAlta, nivel).id };
 }
 
-/** Nó de rua mais perto do centro (ponto inicial da câmera). */
+/** Onde a câmera começa (lat, lon), quando não é o centro do mapa: no Rio, a orla de Copacabana. */
+const PONTO_INICIAL: Record<string, [number, number]> = { '3304557': [-22.9711, -43.1840] };
+
+/** Nó de rua mais perto do ponto inicial (ou do centro do mapa): onde a câmera começa. */
 export function centroReal(c: CidadeReal): [number, number] {
-  let melhor: [number, number] = [0, 0], dm = Infinity;
+  const pi = PONTO_INICIAL[c.ibge];
+  const kx = 111_320 * Math.cos((c.lat * Math.PI) / 180), kz = 110_574;
+  const [ax, az] = pi ? [(pi[1] - c.lon) * kx, -(pi[0] - c.lat) * kz] : [0, 0];
+  let melhor: [number, number] = [ax, az], dm = Infinity;
   for (let i = 0; i < c.vias.nos.length / 2; i++) {
-    const x = c.vias.nos[i * 2], z = c.vias.nos[i * 2 + 1], d = Math.hypot(x, z);
+    const x = c.vias.nos[i * 2], z = c.vias.nos[i * 2 + 1], d = Math.hypot(x - ax, z - az);
     if (d < dm) { dm = d; melhor = [x, z]; }
   }
   return melhor;

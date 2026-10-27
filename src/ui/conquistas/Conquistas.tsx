@@ -46,7 +46,7 @@ export function AvisoConquista() {
 }
 
 const CATS: { id: Categoria; nome: string }[] = [
-  { id: 'cidade', nome: 'Cidade' }, { id: 'estado', nome: 'Governo estadual' }, { id: 'presidente', nome: 'Presidência' }, { id: 'brasil', nome: 'Brasil' },
+  { id: 'cidade', nome: 'Cidade' }, { id: 'estado', nome: 'Governo estadual' },
 ];
 
 /** Galeria de conquistas (menu). */

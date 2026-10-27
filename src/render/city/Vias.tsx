@@ -2,8 +2,13 @@
  * Malha das vias: leito com sinalização, meio-fio, calçadas (pedra portuguesa nas avenidas),
  * talude/lateral de ponte, cruzamentos, pilares, postes com luz de sódio ou LED e palmeiras
  * no canteiro central das avenidas.
+ *
+ * Fase 13: o Rio tem ~1.000 km de ruas. A malha é dividida em blocos de 1 km (cada bloco com as suas
+ * faixas, postes, pilares e palmeiras) e os blocos longe da câmera ficam ocultos — sem isso a cena
+ * desenhava milhões de vértices de rua a cada quadro, inclusive na sombra.
  */
-import { useFrame } from '@react-three/fiber';
+import { medir } from '../medir';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
@@ -75,7 +80,14 @@ function indiceDoCorte(p: Perfil, s: number, doFim: boolean): number {
   return 0;
 }
 
-interface MalhaVias {
+/** lado do bloco de vias (m) e distância (m) até onde um bloco aparece */
+const BLOCO_VIAS = 1024;
+const DIST_VIAS = 4500;
+
+interface MalhaBloco {
+  chave: string;
+  /** centro do bloco */
+  cx: number; cz: number;
   leitos: Record<RoadType, THREE.BufferGeometry>;
   calcadas: THREE.BufferGeometry;
   calcadoes: THREE.BufferGeometry;
@@ -85,18 +97,26 @@ interface MalhaVias {
   pilares: THREE.Matrix4[];
   palmeiras: THREE.Matrix4[];
 }
+type MalhaVias = MalhaBloco[];
 
-function construir(hm: Heightmap): MalhaVias {
+interface Acum { leitos: Record<RoadType, Buffers>; calc: Buffers; calcadao: Buffers; lat: Buffers; cruz: Buffers; postes: THREE.Matrix4[]; pilares: THREE.Matrix4[]; palmeiras: THREE.Matrix4[] }
+const novoAcum = (): Acum => ({ leitos: { rua: novo(), avenida: novo() }, calc: novo(), calcadao: novo(), lat: novo(), cruz: novo(), postes: [], pilares: [], palmeiras: [] });
+
+export function construir(hm: Heightmap): MalhaVias {
   const g = mundo.roads;
   const perfis = construirPerfis(g, hm);
   perfisAtuais = perfis;
-  const leitos: Record<RoadType, Buffers> = { rua: novo(), avenida: novo() };
-  const calc = novo(), calcadao = novo(), lat = novo(), cruz = novo();
-  const postes: THREE.Matrix4[] = [], pilares: THREE.Matrix4[] = [], palmeiras: THREE.Matrix4[] = [];
+  const blocos = new Map<string, Acum>();
+  const bloco = (x: number, z: number) => {
+    const k = `${Math.floor(x / BLOCO_VIAS)},${Math.floor(z / BLOCO_VIAS)}`;
+    return blocos.get(k) ?? blocos.set(k, novoAcum()).get(k)!;
+  };
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), pos = new THREE.Vector3();
   const eixoY = new THREE.Vector3(0, 1, 0);
 
   for (const p of perfis.values()) {
+    const meio = p.n >> 1;
+    const { leitos, calc, calcadao, lat, postes, pilares, palmeiras } = bloco(p.x[meio], p.z[meio]);
     const spec = ROAD_SPECS[p.edge.type];
     const hw = spec.width / 2, sw = spec.sidewalk;
     const i0 = indiceDoCorte(p, p.cortaA, false), i1 = indiceDoCorte(p, p.cortaB, true);
@@ -159,16 +179,20 @@ function construir(hm: Heightmap): MalhaVias {
     }
   }
 
-  // cruzamentos e emendas
+  // cruzamentos e emendas (grau e larguras por nó num passe só: o Rio tem 15 mil trechos)
+  const porNo = new Map<number, { grau: number; hw: number; sw: number }>();
+  for (const e of g.edges.values()) for (const id of [e.a, e.b]) {
+    const r = porNo.get(id) ?? porNo.set(id, { grau: 0, hw: 0, sw: 0 }).get(id)!;
+    r.grau++;
+    r.hw = Math.max(r.hw, ROAD_SPECS[e.type].width / 2);
+    r.sw = Math.max(r.sw, ROAD_SPECS[e.type].sidewalk);
+  }
   for (const n of g.nodes.values()) {
-    let grau = 0, hwMax = 0, swMax = 0;
-    for (const e of g.edges.values()) if (e.a === n.id || e.b === n.id) {
-      grau++;
-      hwMax = Math.max(hwMax, ROAD_SPECS[e.type].width / 2);
-      swMax = Math.max(swMax, ROAD_SPECS[e.type].sidewalk);
-    }
+    const r = porNo.get(n.id);
+    const grau = r?.grau ?? 0, hwMax = r?.hw ?? 0, swMax = r?.sw ?? 0;
     if (!grau) continue;
     const y = roadBaseY(hm, n.x, n.z);
+    const { calc, cruz } = bloco(n.x, n.z);
     if (grau >= 3) {
       disco(calc, n.x, y + 0.16, n.z, hwMax + 1.5 + swMax, 28);
       disco(cruz, n.x, y + 0.19, n.z, hwMax + 1.5, 28);
@@ -177,11 +201,15 @@ function construir(hm: Heightmap): MalhaVias {
     }
   }
 
-  return {
-    leitos: { rua: geometria(leitos.rua), avenida: geometria(leitos.avenida) },
-    calcadas: geometria(calc), calcadoes: geometria(calcadao), laterais: geometria(lat), cruzamentos: geometria(cruz),
-    postes, pilares, palmeiras,
-  };
+  return [...blocos].map(([chave, b]) => {
+    const [bx, bz] = chave.split(',').map(Number);
+    return {
+      chave, cx: (bx + 0.5) * BLOCO_VIAS, cz: (bz + 0.5) * BLOCO_VIAS,
+      leitos: { rua: geometria(b.leitos.rua), avenida: geometria(b.leitos.avenida) },
+      calcadas: geometria(b.calc), calcadoes: geometria(b.calcadao), laterais: geometria(b.lat), cruzamentos: geometria(b.cruz),
+      postes: b.postes, pilares: b.pilares, palmeiras: b.palmeiras,
+    };
+  });
 }
 
 function Instancias({ matrizes, geometria, material, sombra = true }: { matrizes: THREE.Matrix4[]; geometria: THREE.BufferGeometry; material: THREE.Material; sombra?: boolean }) {
@@ -195,7 +223,7 @@ function Instancias({ matrizes, geometria, material, sombra = true }: { matrizes
     im.instanceMatrix.needsUpdate = true;
     im.computeBoundingSphere();
   }, [matrizes]);
-  return <instancedMesh key={cap} ref={ref} args={[geometria, material, cap]} castShadow={sombra} receiveShadow frustumCulled={false} />;
+  return <instancedMesh key={cap} ref={ref} args={[geometria, material, cap]} castShadow={sombra} receiveShadow />;
 }
 
 /** Geometria de poste: haste + braço + luminária (y=0 na calçada). */
@@ -254,10 +282,12 @@ export function geoPalmeira(): { tronco: THREE.BufferGeometry; copa: THREE.Buffe
 
 export function Vias({ hm }: { hm: Heightmap }) {
   const versao = useGame((s) => s.worldVersion);
-  const malha = useMemo(() => construir(hm), [hm, versao]);
+  const malha = useMemo(() => medir('vias: construir', () => construir(hm)), [hm, versao]);
   useEffect(() => () => {
-    Object.values(malha.leitos).forEach((g) => g.dispose());
-    malha.calcadas.dispose(); malha.calcadoes.dispose(); malha.laterais.dispose(); malha.cruzamentos.dispose();
+    for (const b of malha) {
+      Object.values(b.leitos).forEach((g) => g.dispose());
+      b.calcadas.dispose(); b.calcadoes.dispose(); b.laterais.dispose(); b.cruzamentos.dispose();
+    }
   }, [malha]);
 
   const mats = useMemo(() => {
@@ -292,12 +322,27 @@ export function Vias({ hm }: { hm: Heightmap }) {
   }, []);
   useEffect(() => () => Object.values(geos).forEach((g) => g.dispose()), [geos]);
 
-  const halos = useMemo(() => malha.postes.map((m) => {
+  const halos = useMemo(() => malha.map((b) => b.postes.map((m) => {
     const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3();
     m.decompose(p, q, s);
     const off = new THREE.Vector3(0, 0, 1.7).applyQuaternion(q);
     return new THREE.Matrix4().makeTranslation(p.x + off.x, p.y + 0.05, p.z + off.z);
-  }), [malha]);
+  })), [malha]);
+
+  // blocos longe da câmera ficam ocultos (checado a cada ~0,3 s)
+  const camera = useThree((st) => st.camera);
+  const grupos = useRef<(THREE.Group | null)[]>([]);
+  const ultimo = useRef(0);
+  useFrame(() => {
+    const agora = performance.now();
+    if (agora - ultimo.current < 300) return;
+    ultimo.current = agora;
+    const { x, y, z } = camera.position;
+    malha.forEach((b, i) => {
+      const g = grupos.current[i];
+      if (g) g.visible = Math.hypot(b.cx - x, b.cz - z, Math.max(0, y) * 0.6) < DIST_VIAS;
+    });
+  });
 
   const sodio = useMemo(() => new THREE.Color('#ffa63d'), []);
   const led = useMemo(() => new THREE.Color('#e9f1ff'), []);
@@ -313,18 +358,22 @@ export function Vias({ hm }: { hm: Heightmap }) {
 
   return (
     <group>
-      <mesh geometry={malha.leitos.rua} material={mats.rua} receiveShadow />
-      <mesh geometry={malha.leitos.avenida} material={mats.avenida} receiveShadow />
-      <mesh geometry={malha.calcadas} material={mats.calcada} receiveShadow />
-      <mesh geometry={malha.calcadoes} material={mats.calcadao} receiveShadow />
-      <mesh geometry={malha.laterais} material={mats.lateral} receiveShadow castShadow />
-      <mesh geometry={malha.cruzamentos} material={mats.cruz} receiveShadow />
-      <Instancias matrizes={malha.postes} geometria={geos.haste} material={mats.poste} />
-      <Instancias matrizes={malha.postes} geometria={geos.lampada} material={mats.lampada} sombra={false} />
-      <Instancias matrizes={halos} geometria={geos.halo} material={mats.halo} sombra={false} />
-      <Instancias matrizes={malha.pilares} geometria={geos.pilar} material={mats.pilar} />
-      <Instancias matrizes={malha.palmeiras} geometria={geos.tronco} material={mats.tronco} />
-      <Instancias matrizes={malha.palmeiras} geometria={geos.copa} material={mats.folha} />
+      {malha.map((b, i) => (
+        <group key={b.chave} ref={(g) => { grupos.current[i] = g; }} visible={false}>
+          <mesh geometry={b.leitos.rua} material={mats.rua} receiveShadow />
+          <mesh geometry={b.leitos.avenida} material={mats.avenida} receiveShadow />
+          <mesh geometry={b.calcadas} material={mats.calcada} receiveShadow />
+          <mesh geometry={b.calcadoes} material={mats.calcadao} receiveShadow />
+          <mesh geometry={b.laterais} material={mats.lateral} receiveShadow castShadow />
+          <mesh geometry={b.cruzamentos} material={mats.cruz} receiveShadow />
+          <Instancias matrizes={b.postes} geometria={geos.haste} material={mats.poste} />
+          <Instancias matrizes={b.postes} geometria={geos.lampada} material={mats.lampada} sombra={false} />
+          <Instancias matrizes={halos[i]} geometria={geos.halo} material={mats.halo} sombra={false} />
+          <Instancias matrizes={b.pilares} geometria={geos.pilar} material={mats.pilar} />
+          <Instancias matrizes={b.palmeiras} geometria={geos.tronco} material={mats.tronco} />
+          <Instancias matrizes={b.palmeiras} geometria={geos.copa} material={mats.folha} />
+        </group>
+      ))}
     </group>
   );
 }

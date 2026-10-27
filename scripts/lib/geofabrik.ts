@@ -74,7 +74,7 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             const t = it.tags ?? {};
             const temTag = Object.keys(t).length > 0;
             const viaPredio = !!t.building || (!!t.highway && RE_VIA.test(t.highway)) || /^(residential|commercial|retail|industrial)$/.test(t.landuse ?? '');
-            const nat = /^(water|wood|scrub)$/.test(t.natural ?? '') || /^(river|canal|riverbank)$/.test(t.waterway ?? '') || /^(forest|reservoir|basin|grass|meadow)$/.test(t.landuse ?? '') || /^(park|nature_reserve|garden)$/.test(t.leisure ?? '');
+            const nat = /^(water|wood|scrub|coastline)$/.test(t.natural ?? '') || /^(river|canal|riverbank)$/.test(t.waterway ?? '') || /^(forest|reservoir|basin|grass|meadow)$/.test(t.landuse ?? '') || /^(park|nature_reserve|garden)$/.test(t.leisure ?? '');
             if (!viaPredio && !nat && temTag) continue;
             if (!it.refs!.some((r) => idx.has(r))) continue;
             if (!temTag) { contornos.set(it.id, it.refs!); continue; }

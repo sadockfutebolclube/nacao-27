@@ -8,7 +8,7 @@ import type { Stats } from '../../sim/protocol';
 import { useState } from 'react';
 import { nuvemConfigurada, publicarRanking } from '../../cloud/nuvem';
 import { PARTIDOS } from '../../sim/politica/dados';
-import { Login, useSessao } from '../presidente/Nuvem';
+import { Login, useSessao } from '../nuvem/Nuvem';
 
 /** Publica o legado de governador(a) no ranking da nuvem. */
 function PublicarGovernador({ L, st, nota }: { L: TLegado; st: Stats; nota: number }) {
@@ -48,10 +48,8 @@ function Serie({ s }: { s: number[] }) {
   );
 }
 
-export function TelaLegado({ L, st, onMenu, onFechar, onPresidencia }: { L: TLegado; st: Stats; onMenu: () => void; onFechar: () => void; onPresidencia?: () => void }) {
+export function TelaLegado({ L, st, onMenu, onFechar }: { L: TLegado; st: Stats; onMenu: () => void; onFechar: () => void }) {
   const bom = L.motivo === 'sucessor-eleito' || L.motivo === 'fim-mandatos';
-  // carreira (Fase 9): saiu bem avaliado(a) e sem impeachment ⇒ pode disputar a Presidência
-  const podePresidencia = !!onPresidencia && L.motivo !== 'afastado' && L.aprovacao.final >= 40;
   const nota = Math.round(Math.max(0, Math.min(100, 0.6 * L.aprovacao.media + 0.4 * L.aprovacao.final + 5 * L.conquistas.length + (bom ? 10 : 0) - (L.motivo === 'afastado' ? 25 : 0))));
   return (
     <div className="absolute inset-0 z-30 bg-black/80 flex items-center justify-center p-3 pointer-events-auto">
@@ -133,7 +131,6 @@ export function TelaLegado({ L, st, onMenu, onFechar, onPresidencia }: { L: TLeg
 
         {nuvemConfigurada() && <PublicarGovernador L={L} st={st} nota={nota} />}
         <div className="mt-5 flex justify-end gap-2 flex-wrap">
-          {podePresidencia && <button onClick={onPresidencia} className="px-4 py-2 rounded-lg bg-acento-2 text-tinta font-semibold text-sm" title="Seu partido te lança candidato(a) — e você vence">Disputar a Presidência →</button>}
           <button onClick={onFechar} className="px-4 py-2 rounded-lg bg-white/8 hover:bg-white/12 text-sm">Ver a cidade</button>
           <button onClick={onMenu} className="px-4 py-2 rounded-lg bg-acento text-tinta font-semibold text-sm">Voltar ao menu</button>
         </div>

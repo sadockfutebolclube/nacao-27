@@ -43,12 +43,16 @@ function sendState() {
   post({ type: 'state', version: sim.worldVersion, lotState, pollution, stats: sim.stats(speed), news: sim.takeNews(), render }, transf);
 }
 
+/** Fase 13: com o Rio inteiro o estado tem ~7 MB; no relógio, manda no máximo ~4 vezes por segundo. */
+const MS_ENTRE_ENVIOS = 250;
+let ultimoEnvio = 0;
+
 function loop() {
   timer = null;
   if (!sim || speed <= 0) return;
   const t0 = performance.now();
   sim.step();
-  sendState();
+  if (t0 - ultimoEnvio >= MS_ENTRE_ENVIOS) { ultimoEnvio = t0; sendState(); }
   const gasto = performance.now() - t0;
   timer = setTimeout(loop, Math.max(0, MS_POR_TICK_1X / speed - gasto));
 }

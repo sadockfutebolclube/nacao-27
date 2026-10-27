@@ -2,6 +2,7 @@
  * Ponte entre a thread principal e o Worker. Dados volumosos (lotes, estado por lote) ficam
  * em `mundo` (mutável, sem re-render); a UI assina só versões e estatísticas via Zustand.
  */
+import { medir } from '../render/medir';
 import type { CidadeReal } from '../data/cidadeReal';
 import { create } from 'zustand';
 import { emptyGraph, graphFromJSON, type RoadGraph, type RoadType } from '../world/roads';
@@ -117,6 +118,10 @@ const pendentes = new Map<number, (r: { ok: boolean; msg?: string; custo?: numbe
 const savesPendentes = new Map<number, (s: SaveData) => void>();
 
 function onMessage(ev: MessageEvent<FromWorker>) {
+  medir(`bridge: ${ev.data.type}`, () => tratar(ev));
+}
+
+function tratar(ev: MessageEvent<FromWorker>) {
   const m = ev.data;
   const g = useGame.getState();
   switch (m.type) {

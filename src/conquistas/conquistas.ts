@@ -1,14 +1,13 @@
 /**
  * Conquistas permanentes (Fase 10): valem entre partidas e ficam no navegador (`nacao27:conquistas`).
- * São checadas a cada poucos segundos a partir do estado do jogo; as de "Brasil" vêm do registro de partidas
- * (UFs, regiões, biomas e municípios jogados). As conquistas de cada mandato continuam na tela de legado.
+ * São checadas a cada poucos segundos a partir do estado do jogo. As conquistas de cada mandato continuam na
+ * tela de legado. Desde a Fase 13 o jogo é só o Rio: saíram as da Presidência e as de "Brasil" (estados, biomas).
  */
 import type { Stats } from '../sim/protocol';
-import type { Presidencia } from '../sim/presidente/presidencia';
 
-export type Categoria = 'cidade' | 'estado' | 'presidente' | 'brasil';
+export type Categoria = 'cidade' | 'estado';
 export interface Registro { ufs: string[]; regioes: string[]; biomas: string[]; interior: boolean; carreira: boolean }
-export interface CtxConquista { stats?: Stats; pres?: Presidencia; registro: Registro }
+export interface CtxConquista { stats?: Stats; registro: Registro }
 export interface DefConquista { id: string; nome: string; desc: string; cat: Categoria; icone: string; teste: (c: CtxConquista) => boolean; progresso?: (c: CtxConquista) => [number, number] }
 
 const e = (c: CtxConquista) => c.stats?.estado ?? null;
@@ -31,24 +30,6 @@ export const CONQUISTAS: DefConquista[] = [
   { id: 'reeleito-gov', nome: 'Mais quatro anos', desc: 'Seja reeleito(a) governador(a).', cat: 'estado', icone: '🗳', teste: (c) => (e(c)?.mandato ?? 1) >= 2 },
   { id: 'legado-gov', nome: 'Missão cumprida', desc: 'Termine o governo estadual elegendo o sucessor ou completando os dois mandatos.', cat: 'estado', icone: '🏅', teste: (c) => { const m = e(c)?.legado?.motivo; return m === 'sucessor-eleito' || m === 'fim-mandatos'; } },
   { id: 'popular-gov', nome: 'Querido(a) pelo povo', desc: 'Chegue a 65% de aprovação como governador(a).', cat: 'estado', icone: '❤', teste: (c) => (e(c)?.aprovacao ?? 0) >= 65 },
-  // ── Presidência
-  { id: 'mp', nome: 'Medida convertida', desc: 'Converta uma medida provisória em lei.', cat: 'presidente', icone: '✍', teste: (c) => !!c.pres?.propostas.some((p) => p.tipo === 'MP' && p.status === 'aprovada') },
-  { id: 'pec', nome: 'Emenda à Constituição', desc: 'Aprove uma PEC nos dois turnos das duas Casas.', cat: 'presidente', icone: '⚖', teste: (c) => !!c.pres?.propostas.some((p) => p.tipo === 'PEC' && p.status === 'aprovada') },
-  { id: 'stf', nome: 'Toga escolhida', desc: 'Emplaque um ministro no STF.', cat: 'presidente', icone: '🏛', teste: (c) => !!c.pres?.stf.some((m) => m.indicadoPorVoce) },
-  { id: 'bc', nome: 'Quem manda nos juros', desc: 'Aprove sua indicação para a presidência do Banco Central.', cat: 'presidente', icone: '🏦', teste: (c) => !!c.pres?.bc.presidente.indicadoPorVoce },
-  { id: 'meta', nome: 'Conta fechada', desc: 'Cumpra a meta fiscal do ano.', cat: 'presidente', icone: '📊', teste: (c) => !!c.pres && c.pres.t > 370 && !c.pres.gatilhos && c.pres.descumprimentos === 0 },
-  { id: 'inflacao', nome: 'Inflação domada', desc: 'Doze meses seguidos com o IPCA dentro da meta.', cat: 'presidente', icone: '🎯', teste: (c) => { const p = c.pres; if (!p || p.serie.length < 13) return false; return p.serie.slice(-12).every((x) => Math.abs(x.inflacao - p.eco.metaInflacao) <= 1.5); } },
-  { id: 'grau', nome: 'Grau de investimento', desc: 'Receba a melhora da nota soberana.', cat: 'presidente', icone: '⭐', teste: (c) => c.pres?.eventos.ultimo['pres-agencia-eleva'] !== undefined },
-  { id: 'impeachment', nome: 'Fica!', desc: 'Barre um processo de impeachment.', cat: 'presidente', icone: '🛡', teste: (c) => !!c.pres?.votacoes.some((v) => v.titulo === 'Impeachment' && !v.aprovado) },
-  { id: 'reeleito-pres', nome: 'Reeleição', desc: 'Seja reeleito(a) Presidente.', cat: 'presidente', icone: '🇧🇷', teste: (c) => (c.pres?.mandato ?? 1) >= 2 },
-  { id: 'sucessor', nome: 'Herança', desc: 'Eleja seu sucessor ao fim do segundo mandato.', cat: 'presidente', icone: '🤝', teste: (c) => c.pres?.fim?.motivo === 'sucessor-eleito' },
-  { id: 'popular-pres', nome: 'Popularidade recorde', desc: 'Chegue a 65% de aprovação como Presidente.', cat: 'presidente', icone: '📈', teste: (c) => (c.pres?.aprovacao ?? 0) >= 65 },
-  // ── Brasil
-  { id: 'regioes', nome: 'De ponta a ponta', desc: 'Governe estados das cinco regiões.', cat: 'brasil', icone: '🧭', teste: (c) => c.registro.regioes.length >= 5, progresso: (c) => [c.registro.regioes.length, 5] },
-  { id: 'vinte-e-sete', nome: 'Nação 27', desc: 'Governe todos os 27 estados.', cat: 'brasil', icone: '🗺', teste: (c) => c.registro.ufs.length >= 27, progresso: (c) => [c.registro.ufs.length, 27] },
-  { id: 'biomas', nome: 'Seis biomas', desc: 'Construa cidades na Amazônia, Cerrado, Caatinga, Mata Atlântica, Pampa e Pantanal.', cat: 'brasil', icone: '🌵', teste: (c) => c.registro.biomas.length >= 6, progresso: (c) => [c.registro.biomas.length, 6] },
-  { id: 'interior', nome: 'Interior', desc: 'Construa sua cidade num município que não é capital.', cat: 'brasil', icone: '🛤', teste: (c) => c.registro.interior },
-  { id: 'carreira', nome: 'Do Palácio ao Planalto', desc: 'Chegue à Presidência depois de governar um estado.', cat: 'brasil', icone: '🚀', teste: (c) => c.registro.carreira },
 ];
 
 // ── armazenamento ────────────────────────────────────────────────────────────────

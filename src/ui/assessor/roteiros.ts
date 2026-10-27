@@ -4,7 +4,6 @@
  * As dicas aparecem uma única vez quando a situação acontece (vistas ficam guardadas no navegador).
  */
 import type { Stats } from '../../sim/protocol';
-import type { Presidencia } from '../../sim/presidente/presidencia';
 
 export interface CtxCidade {
   stats: Stats;
@@ -12,14 +11,12 @@ export interface CtxCidade {
   equipamentos: string[];
   velocidade: number;
 }
-export interface CtxPres { p: Presidencia; painel: string; ufSelecionada: string | null; velocidade: number }
 
 export interface Passo<C> { id: string; titulo: string; texto: string; feito?: (c: C) => boolean; botao?: string; so?: (c: C) => boolean }
 export interface Dica<C> { id: string; texto: string; quando: (c: C) => boolean; tom?: 'alerta' | 'info' }
 
 export interface Assessor { nome: string; cargo: string; genero: 'f' | 'm'; retrato: number; idade: number }
 export const ASSESSOR_CIDADE: Assessor = { nome: 'Celina Rocha', cargo: 'Chefe de gabinete', genero: 'f', retrato: 271828, idade: 54 };
-export const ASSESSOR_PRES: Assessor = { nome: 'Otávio Lins', cargo: 'Ministro-chefe da Casa Civil', genero: 'm', retrato: 314159, idade: 61 };
 
 const temEstado = (c: CtxCidade) => !!c.stats.estado;
 
@@ -48,24 +45,3 @@ export const DICAS_CIDADE: Dica<CtxCidade>[] = [
   { id: 'aprovacao-baixa', texto: 'A aprovação está perigosamente baixa. Abaixo de 25%, a Assembleia começa a falar em impeachment.', quando: (c) => !!c.stats.estado && c.stats.estado.aprovacao < 28, tom: 'alerta' },
 ];
 
-export const PASSOS_PRES: Passo<CtxPres>[] = [
-  { id: 'boas-vindas', titulo: 'Bem-vindo(a) ao Planalto', texto: 'Sou o Otávio, da Casa Civil. A economia que você recebeu é a real de hoje, segundo o Banco Central. O tempo está parado: nada acontece até você soltá-lo.', botao: 'Vamos lá' },
-  { id: 'economia', titulo: 'Os números que derrubam governos', texto: 'Abra "Economia" à direita. Inflação, dólar e desemprego mexem direto na aprovação. A Selic é do Banco Central, não sua.', feito: (c) => c.painel === 'economia' },
-  { id: 'orcamento', titulo: 'A meta fiscal', texto: 'Em "Orçamento" está a meta de primário. O governo começa abaixo dela: contingenciar ou aprovar receita nova é o caminho. Descumprir aciona gatilhos — e vira munição para impeachment.', feito: (c) => c.painel === 'orcamento' },
-  { id: 'congresso', titulo: 'Nada passa sem o Congresso', texto: 'Em "Congresso", envie sua primeira medida. MP vale na hora mas caduca em 120 dias; PEC exige 3/5 em dois turnos. Veja a chance de aprovação antes de gastar capital político.', feito: (c) => c.p.propostas.length > 0 },
-  { id: 'mapa', titulo: 'O país é grande', texto: 'Clique num estado do mapa: aprovação, governador e bancada. Viagens e obras federais compram apoio regional.', feito: (c) => c.ufSelecionada !== null },
-  { id: 'tempo', titulo: 'Solte o tempo', texto: 'Espaço despausa; 1, 2 e 3 mudam a velocidade. O jogo pausa sozinho quando chega uma decisão.', feito: (c) => c.velocidade > 0 },
-  { id: 'fim', titulo: 'Conte comigo', texto: 'Copom, STF, governadores: eu aviso quando algo pedir sua atenção. Boa sorte, Presidente.', botao: 'Obrigado, Otávio' },
-];
-
-export const DICAS_PRES: Dica<CtxPres>[] = [
-  { id: 'meta-risco', texto: 'Pelo andar das contas, a meta fiscal deste ano não fecha. Contingenciar agora dói menos que os gatilhos em janeiro.', quando: ({ p }) => p.mes >= 6 && p.eco.primario < (p.metaPorAno[p.ano] ?? 0) - 0.3 && p.contingenciamento === 0, tom: 'alerta' },
-  { id: 'dolar', texto: 'O dólar disparou. Vai bater na inflação em alguns meses. Sinalizar compromisso fiscal costuma acalmar mais que bronca no BC.', quando: ({ p }) => p.eco.cambio > p.eco.cambio0 * 1.12, tom: 'alerta' },
-  { id: 'base-fraca', texto: 'Menos de 45% da Câmara está com a gente. Um ministério para um partido de centro muda isso — a um preço.', quando: ({ p }) => p.base_() < 0.45, tom: 'alerta' },
-  { id: 'mp-caducando', texto: 'Uma MP está perto de caducar. Peça urgência ou converse com os líderes, senão os efeitos acabam.', quando: ({ p }) => p.propostas.some((x) => x.status === 'tramitando' && x.caducaEm !== undefined && x.caducaEm - p.t < 25), tom: 'alerta' },
-  { id: 'vaga-stf', texto: 'Abriu vaga no STF. Uma indicação aliada pesa nos julgamentos por décadas — mas a sabatina é mais dura.', quando: ({ p }) => !!p.vagaSTF },
-  { id: 'indicar-bc', texto: 'Está na hora de indicar o próximo presidente do Banco Central. O mercado vai ler o nome como um recado.', quando: ({ p }) => !!p.bc.indicacao },
-  { id: 'gatilhos', texto: 'A meta foi descumprida e os gatilhos estão ligados: nada de despesa nova este ano. Duas metas perdidas viram argumento para impeachment.', quando: ({ p }) => p.gatilhos, tom: 'alerta' },
-  { id: 'ano-eleitoral', texto: 'Ano de eleição. Na campanha (de agosto em diante), cada viagem a um estado vale votos lá.', quando: ({ p }) => p.anoEleitoral() && p.mes >= 3 },
-  { id: 'aprovacao-baixa', texto: 'Aprovação abaixo de 25%. Com crise fiscal ou escândalo, o presidente da Câmara pode aceitar um pedido de impeachment.', quando: ({ p }) => p.aprovacao < 25, tom: 'alerta' },
-];

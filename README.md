@@ -1,8 +1,8 @@
 # NAÇÃO 27
 
-> *Você acabou de ganhar a eleição. Tem 4 anos, um orçamento apertado, uma Assembleia que não confia em você, uma imprensa faminta e milhões de pessoas esperando milagre. Boa sorte, Governador(a).*
+> *Você acabou de ganhar a eleição no Rio. Tem 4 anos, um orçamento apertado, uma Alerj que não confia em você, uma imprensa faminta e 17 milhões de fluminenses esperando milagre. Boa sorte, Governador(a).*
 
-City-builder e simulador de governo 100% brasileiro, no navegador. Escolha uma das 27 UFs (com dados reais do IBGE) e construa a capital: vias em curva, zoneamento, prédios que crescem por demanda, água, energia e esgoto, ciclo dia/noite com o sol na latitude certa.
+City-builder e simulador de governo no navegador, **focado no Rio de Janeiro** (desde a Fase 13): você governa o estado do RJ a partir da capital real — ruas, prédios e relevo do OpenStreetMap, orçamento real do SICONFI, Alerj, eleição e a cidade que cresce por demanda.
 
 **Estado atual: Fases 0 a 3 jogáveis** (pesquisa + dados reais, mapa 3D do Brasil e seleção, fatia vertical do city-builder, orçamento estadual real com LRF, mínimos e ciclo PPA/LDO/LOA). Ver [CHANGELOG.md](CHANGELOG.md).
 
@@ -69,25 +69,18 @@ Outros comandos:
 - Lance obras (hospitais, escolas, metrô, saneamento…), contingencie, faça reforma da Previdência, contrate crédito ou adira ao PROPAG/RRF.
 
 ### Cidades reais (Fase 11)
-- As capitais começam com a cidade de verdade: ruas, prédios, relevo, rios e parques do OpenStreetMap, completados com contornos de satélite da Microsoft. Escolha "🏙 real" no município ou desmarque para jogar no terreno vazio.
+- O Rio começa com a cidade de verdade, em larga escala (12 × 12 km: Centro, Zona Sul, Tijuca, Maracanã): 153 mil prédios, 1.000 km de ruas, relevo, mar e parques do OpenStreetMap, completados com contornos de satélite da Microsoft.
 - Clique num prédio para ver o nome e o tipo; demolir um prédio real é permanente.
-- Para gerar outros municípios: baixe os extratos regionais da Geofabrik em `data/osm-cache/` (o script usa o Overpass se não estiverem lá) e rode `npm run fetch-cidades -- <código IBGE>`.
+- Para regerar o Rio: baixe o extrato do Sudeste da Geofabrik em `data/osm-cache/` (o script usa o Overpass se não estiver lá) e rode `npm run fetch-cidades`.
 
 ### Visual realista e Vista Google 3D (Fase 12)
 - Prédios reais com a planta verdadeira, fachadas fotográficas, telhas, laje e janelas que acendem à noite; céu HDRI, asfalto, calçadas e terreno fotográficos (materiais CC0 do ambientCG e do Poly Haven, em `public/assets/`; para baixar de novo: `npm run fetch-assets` e depois `scripts/comprimir-materiais.ps1`).
 - **Vista Google 3D** (painel Visual): mostra a cidade nos Photorealistic 3D Tiles do Google, ao vivo. Precisa de uma chave sua da Map Tiles API (Google Cloud, com faturamento): ponha `VITE_GOOGLE_MAPS_KEY=...` no `.env.local` ou digite na tela (fica só no navegador). O jogo não baixa nem guarda nada do Google.
 
 ### Primeiros passos, opções e conquistas (Fase 10)
-- Na primeira partida, a assessora (ou o assessor, no Planalto) explica o que fazer e avança sozinha quando você faz. Recolha, desligue ou recomece em **Opções**.
+- Na primeira partida, a assessora explica o que fazer e avança sozinha quando você faz. Recolha, desligue ou recomece em **Opções**.
 - **Opções** (menu ou Esc): tamanho da interface, daltonismo, alto contraste, reduzir movimento, qualidade gráfica (automática por padrão) e som.
-- **Conquistas** (menu): 31 marcos que valem entre partidas, inclusive governar os 27 estados.
-
-### Modo Presidente (Fase 9)
-- Menu → **Presidente**: escolha nome, partido e estado de origem. Ou, ao fim de um bom governo estadual, **Disputar a Presidência**.
-- A economia começa com os números reais do Banco Central (`npm run fetch-macro` atualiza).
-- Abas à direita: **Planalto** (decisões e notícias), **Economia**, **Orçamento** (PLOA até 31/08, contingenciamento, metas), **Congresso** (envie MPs, PLs, PLPs e PECs e articule os votos), **STF**, **Banco Central**, **Ministérios**, **Estados** e **Eleição**.
-- O mapa mostra a aprovação por estado, a relação com os governadores ou os votos. Clique num estado para visitar ou lançar obra.
-- Espaço pausa; 1/2/3 velocidade; Esc menu (salvar, exportar).
+- **Conquistas** (menu): 15 marcos da cidade e do governo do estado, que valem entre partidas.
 
 ### Nuvem (opcional)
 1. Crie um projeto no Supabase e rode o SQL de `supabase/migrations/` (SQL Editor ou `supabase db push`).
@@ -95,9 +88,7 @@ Outros comandos:
 3. Copie `.env.example` para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (chave pública/publishable).
 Sem isso o jogo usa só saves locais.
 
-### Os 27 estados (Fase 8)
-- Ao escolher o estado, escolha também a **cidade** entre as 8 maiores: cada uma tem relevo real, bioma, clima e um mapa próprio. A cidade que você constrói é o seu reduto eleitoral.
-- Prédios seguem a arquitetura da região e a vegetação segue o bioma (repare nos mandacarus).
+### Trilha e arquitetura regional (Fase 8)
 - A trilha sonora é composta na hora com os ritmos do estado; ajuste o volume ou pule a faixa no menu de pausa (Esc). Precisa de um clique para começar.
 
 ### Eleição (Fase 7)

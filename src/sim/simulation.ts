@@ -11,7 +11,7 @@ import { CARGOS } from './politica/dados';
  * Fórmulas documentadas em SIMULATION.md.
  */
 import { bairroEm, deUF, nomeRua } from '../data/nomes';
-import { BUILD_HALF, FIELD_CELL, FIELD_RES, RASTER_RES } from '../world/constants';
+import { BUILD_HALF, FIELD_CELL, FIELD_RES, RASTER_CELL, RASTER_RES } from '../world/constants';
 import { computeLots, forRectCells, LOT_STRIDE, packLots, rasterizeRoads, type Footprint, type LotGeom, RASTER_INFORMAL } from '../world/lots';
 import {
   applyRoad, components, edgeLength, emptyGraph, findEdgeNear, graphFromJSON, graphToJSON, planRoad,
@@ -523,7 +523,7 @@ export class Simulation {
   }
 
   lotAt(x: number, z: number): number {
-    const i = Math.floor((x + BUILD_HALF) / 2), j = Math.floor((z + BUILD_HALF) / 2);
+    const i = Math.floor((x + BUILD_HALF) / RASTER_CELL), j = Math.floor((z + BUILD_HALF) / RASTER_CELL);
     if (i < 0 || j < 0 || i >= RASTER_RES || j >= RASTER_RES) return -1;
     const v = this.raster[j * RASTER_RES + i];
     return v > 0 ? v - 1 : -1;

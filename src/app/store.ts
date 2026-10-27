@@ -1,23 +1,15 @@
 /** Estado de navegação e preferências (Zustand). O estado do jogo em si vive em src/sim/bridge.ts. */
 import { create } from 'zustand';
-import type { FeatureCollection } from 'geojson';
-import type { DadosUF, IndiceUFs, ResumoUF, SiglaUF } from '../data/schemas';
+import type { DadosUF } from '../data/schemas';
 import type { ModoJogo, SaveData } from '../sim/protocol';
 import type { MunicipioJogavel } from '../data/municipios';
-import type { IdPartido } from '../sim/politica/dados';
 
-export type Tela = 'menu' | 'selecao' | 'carregando' | 'jogo' | 'presidente-setup' | 'presidente';
-
-export type Metrica = 'dificuldade' | 'populacao' | 'pib' | 'pibPerCapita' | 'idh' | 'homicidios' | 'idebEM' | 'esgoto' | 'dividaRCL' | 'regiao';
+/** Rio de Janeiro (foco do jogo desde a Fase 13): governo do estado do RJ com a capital real. */
+export type Tela = 'menu' | 'carregando' | 'jogo';
 
 interface AppState {
   tela: Tela;
-  indice: IndiceUFs | null;
-  malha: FeatureCollection | null;
   erro: string | null;
-  metrica: Metrica;
-  hover: SiglaUF | null;
-  selecionada: SiglaUF | null;
   modo: ModoJogo;
   dadosUF: DadosUF | null;
   saveParaCarregar: SaveData | null;
@@ -29,8 +21,6 @@ interface AppState {
   cidadeReal: boolean;
   volumeMusica: number;
   volumeAmbiente: number;
-  /** carreira (Fase 9): governador(a) que disputa a Presidência */
-  carreira: { uf: SiglaUF; aprovacao: number; partido: IdPartido; ano: number } | null;
   /** Fase 10: qualidade gráfica, movimento reduzido, dicas do assessor, texto de alto contraste */
   qualidade: 'auto' | 'alta' | 'media' | 'baixa';
   reduzirMovimento: boolean;
@@ -38,11 +28,7 @@ interface AppState {
   altoContraste: boolean;
   setPref: (p: Partial<Pick<AppState, 'qualidade' | 'reduzirMovimento' | 'tutorial' | 'altoContraste'>>) => void;
   irPara: (t: Tela) => void;
-  setDados: (indice: IndiceUFs, malha: FeatureCollection) => void;
   setErro: (e: string) => void;
-  setMetrica: (m: Metrica) => void;
-  setHover: (s: SiglaUF | null) => void;
-  setSelecionada: (s: SiglaUF | null) => void;
   setModo: (m: ModoJogo) => void;
   iniciar: (d: DadosUF, save?: SaveData) => void;
   setEscalaUI: (v: number) => void;
@@ -69,23 +55,14 @@ const salvarPrefs = (p: Prefs) => {
 
 export const useApp = create<AppState>((set) => ({
   tela: 'menu',
-  indice: null,
-  malha: null,
   erro: null,
-  metrica: 'dificuldade',
-  hover: null,
-  selecionada: null,
   modo: 'mandato',
   dadosUF: null,
   saveParaCarregar: null,
   escalaUI: prefs.escalaUI ?? 1,
   daltonico: prefs.daltonico ?? false,
   irPara: (tela) => set({ tela }),
-  setDados: (indice, malha) => set({ indice, malha }),
   setErro: (erro) => set({ erro }),
-  setMetrica: (metrica) => set({ metrica }),
-  setHover: (hover) => set({ hover }),
-  setSelecionada: (selecionada) => set({ selecionada }),
   setModo: (modo) => set({ modo }),
   iniciar: (dadosUF, save) => set({ dadosUF, saveParaCarregar: save ?? null, tela: 'carregando' }),
   setEscalaUI: (escalaUI) => { set({ escalaUI }); salvarPrefs({ escalaUI }); },
@@ -94,7 +71,6 @@ export const useApp = create<AppState>((set) => ({
   volumeMusica: prefs.volumeMusica ?? 0.5,
   volumeAmbiente: prefs.volumeAmbiente ?? 0.6,
   setMunicipio: (municipio) => set({ municipio }),
-  carreira: null,
   cidadeReal: true,
   qualidade: prefs.qualidade ?? 'auto',
   reduzirMovimento: prefs.reduzirMovimento ?? prefereMenosMovimento(),
@@ -103,11 +79,6 @@ export const useApp = create<AppState>((set) => ({
   setPref: (p) => { set(p); salvarPrefs(p); },
   setVolumes: (volumeMusica, volumeAmbiente) => { set({ volumeMusica, volumeAmbiente }); salvarPrefs({ volumeMusica, volumeAmbiente }); },
 }));
-
-export function resumo(indice: IndiceUFs | null, sigla: SiglaUF | null): ResumoUF | null {
-  if (!indice || !sigla) return null;
-  return indice.ufs.find((u) => u.sigla === sigla) ?? null;
-}
 
 /** Formatação PT-BR compacta. */
 export const fmt = {

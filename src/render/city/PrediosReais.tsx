@@ -3,13 +3,15 @@
  * prisma extrudado com fachada fotográfica (ambientCG), reboco com janelas desenhadas, telhado de
  * duas águas com telha cerâmica nas casas e laje com brita nos prédios.
  *
- * A geometria é estática (montada uma vez por cidade, em blocos de 512 m para o recorte por câmera);
- * o que muda com a simulação — altura, cota do terreno, obra, abandono, cor da camada de informação —
+ * A geometria é estática por bloco de 512 m e, desde a Fase 13 (Rio com 150 mil prédios), só existe perto
+ * da câmera: até 1,5 km a planta completa, até 3,5 km uma caixa simples, até 9 km só os prédios altos
+ * (a silhueta da cidade). Os blocos são montados aos poucos, alguns por quadro. O que muda com a simulação — altura, cota do terreno, obra, abandono, cor da camada de informação —
  * vem de uma textura de estado lida no vertex shader (2 texels por prédio). Assim dezenas de milhares
  * de prédios mudam sem remontar nada.
  */
-import { useFrame } from '@react-three/fiber';
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { medir } from '../medir';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { CAMPOS_PREDIO, contorno, predio, retangulo, type CidadeReal } from '../../data/cidadeReal';
 import { arquetipoPorId } from '../../sim/catalog';
@@ -21,23 +23,23 @@ import { useNivel } from '../qualidade';
 import { CAMADA, CAMADAS, carregarBiblioteca, type Biblioteca } from '../materiais/biblioteca';
 import { ambiente } from './ambiente';
 import { clima } from './climaVisual';
-import { corCamada } from './Edificios';
+import { corCamada, useVersaoLenta } from './Edificios';
 import { estiloRegional } from './estilos';
 import { usePrediosReais } from './prediosReaisEstado';
 
 const BLOCO = 512;
+/** distância (m) da câmera ao centro do bloco para cada nível de detalhe */
+const DIST_LOD = [1500, 3500, 9000];
 const POR_LINHA = 2048;
 const CAMADAS_NEUTRAS: Camada[] = ['nenhuma', 'zonas', 'transito', 'transporte'];
 
 /** estilo das paredes de reboco: janelas desenhadas no shader */
-const enum Estilo { Casa = 0, Predio = 1, Loja = 2, Galpao = 3 }
-/** parte da geometria: parede (v pela altura), telhado (uv no plano), oitão (parede triangular) */
-const enum Parte { Parede = 0, Telhado = 1, Oitao = 2 }
+const enum Estilo { Casa = 0, Predio = 1, Loja = 2, Galpao = 3, Liso = 4 }
+/** parte da geometria: parede (v pela altura), telhado (uv no plano), oitão (parede triangular), anexo na laje (paredes e teto) */
+const enum Parte { Parede = 0, Telhado = 1, Oitao = 2, Anexo = 3, LajeAnexo = 4 }
 
 function hash01(n: number) { const s = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); }
 
-interface Acumulador { pos: number[]; nor: number[]; info: number[]; uv: number[]; cor: number[]; idx: number[] }
-const novoAcc = (): Acumulador => ({ pos: [], nor: [], info: [], uv: [], cor: [], idx: [] });
 
 /** Escolhe materiais e forma do telhado a partir do que o arquivo diz do prédio. */
 function aparencia(c: CidadeReal, i: number, sigla: string | undefined) {
@@ -80,28 +82,87 @@ function aparencia(c: CidadeReal, i: number, sigla: string | undefined) {
   return { p, parede, estilo, estiloTelhado, tinta: new THREE.Color(tinta), telhado, corTelhado: new THREE.Color(corTelhado), duasAguas, inclinacao: E.inclinacao };
 }
 
-/** Monta os blocos de geometria de todos os prédios reais da cidade. */
-function montarGeometria(c: CidadeReal, sigla: string | undefined): THREE.BufferGeometry[] {
-  const blocos = new Map<string, Acumulador>();
-  const n = c.predios.length / CAMPOS_PREDIO;
+/** Acumulador de vértices em arrays tipados que crescem (blocos densos têm dezenas de milhares de vértices). */
+class Acumulador {
+  n = 0; ni = 0;
+  pos = new Float32Array(3 * 4096); nor = new Float32Array(3 * 4096); info = new Float32Array(4 * 4096);
+  uv = new Float32Array(2 * 4096); cor = new Uint8Array(4 * 4096); idx = new Uint32Array(6 * 4096);
+  private crescer() {
+    const f32 = (a: Float32Array) => { const b = new Float32Array(a.length * 2); b.set(a); return b; };
+    const u8 = new Uint8Array(this.cor.length * 2); u8.set(this.cor); this.cor = u8;
+    this.pos = f32(this.pos); this.nor = f32(this.nor); this.info = f32(this.info); this.uv = f32(this.uv);
+  }
+  vert(i: number, x: number, topo: number, z: number, nx: number, ny: number, nz: number, camada: number, estilo: number, parte: Parte, extra: number, u: number, v: number, c: THREE.Color): number {
+    if ((this.n + 1) * 3 > this.pos.length) this.crescer();
+    const k = this.n;
+    this.pos[k * 3] = x; this.pos[k * 3 + 1] = topo; this.pos[k * 3 + 2] = z;
+    this.nor[k * 3] = nx; this.nor[k * 3 + 1] = ny; this.nor[k * 3 + 2] = nz;
+    this.info[k * 4] = i; this.info[k * 4 + 1] = camada; this.info[k * 4 + 2] = estilo + parte * 8; this.info[k * 4 + 3] = extra;
+    this.uv[k * 2] = u; this.uv[k * 2 + 1] = v;
+    this.cor[k * 4] = Math.round(c.r * 255); this.cor[k * 4 + 1] = Math.round(c.g * 255); this.cor[k * 4 + 2] = Math.round(c.b * 255); this.cor[k * 4 + 3] = 255;
+    return this.n++;
+  }
+  tri(a: number, b: number, c: number) {
+    if (this.ni + 3 > this.idx.length) { const b2 = new Uint32Array(this.idx.length * 2); b2.set(this.idx); this.idx = b2; }
+    this.idx[this.ni++] = a; this.idx[this.ni++] = b; this.idx[this.ni++] = c;
+  }
+  /** Triângulo com a face voltada para `n` (corrige a ordem dos vértices se preciso). */
+  triVoltado(a: number, b: number, c: number, n: [number, number, number]) {
+    const P = this.pos, I = this.info;
+    // y de referência: topo a 10 m + extra (telhados)
+    const y = (k: number) => P[k * 3 + 1] * 10 + I[k * 4 + 3];
+    const ux = P[b * 3] - P[a * 3], uy = y(b) - y(a), uz = P[b * 3 + 2] - P[a * 3 + 2];
+    const vx = P[c * 3] - P[a * 3], vy = y(c) - y(a), vz = P[c * 3 + 2] - P[a * 3 + 2];
+    const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+    if (cx * n[0] + cy * n[1] + cz * n[2] >= 0) this.tri(a, b, c); else this.tri(a, c, b);
+  }
+  geometria(bx: number, bz: number): THREE.BufferGeometry {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(this.pos.slice(0, this.n * 3), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(this.nor.slice(0, this.n * 3), 3));
+    g.setAttribute('aInfo', new THREE.BufferAttribute(this.info.slice(0, this.n * 4), 4));
+    g.setAttribute('aUV', new THREE.BufferAttribute(this.uv.slice(0, this.n * 2), 2));
+    g.setAttribute('color', new THREE.BufferAttribute(this.cor.slice(0, this.n * 4), 4, true));
+    g.setIndex(this.n > 65535 ? new THREE.BufferAttribute(this.idx.slice(0, this.ni), 1) : new THREE.BufferAttribute(Uint16Array.from(this.idx.subarray(0, this.ni)), 1));
+    // a altura real vem do estado: caixa generosa no Y para o recorte por câmera
+    g.boundingBox = new THREE.Box3(new THREE.Vector3(bx * BLOCO - 300, -200, bz * BLOCO - 300), new THREE.Vector3((bx + 1) * BLOCO + 300, 1800, (bz + 1) * BLOCO + 300));
+    g.boundingSphere = g.boundingBox.getBoundingSphere(new THREE.Sphere());
+    return g;
+  }
+}
 
-  for (let i = 0; i < n; i++) {
+/** Níveis de detalhe: 0 planta real completa, 1 caixa simples, 2 só prédios altos (silhueta da cidade ao longe). */
+export type Lod = 0 | 1 | 2;
+
+/** Prédios por bloco de 512 m (calculado uma vez por cidade). */
+const cacheBlocos = new WeakMap<CidadeReal, Map<string, number[]>>();
+function blocosDe(c: CidadeReal): Map<string, number[]> {
+  let m = cacheBlocos.get(c);
+  if (m) return m;
+  m = new Map();
+  const P = c.predios;
+  for (let i = 0; i < P.length / CAMPOS_PREDIO; i++) {
+    const k = `${Math.floor(P[i * CAMPOS_PREDIO] / BLOCO)},${Math.floor(P[i * CAMPOS_PREDIO + 1] / BLOCO)}`;
+    (m.get(k) ?? m.set(k, []).get(k)!).push(i);
+  }
+  cacheBlocos.set(c, m);
+  return m;
+}
+
+const BRANCO_CASA = new THREE.Color('#8f8a80');
+
+/** Monta a geometria de um bloco no nível de detalhe pedido (null se não sobrar nenhum prédio). */
+function montarBloco(c: CidadeReal, chave: string, lod: Lod, sigla: string | undefined): THREE.BufferGeometry | null {
+  const lista = blocosDe(c).get(chave);
+  if (!lista) return null;
+  const A = new Acumulador();
+  for (const i of lista) {
     const ap = aparencia(c, i, sigla);
     const { p } = ap;
-    const chave = `${Math.floor(p.x / BLOCO)},${Math.floor(p.z / BLOCO)}`;
-    const A = blocos.get(chave) ?? blocos.set(chave, novoAcc()).get(chave)!;
-
-    const vert = (x: number, topo: number, z: number, nx: number, ny: number, nz: number, camada: number, estilo: number, parte: Parte, extra: number, u: number, v: number, cor: THREE.Color) => {
-      A.pos.push(x, topo, z); A.nor.push(nx, ny, nz);
-      A.info.push(i, camada, estilo + parte * 8, extra);
-      A.uv.push(u, v);
-      A.cor.push(Math.round(cor.r * 255), Math.round(cor.g * 255), Math.round(cor.b * 255), 255);
-      return A.pos.length / 3 - 1;
-    };
-
-    const anel = contorno(c, i);
+    if (lod === 2 && p.andares < 4 && p.w * p.d < 1500) continue;
+    const anel = lod === 0 ? contorno(c, i) : retangulo(p);
     // casas retangulares de duas águas: paredes e telhado sobre o retângulo orientado
-    const usarRet = ap.duasAguas && anel.length <= 5;
+    const usarRet = lod === 0 && ap.duasAguas && anel.length <= 5;
     const pts = usarRet ? retangulo(p) : anel;
 
     // paredes
@@ -112,11 +173,11 @@ function montarGeometria(c: CidadeReal, sigla: string | undefined): THREE.Buffer
       if (L < 0.05) continue;
       const tx = (x1 - x0) / L, tz = (z1 - z0) / L;
       const nx = -tz, nz = tx;
-      const a = vert(x0, 0, z0, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u, 0, ap.tinta);
-      const b = vert(x1, 0, z1, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u + L, 0, ap.tinta);
-      const cc = vert(x1, 1, z1, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u + L, 0, ap.tinta);
-      const d = vert(x0, 1, z0, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u, 0, ap.tinta);
-      A.idx.push(a, b, cc, a, cc, d);
+      const a = A.vert(i, x0, 0, z0, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u, 0, ap.tinta);
+      const b = A.vert(i, x1, 0, z1, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u + L, 0, ap.tinta);
+      const cc = A.vert(i, x1, 1, z1, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u + L, 0, ap.tinta);
+      const d = A.vert(i, x0, 1, z0, nx, 0, nz, ap.parede, ap.estilo, Parte.Parede, 0, u, 0, ap.tinta);
+      A.tri(a, b, cc); A.tri(a, cc, d);
       u += L;
     }
 
@@ -136,13 +197,13 @@ function montarGeometria(c: CidadeReal, sigla: string | undefined): THREE.Buffer
         const nx = eC[0] * lado * nh, nz = eC[1] * lado * nh;
         const q = [P(-hl, lado * hc), P(hl, lado * hc), P(hl, 0), P(-hl, 0)];
         const ids = [
-          vert(q[0][0], 1, q[0][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, -0.25, -hl, 0, ap.corTelhado),
-          vert(q[1][0], 1, q[1][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, -0.25, hl, 0, ap.corTelhado),
-          vert(q[2][0], 1, q[2][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, alt, hl, inc, ap.corTelhado),
-          vert(q[3][0], 1, q[3][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, alt, -hl, inc, ap.corTelhado),
+          A.vert(i, q[0][0], 1, q[0][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, -0.25, -hl, 0, ap.corTelhado),
+          A.vert(i, q[1][0], 1, q[1][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, -0.25, hl, 0, ap.corTelhado),
+          A.vert(i, q[2][0], 1, q[2][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, alt, hl, inc, ap.corTelhado),
+          A.vert(i, q[3][0], 1, q[3][1], nx, nv, nz, ap.telhado, 0, Parte.Telhado, alt, -hl, inc, ap.corTelhado),
         ];
-        triangulo(A, ids[0], ids[1], ids[2], [nx, nv, nz]);
-        triangulo(A, ids[0], ids[2], ids[3], [nx, nv, nz]);
+        A.triVoltado(ids[0], ids[1], ids[2], [nx, nv, nz]);
+        A.triVoltado(ids[0], ids[2], ids[3], [nx, nv, nz]);
       }
       // oitões (paredes triangulares nas pontas)
       for (const lado of [-1, 1]) {
@@ -150,49 +211,42 @@ function montarGeometria(c: CidadeReal, sigla: string | undefined): THREE.Buffer
         const nx = eL[0] * lado, nz = eL[1] * lado;
         const a = P(l, -(hc - 0.4)), b = P(l, hc - 0.4), t = P(l, 0);
         const ids = [
-          vert(a[0], 1, a[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, 0, 0, 0, ap.tinta),
-          vert(b[0], 1, b[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, 0, 2 * (hc - 0.4), 0, ap.tinta),
-          vert(t[0], 1, t[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, alt * (hc - 0.4) / hc, hc - 0.4, 0, ap.tinta),
+          A.vert(i, a[0], 1, a[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, 0, 0, 0, ap.tinta),
+          A.vert(i, b[0], 1, b[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, 0, 2 * (hc - 0.4), 0, ap.tinta),
+          A.vert(i, t[0], 1, t[1], nx, 0, nz, ap.parede, ap.estilo, Parte.Oitao, alt * (hc - 0.4) / hc, hc - 0.4, 0, ap.tinta),
         ];
-        triangulo(A, ids[0], ids[1], ids[2], [nx, 0, nz]);
+        A.triVoltado(ids[0], ids[1], ids[2], [nx, 0, nz]);
       }
     } else {
-      // laje: polígono triangulado
-      const v2 = pts.map(([x, z]) => new THREE.Vector2(x, z));
-      const tris = THREE.ShapeUtils.triangulateShape(v2, []);
-      const base = pts.map(([x, z]) => vert(x, 1, z, 0, 1, 0, ap.telhado, ap.estiloTelhado, Parte.Telhado, 0, x, z, ap.corTelhado));
-      for (const [a, b, cc] of tris) triangulo(A, base[a], base[b], base[cc], [0, 1, 0]);
+      // laje: polígono triangulado (no retângulo, dois triângulos)
+      const base = pts.map(([x, z]) => A.vert(i, x, 1, z, 0, 1, 0, ap.telhado, ap.estiloTelhado, Parte.Telhado, 0, x, z, ap.corTelhado));
+      const tris = pts.length === 4 ? [[0, 1, 2], [0, 2, 3]] : THREE.ShapeUtils.triangulateShape(pts.map(([x, z]) => new THREE.Vector2(x, z)), []);
+      for (const [a, b, cc] of tris) A.triVoltado(base[a], base[b], base[cc], [0, 1, 0]);
+      // casa de máquinas e reservatório na laje dos prédios
+      if (lod === 0 && p.andares > 3 && p.tipo !== 2) caixaNaLaje(A, i, p.x, p.z, p.angle, Math.min(7, p.w * 0.32), Math.min(6, p.d * 0.3), 3.2);
     }
   }
-
-  const geos: THREE.BufferGeometry[] = [];
-  for (const [chave, A] of blocos) {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(A.pos, 3));
-    g.setAttribute('normal', new THREE.Float32BufferAttribute(A.nor, 3));
-    g.setAttribute('aInfo', new THREE.Float32BufferAttribute(A.info, 4));
-    g.setAttribute('aUV', new THREE.Float32BufferAttribute(A.uv, 2));
-    g.setAttribute('color', new THREE.Uint8BufferAttribute(A.cor, 4, true));
-    g.setIndex(A.idx.length / 3 > 0 && A.pos.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(A.idx, 1) : new THREE.Uint16BufferAttribute(A.idx, 1));
-    // a altura real vem do estado: caixa generosa no Y para o recorte por câmera
-    const [bx, bz] = chave.split(',').map(Number);
-    g.boundingBox = new THREE.Box3(new THREE.Vector3(bx * BLOCO - 300, -200, bz * BLOCO - 300), new THREE.Vector3((bx + 1) * BLOCO + 300, 1800, (bz + 1) * BLOCO + 300));
-    g.boundingSphere = g.boundingBox.getBoundingSphere(new THREE.Sphere());
-    geos.push(g);
-  }
-  return geos;
+  if (A.n === 0) return null;
+  const [bx, bz] = chave.split(',').map(Number);
+  return A.geometria(bx, bz);
 }
 
-/** Empurra um triângulo com a face voltada para `n` (corrige a ordem dos vértices se preciso). */
-function triangulo(A: Acumulador, a: number, b: number, c: number, n: [number, number, number]) {
-  const P = A.pos, I = A.info;
-  // y de referência: topo a 10 m + extra (telhados)
-  const y = (k: number) => P[k * 3 + 1] * 10 + I[k * 4 + 3];
-  const ux = P[b * 3] - P[a * 3], uy = y(b) - y(a), uz = P[b * 3 + 2] - P[a * 3 + 2];
-  const vx = P[c * 3] - P[a * 3], vy = y(c) - y(a), vz = P[c * 3 + 2] - P[a * 3 + 2];
-  const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
-  if (cx * n[0] + cy * n[1] + cz * n[2] >= 0) A.idx.push(a, b, c);
-  else A.idx.push(a, c, b);
+/** Caixa de concreto liso sobre a laje (paredes do anexo + teto), sumindo junto quando o prédio vira obra. */
+function caixaNaLaje(A: Acumulador, i: number, cx: number, cz: number, ang: number, w: number, d: number, h: number) {
+  const r = retangulo({ x: cx, z: cz, angle: ang, w, d, andares: 0, tipo: 0, aresta: 0, nome: null });
+  let u = 0;
+  for (let k = 0; k < 4; k++) {
+    const [x0, z0] = r[k], [x1, z1] = r[(k + 1) % 4];
+    const L = Math.hypot(x1 - x0, z1 - z0), tx = (x1 - x0) / L, tz = (z1 - z0) / L;
+    const a = A.vert(i, x0, 1, z0, -tz, 0, tx, CAMADA.Concrete034, Estilo.Liso, Parte.Anexo, 0, u, 0, BRANCO_CASA);
+    const b = A.vert(i, x1, 1, z1, -tz, 0, tx, CAMADA.Concrete034, Estilo.Liso, Parte.Anexo, 0, u + L, 0, BRANCO_CASA);
+    const c = A.vert(i, x1, 1, z1, -tz, 0, tx, CAMADA.Concrete034, Estilo.Liso, Parte.Anexo, h, u + L, 0, BRANCO_CASA);
+    const dd = A.vert(i, x0, 1, z0, -tz, 0, tx, CAMADA.Concrete034, Estilo.Liso, Parte.Anexo, h, u, 0, BRANCO_CASA);
+    A.tri(a, b, c); A.tri(a, c, dd);
+    u += L;
+  }
+  const t = r.map(([x, z]) => A.vert(i, x, 1, z, 0, 1, 0, CAMADA.Concrete034, 0, Parte.LajeAnexo, h, x, z, BRANCO_CASA));
+  A.triVoltado(t[0], t[1], t[2], [0, 1, 0]); A.triVoltado(t[0], t[2], t[3], [0, 1, 0]);
 }
 
 // ── shader ───────────────────────────────────────────────────────────────────────
@@ -215,7 +269,11 @@ ivec2 pxE = ivec2((refP % ${POR_LINHA}) * 2, refP / ${POR_LINHA});
 vec4 e0 = texelFetch(tEstado, pxE, 0);
 vec4 e1 = texelFetch(tEstado, pxE + ivec2(1, 0), 0);
 int flagsE = int(e0.z + 0.5);
-float extraE = (flagsE & 4) != 0 ? min(aInfo.w, 0.0) : aInfo.w;
+float parteE = floor(aInfo.z / 8.0);
+float extraE = aInfo.w;
+// telhado inclinado/oitão só nas casas baixas; anexo da laje some durante a obra
+if ((parteE == 1.0 || parteE == 2.0) && (flagsE & 4) != 0) extraE = min(extraE, 0.0);
+if (parteE >= 3.0 && (flagsE & 2) != 0) extraE = 0.0;
 float yE = position.y > 0.5 ? e0.x + extraE : -1.5;
 if (e0.x <= 0.0) yE = -80.0;
 transformed = vec3(position.x, e0.y + yE, position.z);`;
@@ -234,7 +292,7 @@ function criarMaterial(bib: Biblioteca, uniforms: Record<string, THREE.IUniform>
 ${VERT_POS}
 float parteV = floor(aInfo.z / 8.0);
 vYr = yE;
-vUVr = parteV == 1.0 ? aUV : vec2(aUV.x, yE);
+vUVr = parteV == 1.0 || parteV == 4.0 ? aUV : vec2(aUV.x, yE);
 vInfo = aInfo; vEst = e0; vEst2 = e1;
 vec3 tW = vec3(normal.z, 0.0, -normal.x);
 tW = length(tW) < 0.1 ? vec3(1.0, 0.0, 0.0) : normalize(tW);
@@ -267,7 +325,7 @@ vec2 uvR = vUVr / uEsc[camR];
 vec4 tcR = texture(tCor, vec3(uvR, float(camR)));
 vec4 tnR = texture(tNor, vec3(uvR, float(camR)));
 float janelaR = 0.0, acesaR = 0.0, rugR = tcR.a;
-bool paredeR = parteR != 1.0;
+bool paredeR = parteR != 1.0 && parteR != 4.0;
 if (camR < 8 && paredeR) {
   // fachada fotográfica
   diffuseColor.rgb = tcR.rgb * mix(vec3(1.0), diffuseColor.rgb, 0.15);
@@ -345,7 +403,7 @@ if (camR < 8 && paredeR) {
     diffuseColor.rgb = mix(mix(paredeBaseR, vec3(0.04, 0.045, 0.05), vidroMedR), diffuseColor.rgb, aaR);
     acesaR = mix(vidroMedR * 0.33 * step(vYr, alturaR - 0.7), acesaR, aaR);
     janelaR *= aaR;
-  } else {
+  } else if (estiloR < 3.5) {
     // galpão: chapa ondulada e faixa de janelas altas
     diffuseColor.rgb *= 0.88 + 0.12 * step(0.5, fract(vUVr.x * 1.3));
     janelaR = step(alturaR * 0.72, vYr) * step(vYr, alturaR * 0.88) * step(0.15, fract(vUVr.x / 3.0));
@@ -411,7 +469,13 @@ ${VERT_POS}`);
 
 export function PrediosReais() {
   const wv = useGame((s) => s.worldVersion);
-  const sv = useGame((s) => s.stateVersion);
+  // 150 mil prédios: a textura de estado é refeita no máximo a cada 0,7 s
+  const sv = useVersaoLenta(useGame((s) => s.stateVersion), 700);
+  const camera = useThree((s) => s.camera);
+  const grupo = useRef<THREE.Group>(null);
+  const blocos = useRef(new Map<string, { lod: Lod; mesh: THREE.Mesh | null }>());
+  const fila = useRef<{ chave: string; lod: Lod; d: number }[]>([]);
+  const ultimaAvaliacao = useRef(-1e9);
   const camada = useGame((s) => s.camada);
   const daltonico = useApp((s) => s.daltonico);
   const nivel = useNivel();
@@ -425,10 +489,6 @@ export function PrediosReais() {
     return () => { vivo = false; };
   }, [real, nivel]);
 
-  // a sigla vem junto com `real` (mesma inicialização)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const geos = useMemo(() => (real ? montarGeometria(real, mundo.init?.sigla) : []), [real]);
-  useEffect(() => () => geos.forEach((g) => g.dispose()), [geos]);
 
   const nPredios = real ? real.predios.length / CAMPOS_PREDIO : 0;
   const estado = useMemo(() => {
@@ -484,18 +544,65 @@ export function PrediosReais() {
     estado.needsUpdate = true;
   }, [real, estado, sv, wv, camada, daltonico, nPredios, uniforms]);
 
+  // troca de cidade ou de material: descarta os blocos montados
+  useEffect(() => {
+    const mapa = blocos.current, g = grupo.current;
+    return () => {
+      for (const b of mapa.values()) if (b.mesh) { g?.remove(b.mesh); b.mesh.geometry.dispose(); }
+      mapa.clear();
+      fila.current = [];
+      ultimaAvaliacao.current = -1e9;
+    };
+  }, [real, mat, matSombra]);
+
   useFrame((_, dt) => {
     uniforms.uNoite.value = ambiente.noite * (1 - clima.apagao);
     uniforms.uTempo.value += dt;
     uniforms.uCeu.value.copy(ambiente.corCeu);
+    const g = grupo.current;
+    if (!real || !mat || !g) return;
+
+    // a cada 0,4 s: que nível de detalhe cada bloco deve ter, pela distância até a câmera
+    const agora = performance.now();
+    if (agora - ultimaAvaliacao.current > 400) {
+      ultimaAvaliacao.current = agora;
+      const { x: cx, y: cy, z: cz } = camera.position;
+      const desejado = new Map<string, { lod: Lod; d: number }>();
+      for (const chave of blocosDe(real).keys()) {
+        const sep = chave.indexOf(',');
+        const bx = Number(chave.slice(0, sep)), bz = Number(chave.slice(sep + 1));
+        const d = Math.hypot((bx + 0.5) * BLOCO - cx, (bz + 0.5) * BLOCO - cz, Math.max(0, cy) * 0.6);
+        const lod = d < DIST_LOD[0] ? 0 : d < DIST_LOD[1] ? 1 : d < DIST_LOD[2] ? 2 : -1;
+        if (lod >= 0) desejado.set(chave, { lod: lod as Lod, d });
+      }
+      for (const [chave, b] of blocos.current) {
+        if (desejado.has(chave)) continue;
+        if (b.mesh) { g.remove(b.mesh); b.mesh.geometry.dispose(); }
+        blocos.current.delete(chave);
+      }
+      fila.current = [...desejado].filter(([k, v]) => blocos.current.get(k)?.lod !== v.lod).map(([chave, v]) => ({ chave, ...v })).sort((a, b) => a.d - b.d);
+    }
+
+    // monta os blocos pendentes, do mais perto para o mais longe, uns 6 ms por quadro
+    const t0 = performance.now();
+    while (fila.current.length && performance.now() - t0 < 6) {
+      const { chave, lod } = fila.current.shift()!;
+      const geo = medir(`prédios: bloco ${chave} lod ${lod}`, () => montarBloco(real, chave, lod, mundo.init?.sigla), 30);
+      const velho = blocos.current.get(chave);
+      if (velho?.mesh) { g.remove(velho.mesh); velho.mesh.geometry.dispose(); }
+      let mesh: THREE.Mesh | null = null;
+      if (geo) {
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.customDepthMaterial = matSombra;
+        mesh.castShadow = lod < 2;
+        mesh.receiveShadow = true;
+        mesh.matrixAutoUpdate = false;
+        g.add(mesh);
+      }
+      blocos.current.set(chave, { lod, mesh });
+    }
   });
 
   if (!real || !mat) return null;
-  return (
-    <group>
-      {geos.map((g, k) => (
-        <mesh key={k} geometry={g} material={mat} customDepthMaterial={matSombra} castShadow receiveShadow />
-      ))}
-    </group>
-  );
+  return <group ref={grupo} />;
 }

@@ -25,7 +25,8 @@ export const PALETAS: Record<Bioma, Paleta> = {
   pantanal: { grama: '#7ea34a', grama2: '#94b45a', mata: '#3e6b2b', solo: '#6c5a3a', areia: '#d6c69c', rocha: '#7a776e', fundo: '#8f8662' },
 };
 
-const CHUNK = 96;
+/** células por bloco do terreno (precisa dividir HM_RES: 1024 / 128 = 8 × 8 blocos) */
+const CHUNK = 128;
 
 function corDoVertice(hm: Heightmap, i: number, j: number, p: Paleta, nz: (x: number, z: number) => number, out: THREE.Color, tmp: THREE.Color) {
   const k = j * HM_VERTS + i;

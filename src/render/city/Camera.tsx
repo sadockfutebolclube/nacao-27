@@ -115,7 +115,7 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
       enableDamping
       dampingFactor={0.12}
       minDistance={25}
-      maxDistance={2800}
+      maxDistance={6000}
       minPolarAngle={0.12}
       maxPolarAngle={1.38}
       screenSpacePanning={false}

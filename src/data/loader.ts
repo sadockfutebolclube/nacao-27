@@ -5,7 +5,6 @@ import { DadosSociais, type SocialUF } from './social';
 import { DadosClima, type NormaisUF } from './clima';
 import { EleitoradoUF } from './eleitorado';
 import { MunicipiosUF } from './municipios';
-import { DadosMacro } from './macro';
 import { CidadeReal } from './cidadeReal';
 import { DadosUF, IndiceUFs, type SiglaUF } from './schemas';
 
@@ -18,7 +17,6 @@ async function json<T>(path: string): Promise<T> {
 }
 
 let indiceCache: Promise<IndiceUFs> | null = null;
-let geoCache: Promise<FeatureCollection> | null = null;
 const malhasMun = new Map<string, Promise<FeatureCollection>>();
 
 /** Malha dos municípios da UF (IBGE). */
@@ -30,11 +28,6 @@ export function carregarMalhaMunicipios(sigla: SiglaUF): Promise<FeatureCollecti
 export function carregarIndice(): Promise<IndiceUFs> {
   indiceCache ??= json<unknown>('ufs/index.json').then((j) => IndiceUFs.parse(j));
   return indiceCache;
-}
-
-export function carregarMalhaBrasil(): Promise<FeatureCollection> {
-  geoCache ??= json<FeatureCollection>('geo/brasil-ufs.geojson');
-  return geoCache;
 }
 
 export async function carregarUF(sigla: SiglaUF): Promise<DadosUF> {
@@ -87,13 +80,6 @@ export async function carregarCidadeReal(ibge: string): Promise<CidadeReal | nul
     console.warn('[cidade real] indisponível', e);
     return null;
   }
-}
-
-let macroCache: Promise<DadosMacro> | null = null;
-/** Conjuntura macroeconômica do Brasil (Fase 9 — Modo Presidente). */
-export function carregarMacro(): Promise<DadosMacro> {
-  macroCache ??= json<unknown>('macro/brasil.json').then((j) => DadosMacro.parse(j));
-  return macroCache;
 }
 
 /** Municípios jogáveis da UF (Fase 8); null = só a capital. */

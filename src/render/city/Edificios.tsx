@@ -3,7 +3,9 @@
  * colonial ou laje com caixa d'água azul, puxadinho de tijolo, muro chapiscado, toldo de loja,
  * chaminé, obra com andaime e grua. Também as camadas de informação (água, luz, esgoto, valor…).
  */
+import { medir } from '../medir';
 import { useFrame } from '@react-three/fiber';
+import { alvoCamera } from './Camera';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { arquetipoPorId, Zone, ZONES } from '../../sim/catalog';
@@ -14,7 +16,7 @@ import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { criarMaterialFachada } from '../shaders/fachada';
 import { ambiente } from './ambiente';
 import { clima } from './climaVisual';
-import { corRampa } from '../brasil/metricas';
+import { corRampa } from '../cores';
 import { useApp } from '../../app/store';
 import { GRUPOS, TERR_CELL, TERR_RES } from '../../sim/city/territorio';
 import { BUILD_HALF } from '../../world/constants';
@@ -53,7 +55,7 @@ function geoTelhado(): THREE.BufferGeometry {
 interface Dados { mat: THREE.Matrix4[]; cor: THREE.Color[]; fac?: number[] }
 
 /** Versão do estado com no máximo uma atualização a cada `ms` (cidades reais têm dezenas de milhares de prédios). */
-function useVersaoLenta(v: number, ms: number) {
+export function useVersaoLenta(v: number, ms: number) {
   const [lenta, setLenta] = useState(v);
   const ultimo = useRef(0);
   useEffect(() => {
@@ -71,6 +73,16 @@ export function Edificios({ hm }: { hm: Heightmap }) {
   const camada = useGame((s) => s.camada);
   const daltonico = useApp((s) => s.daltonico);
   const reaisProntos = usePrediosReais((s) => s.pronto);
+  // Fase 13 (Rio com 130 mil lotes): só os lotes perto da câmera; remonta quando ela anda 400 m
+  const [centro, setCentro] = useState<[number, number]>(() => { const a = alvoCamera(); return [a.x, a.z]; });
+  const ultimaChecagem = useRef(0);
+  useFrame(() => {
+    const agora = performance.now();
+    if (agora - ultimaChecagem.current < 500) return;
+    ultimaChecagem.current = agora;
+    const a = alvoCamera();
+    if (Math.hypot(a.x - centro[0], a.z - centro[1]) > 400) setCentro([a.x, a.z]);
+  });
 
   const uniforms = useMemo(() => ({ uNoite: { value: 0 }, uTempo: { value: 0 }, uCeu: { value: new THREE.Color() }, uCamada: { value: 0 } }), []);
   const mats = useMemo(() => ({
@@ -92,9 +104,17 @@ export function Edificios({ hm }: { hm: Heightmap }) {
     mastro: useRef<THREE.InstancedMesh>(null), lanca: useRef<THREE.InstancedMesh>(null),
   } satisfies Record<Parte, React.RefObject<THREE.InstancedMesh | null>>;
 
-  // sv/wv: o estado vive em `mundo` (mutável); as versões disparam a remontagem
+  // sv/wv: o estado vive em `mundo` (mutável); as versões disparam a remontagem — mas só se algo visível
+  // mudou (assinatura dos lotes do raio), senão reaproveita o que já está montado
+  const anterior = useRef<{ chave: string; dados: Record<Parte, Dados> } | null>(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dados = useMemo(() => montar(camada, daltonico, reaisProntos), [sv, wv, camada, daltonico, reaisProntos]);
+  const dados = useMemo(() => medir('edifícios: montar', () => {
+    const chave = `${assinatura(centro, reaisProntos)}|${wv}|${camada}|${daltonico}|${reaisProntos}|${centro.join(',')}`;
+    if (anterior.current?.chave === chave && CAMADAS_NEUTRAS.includes(camada)) return anterior.current.dados;
+    const d = montar(camada, daltonico, reaisProntos, centro);
+    anterior.current = { chave, dados: d };
+    return d;
+  }), [sv, wv, camada, daltonico, reaisProntos, centro]);
   const capacidade = useMemo(() => {
     const cap: Record<Parte, number> = {} as Record<Parte, number>;
     for (const k of Object.keys(dados) as Parte[]) cap[k] = Math.max(64, 2 ** Math.ceil(Math.log2(dados[k].mat.length + 1)));
@@ -195,7 +215,24 @@ export function corCamada(camada: Camada, st: ArrayLike<number>, o: number, c: T
   }
 }
 
-function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Parte, Dados> {
+/** raio (m) em volta da câmera em que os lotes gerados pelo jogo são desenhados */
+const RAIO_EDIFICIOS = 2500;
+const dentroDoRaio = (x: number, z: number, c: [number, number]) => Math.abs(x - c[0]) < RAIO_EDIFICIOS && Math.abs(z - c[1]) < RAIO_EDIFICIOS;
+
+/** Assinatura do que é visível nos lotes do raio (arquétipo, obra, andares, abandono, aparência). */
+function assinatura(centro: [number, number], reaisProntos: boolean): number {
+  const L = mundo.lots, S = mundo.lotState;
+  const n = Math.min(L.length / LOT_STRIDE, S.length / LOT_STATE_STRIDE);
+  let h = 0;
+  for (let i = 0; i < n; i++) {
+    const lo = i * LOT_STRIDE, o = i * LOT_STATE_STRIDE;
+    if (!S[o + 1] || (reaisProntos && L[lo + 7] > 0) || !dentroDoRaio(L[lo], L[lo + 1], centro)) continue;
+    h = (Math.imul(h, 31) + S[o + 1] * 7 + Math.round(S[o + 2] * 8) * 131 + S[o + 3] * 977 + (S[o + 5] & FLAG.ABANDONADO) * 3 + i) | 0;
+  }
+  return h;
+}
+
+function montar(camada: Camada, alto: boolean, reaisProntos: boolean, centro: [number, number]): Record<Parte, Dados> {
   const out = Object.fromEntries((['corpo', 'telhado', 'caixa', 'toldo', 'muro', 'chamine', 'mastro', 'lanca'] as Parte[]).map((k) => [k, { mat: [], cor: [] } as Dados])) as Record<Parte, Dados>;
   out.corpo.fac = [];
   const L = mundo.lots, S = mundo.lotState;
@@ -220,8 +257,11 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Pa
     const o = i * LOT_STATE_STRIDE;
     const archId = S[o + 1];
     if (!archId) continue;
-    const a = arquetipoPorId(archId);
     const lo = i * LOT_STRIDE;
+    // Fase 12/13: prédios reais (corpo, telhado, casa de máquinas) são todos desenhados por PrediosReais
+    if (reaisProntos && L[lo + 7] > 0) continue;
+    if (!dentroDoRaio(L[lo], L[lo + 1], centro)) continue;
+    const a = arquetipoPorId(archId);
     const x = L[lo], z = L[lo + 1], ang = L[lo + 2], w = L[lo + 3], d = L[lo + 4], baseY = L[lo + 5];
     const prog = S[o + 2], andares = Math.max(1, S[o + 3]), look = S[o + 4], flags = S[o + 5], lv = S[o + 6];
     const abandonado = (flags & FLAG.ABANDONADO) !== 0;
@@ -251,11 +291,7 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Pa
     else cor = new THREE.Color(GALPAO[Math.floor(look * GALPAO.length * 4.1) % GALPAO.length]);
     if (camadaAtiva) cor = corCamada(camada, S, o, cTmp, alto)!.clone();
 
-    // Fase 12: o corpo e o telhado dos prédios reais saem da planta verdadeira (PrediosReais)
-    const plantaReal = real && reaisProntos;
-
     if (prog < 1) {
-      if (plantaReal) continue;
       const hObra = Math.max(1.2, H * Math.min(1, prog * 1.15));
       push('corpo', 0, y0, lz, W, hObra + 0.6, D, ang, x, z, camadaAtiva ? cor : '#9a958c');
       out.corpo.fac!.push(4, a.peDireito, seed, 0);
@@ -269,24 +305,16 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Pa
     }
 
     const loja = a.zone === Zone.Comercial && a.level <= 2 ? 1 : 0;
-    if (!plantaReal) {
-      push('corpo', 0, y0, lz, W, H + 0.6, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
-      const estiloNum = a.estilo === 'casa' ? 0 : a.estilo === 'predio' ? 1 : a.estilo === 'vidro' ? 2 : 3;
-      out.corpo.fac!.push(estiloNum, a.peDireito, seed, abandonado ? -1 : loja);
-    }
+    push('corpo', 0, y0, lz, W, H + 0.6, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
+    const estiloNum = a.estilo === 'casa' ? 0 : a.estilo === 'predio' ? 1 : a.estilo === 'vidro' ? 2 : 3;
+    out.corpo.fac!.push(estiloNum, a.peDireito, seed, abandonado ? -1 : loja);
     const topo = y0 + H + 0.6;
 
     if (camadaAtiva) continue;
 
     // telhado / laje
     const telha = a.telhado === 'telha' || (a.estilo === 'casa' && a.telhado !== 'galpao' && ((look * 29.7) % 1) < E.telhaEmCasas);
-    if (plantaReal) {
-      // casa de máquinas e reservatório de concreto na laje dos prédios (casas reais têm telhado próprio)
-      if (andares > 3 && a.telhado !== 'galpao') {
-        push('corpo', (look - 0.5) * W * 0.25, topo - 0.2, lz, Math.min(7, W * 0.32), 3.2, Math.min(6, D * 0.3), ang, x, z, '#8f8a80');
-        out.corpo.fac!.push(5, 3, seed, 0);
-      } else if (andares <= 3 && a.estilo === 'casa' && look > 0.55) push('caixa', (look - 0.5) * (W - 3) * 0.6, topo, lz, 1.5, 1.2, 1.5, ang, x, z, '#1f63b5');
-    } else if (telha) {
+    if (telha) {
       push('telhado', 0, topo, lz, W + 0.7, Math.max(1.4, W * 0.24 * E.inclinacao), D + 0.7, ang, x, z, E.telhas[Math.floor(look * 40) % E.telhas.length]);
     } else if (a.telhado === 'galpao') {
       push('telhado', 0, topo, lz, D + 0.6, Math.max(1.6, W * 0.12), W + 0.6, ang, x, z, look < 0.5 ? '#c3c7c9' : '#7f9bb3', Math.PI / 2);
@@ -306,7 +334,7 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Pa
     }
 
     // muro chapiscado das casas
-    if (a.zone === Zone.ResBaixa && !plantaReal) {
+    if (a.zone === Zone.ResBaixa) {
       const corMuro = E.muros[Math.floor(look * 50) % E.muros.length];
       const yM = baseY - 0.4;
       const hM = 1.9;
@@ -337,8 +365,10 @@ function LotesOverlay({ hm }: { hm: Heightmap }) {
   const mat = useMemo(() => new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), []);
   useEffect(() => () => mat.dispose(), [mat]);
 
-  const NX = 3, NZ = 5;
+  // Fase 13: o relevo é de 16 m, então 2 × 3 vértices por lote bastam; e só monta quando aparece (130 mil lotes no Rio)
+  const NX = 1, NZ = 2;
   const geo = useMemo(() => {
+    if (!visivel) return null;
     const L = mundo.lots;
     const n = L.length / LOT_STRIDE;
     const vpl = (NX + 1) * (NZ + 1);
@@ -366,11 +396,11 @@ function LotesOverlay({ hm }: { hm: Heightmap }) {
     g.setIndex(idx);
     g.computeBoundingSphere();
     return g;
-  }, [hm, wv]);
-  useEffect(() => () => geo.dispose(), [geo]);
+  }, [hm, wv, visivel]);
+  useEffect(() => () => geo?.dispose(), [geo]);
 
   useLayoutEffect(() => {
-    if (!visivel) return;
+    if (!visivel || !geo) return;
     const S = mundo.lotState;
     const col = geo.getAttribute('color') as THREE.BufferAttribute;
     const arr = col.array as Float32Array;
@@ -392,5 +422,6 @@ function LotesOverlay({ hm }: { hm: Heightmap }) {
     col.needsUpdate = true;
   }, [geo, sv, camada, visivel]);
 
-  return <mesh geometry={geo} material={mat} visible={visivel} renderOrder={2} />;
+  if (!geo) return null;
+  return <mesh geometry={geo} material={mat} renderOrder={2} />;
 }

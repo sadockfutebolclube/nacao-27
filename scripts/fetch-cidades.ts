@@ -1,7 +1,7 @@
 /**
  * NAÇÃO 27 — cidades reais (Fase 11).
  *
- *   npm run fetch-cidades                 # as 27 capitais
+ *   npm run fetch-cidades                 # Rio de Janeiro (foco do jogo desde a Fase 13)
  *   npm run fetch-cidades -- 2507507 …    # municípios pelo código IBGE
  *   npm run fetch-cidades -- --todos      # os 216 municípios jogáveis
  *
@@ -29,7 +29,10 @@ import { existsSync } from 'node:fs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'public', 'data', 'cidades');
 const CACHE_OSM = join(ROOT, 'data', 'osm-cache');
-const MAP = 6144, HALF = MAP / 2, BUILD = 1536, PASSO = 16, RES = MAP / PASSO + 1, VERDE_RES = 192;
+// Fase 13: Rio em larga escala — mapa de 16 km com 12 × 12 km construíveis (Centro, Zona Sul, Tijuca, Maracanã)
+const MAP = 16384, HALF = MAP / 2, BUILD = 6144, PASSO = 16, RES = MAP / PASSO + 1, VERDE_RES = 512;
+/** centro do mapa quando não é a sede: no Rio, entre o Centro e a Zona Sul (perto do Cristo) */
+const CENTRO: Record<string, [number, number]> = { '3304557': [-22.945, -43.195] };
 const ESPELHOS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -258,6 +261,82 @@ function andaresPadrao(b: string, tipo: number, area: number): number {
   return area < 110 ? 1 : area < 260 ? 2 : area < 800 ? 3 : 5;
 }
 
+// ── mar pela linha de costa ──────────────────────────────────────────────────────
+
+/**
+ * Fase 13: a altitude Terrarium tem artefatos no mar perto da costa (no Rio, ~800 m de "terra" de 20 m ao sul
+ * de Copacabana). A linha de costa do OSM (`natural=coastline`, terra à esquerda do sentido da via) define o mar:
+ * a costa vira muro na grade, o lado direito de cada trecho vira semente de mar e o mar se espalha (4 vizinhos)
+ * até os muros. Mar fica em −3 m; terra baixa que a altitude punha abaixo de 0,5 m sobe para 1 m.
+ * Se o resultado for absurdo (mar em cima de morro), mantém a altitude original.
+ */
+function corrigirMarPelaCosta(alt: Float32Array, natureza: ElOSM[], xz: (lat: number, lon: number) => P) {
+  const costas = natureza.filter((e) => e.type === 'way' && e.tags?.natural === 'coastline' && e.geometry && e.geometry.length >= 2);
+  if (!costas.length) return;
+  const cel = (x: number, z: number) => {
+    const i = Math.round((x + HALF) / PASSO), j = Math.round((z + HALF) / PASSO);
+    return i >= 0 && j >= 0 && i < RES && j < RES ? j * RES + i : -1;
+  };
+  const muro = new Uint8Array(RES * RES);
+  const direita: number[] = [], esquerda: number[] = [];
+  for (const e of costas) {
+    const pts = e.geometry!.map((g) => xz(g.lat, g.lon));
+    for (let k = 1; k < pts.length; k++) {
+      const [ax, az] = pts[k - 1], [bx, bz] = pts[k];
+      const L = Math.hypot(bx - ax, bz - az);
+      if (L < 0.01) continue;
+      const tx = (bx - ax) / L, tz = (bz - az) / L;
+      // lado direito do sentido da via (no mapa com o norte para cima): (−tz, tx) em x leste / z sul
+      const rx = -tz, rz = tx;
+      const n = Math.ceil(L / (PASSO / 3));
+      for (let s = 0; s <= n; s++) {
+        const x = ax + (bx - ax) * (s / n), z = az + (bz - az) * (s / n);
+        const c = cel(x, z);
+        if (c >= 0) muro[c] = 1;
+        const d = cel(x + rx * PASSO * 1.6, z + rz * PASSO * 1.6), l = cel(x - rx * PASSO * 1.6, z - rz * PASSO * 1.6);
+        if (d >= 0) direita.push(d);
+        if (l >= 0) esquerda.push(l);
+      }
+    }
+  }
+  // regiões separadas pela costa (4 vizinhos); cada uma vira mar ou terra pelo voto das sementes:
+  // uma semente caída do lado errado (píer, enseada estreita) não decide sozinha
+  const regiao = new Int32Array(RES * RES).fill(-1);
+  const votos: number[] = [];
+  const fila: number[] = [];
+  for (let k0 = 0; k0 < regiao.length; k0++) {
+    if (muro[k0] || regiao[k0] >= 0) continue;
+    const id = votos.length;
+    votos.push(0);
+    regiao[k0] = id; fila.length = 0; fila.push(k0);
+    for (let q = 0; q < fila.length; q++) {
+      const k = fila[q], i = k % RES, j = (k / RES) | 0;
+      for (const v of [i > 0 ? k - 1 : -1, i < RES - 1 ? k + 1 : -1, j > 0 ? k - RES : -1, j < RES - 1 ? k + RES : -1]) {
+        if (v >= 0 && regiao[v] < 0 && !muro[v]) { regiao[v] = id; fila.push(v); }
+      }
+    }
+  }
+  for (const s of direita) if (!muro[s]) votos[regiao[s]]++;
+  for (const s of esquerda) if (!muro[s]) votos[regiao[s]]--;
+  const mar = new Uint8Array(RES * RES);
+  for (let k = 0; k < mar.length; k++) if (!muro[k] && votos[regiao[k]] > 0) mar[k] = 1;
+  // conferência: o mar não pode cobrir morro (vazou por um buraco na costa)
+  let total = 0, alto = 0;
+  for (let k = 0; k < mar.length; k++) if (mar[k]) { total++; if (alt[k] > 25) alto++; }
+  if (!total || total > mar.length * 0.9 || alto > total * 0.05) {
+    console.log(`    linha de costa ignorada (mar ${total} células, ${alto} acima de 25 m)`);
+    return;
+  }
+  let corrigidas = 0;
+  for (let k = 0; k < alt.length; k++) {
+    // mar nivelado em −3 m: a batimetria do Terrarium perto da costa tem buracos de −30 m (ruído) que viravam poças escuras;
+    // o jogo aprofunda o mar pela distância da costa
+    if (mar[k]) { if (alt[k] !== -3) { alt[k] = -3; corrigidas++; } }
+    else if (alt[k] <= 0.5) { alt[k] = muro[k] ? 0.6 : 1; corrigidas++; } // a própria costa vira areia (0,6 m)
+  }
+  console.log(`    linha de costa: ${(total * PASSO * PASSO / 1e6).toFixed(1)} km² de mar, ${corrigidas} células corrigidas`);
+}
+
 // ── principal ──────────────────────────────────────────────────────────────────
 
 interface Mun { ibge: string; nome: string; lat: number; lon: number; capital: boolean; uf: string }
@@ -270,7 +349,7 @@ async function gerar(m: Mun, terr: Terrarium) {
   const bbM = `${ma0.toFixed(5)},${mo0.toFixed(5)},${ma1.toFixed(5)},${mo1.toFixed(5)}`;
   const vias = await overpass(`${m.ibge}-vias-predios`, `[out:json][timeout:240];(way["building"](${bbB});way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$"](${bbB});way["landuse"~"^(residential|commercial|retail|industrial)$"](${bbB}););out geom;`);
   await sleep(4000);
-  const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
+  const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub|coastline)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
 
   // ── relevo
   const alt = new Float32Array(RES * RES);
@@ -278,6 +357,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     const [la, lo] = latlon(-HALF + i * PASSO, -HALF + j * PASSO);
     alt[j * RES + i] = await terr.altitude(la, lo);
   }
+  corrigirMarPelaCosta(alt, natureza, xz);
   const mar = alt.filter((v) => v <= 0.5).length / alt.length;
   const litoral = mar > 0.02;
   const terra = [...alt].filter((v) => v > 0.5).sort((a, b) => a - b);
@@ -490,10 +570,11 @@ async function main() {
   const todos: Mun[] = [];
   for (const f of ufs) {
     const j = JSON.parse(await readFile(join(ROOT, 'public', 'data', 'municipios', f), 'utf8')) as { sigla: string; municipios: Omit<Mun, 'uf'>[] };
-    for (const m of j.municipios) todos.push({ ...m, uf: j.sigla });
+    for (const m of j.municipios) todos.push({ ...m, uf: j.sigla, ...(CENTRO[m.ibge] ? { lat: CENTRO[m.ibge][0], lon: CENTRO[m.ibge][1] } : {}) });
   }
   const ids = args.filter((a) => !a.startsWith('--'));
-  const alvo = args.includes('--todos') ? todos : ids.length ? todos.filter((m) => ids.includes(m.ibge)) : todos.filter((m) => m.capital);
+  // Fase 13: o jogo é só o Rio — sem argumentos gera a capital fluminense (3304557)
+  const alvo = args.includes('--todos') ? todos : ids.length ? todos.filter((m) => ids.includes(m.ibge)) : todos.filter((m) => m.ibge === '3304557');
   const terr = new Terrarium(join(ROOT, 'data', 'cache', 'terrarium'), 14);
   // Overpass sobrecarregado? Se os extratos regionais da Geofabrik estiverem em data/osm-cache/{regiao}.osm.pbf,
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).

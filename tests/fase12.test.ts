@@ -9,8 +9,8 @@ const area2 = (p: [number, number][]) => p.reduce((s, [x1, z1], i) => { const [x
 describe('Fase 12 — plantas reais dos prédios', () => {
   const indice = JSON.parse(readFileSync('public/data/cidades/index.json', 'utf8')) as string[];
 
-  it('as 27 capitais trazem o contorno de cada prédio, na mesma ordem', () => {
-    expect(indice.length).toBe(27);
+  it('o Rio (única cidade desde a Fase 13) traz o contorno de cada prédio, na mesma ordem', () => {
+    expect(indice).toEqual(['3304557']);
     for (const ibge of indice) {
       const c = CidadeReal.parse(JSON.parse(readFileSync(`public/data/cidades/${ibge}.json`, 'utf8')));
       expect(c.contornos, ibge).toBeTruthy();
@@ -23,7 +23,7 @@ describe('Fase 12 — plantas reais dos prédios', () => {
   });
 
   it('o contorno é um anel anti-horário que cabe no retângulo do prédio', () => {
-    const c = CidadeReal.parse(JSON.parse(readFileSync('public/data/cidades/3550308.json', 'utf8')));
+    const c = CidadeReal.parse(JSON.parse(readFileSync('public/data/cidades/3304557.json', 'utf8')));
     const n = c.predios.length / CAMPOS_PREDIO;
     let reais = 0;
     for (let i = 0; i < n; i += 7) {
@@ -34,7 +34,7 @@ describe('Fase 12 — plantas reais dos prédios', () => {
       for (const [x, z] of anel) expect(Math.hypot(x - p.x, z - p.z)).toBeLessThanOrEqual(raio);
       if (anel.length !== 4) reais++;
     }
-    // São Paulo tem muitas plantas que não são retângulos
+    // o Rio tem muitas plantas que não são retângulos
     expect(reais).toBeGreaterThan(100);
   });
 

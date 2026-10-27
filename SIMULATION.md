@@ -630,3 +630,12 @@ Vista à parte com os Photorealistic 3D Tiles transmitidos pela Map Tiles API (c
 
 ## Testes (`tests/fase12.test.ts`)
 Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do retângulo; retângulo orientado; arquivos de material e HDRI presentes.
+
+# Parte XII — Rio em larga escala (Fase 13)
+
+- **Mundo**: `MAP_SIZE` 16.384 m, `BUILD_HALF` 6.144 m (12,3 km), relevo de 16 m (1.024 células), raster de ocupação de 4 m (3.072²), campos agregados de 32 m (384²), território de 64 m (192²).
+- **Arquivo da cidade** (`public/data/cidades/3304557.json`): mapa centrado entre o Centro e a Zona Sul (−22,945; −43,195); a câmera começa em Copacabana (`PONTO_INICIAL` em `world/cidadeReal.ts`). `terrenoReal` lê o arquivo pela própria extensão e, no litoral, faz praia em rampa e mar que aprofunda com a distância.
+- **Prédios reais** (`render/city/PrediosReais.tsx`): blocos de 512 m montados sob demanda por `montarBloco` em três níveis de detalhe; a textura de estado continua única (150 mil prédios × 2 texels) e é refeita no máximo a cada 0,7 s.
+- **Ruas** (`render/city/Vias.tsx`): blocos de 1.024 m com leitos, calçadas, postes, pilares e palmeiras; só os de até 4,5 km da câmera ficam visíveis.
+- **Prédios gerados pelo jogo** (`Edificios.tsx`): só num raio de 2,5 km da câmera, com assinatura dos lotes do raio para não remontar sem mudança visível.
+- **Worker**: estado enviado no máximo a cada 250 ms; `tests/escala.test.ts` mede montagem (≈2,4 s), passo e tamanho do estado (6,9 MB).

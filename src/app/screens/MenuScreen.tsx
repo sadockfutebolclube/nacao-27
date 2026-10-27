@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react';
 import { carregarUF } from '../../data/loader';
 import type { SaveData } from '../../sim/protocol';
-import { listarSaves, listarSavesPres, lerArquivoQualquer, type SavePres, type SlotInfo, type SlotPres } from '../../save/save';
-import { carregarMacro } from '../../data/loader';
-import { usePres } from '../../sim/presidente/store';
+import { listarSaves, lerArquivoNacao, type SlotInfo } from '../../save/save';
 import { baixarNuvem, listarNuvem, nuvemConfigurada, type SaveNuvem } from '../../cloud/nuvem';
-import { Login, Ranking, useSessao } from '../../ui/presidente/Nuvem';
+import { Login, Ranking, useSessao } from '../../ui/nuvem/Nuvem';
+import { novoJogoRio } from '../App';
 import { GaleriaConquistas } from '../../ui/conquistas/Conquistas';
 import { TelaOpcoes } from '../../ui/Opcoes';
 import { Icone } from '../../ui/Icone';
@@ -27,60 +26,55 @@ function ItemMenu({ titulo, sub, onClick, desativado, destaque }: { titulo: stri
 }
 
 export function MenuScreen() {
-  const irPara = useApp((s) => s.irPara);
-  const setModo = useApp((s) => s.setModo);
   const iniciar = useApp((s) => s.iniciar);
-  const indice = useApp((s) => s.indice);
   const erro = useApp((s) => s.erro);
   const [saves, setSaves] = useState<SlotInfo[] | null>(null);
-  const [savesPres, setSavesPres] = useState<SlotPres[]>([]);
   const [ranking, setRanking] = useState(false);
   const [conquistas, setConquistas] = useState(false);
   const [opcoes, setOpcoes] = useState(false);
   const sessaoNuvem = useSessao();
   const [nuvem, setNuvem] = useState<SaveNuvem[] | null>(null);
-  const restaurarPres = usePres((s) => s.restaurar);
-  const carregarPres = async (s: SavePres) => { await restaurarPres(s.dados, await carregarMacro()); irPara('presidente'); };
   const abrirSaves = async () => {
-    setSavesPres(await listarSavesPres());
-    setSaves(await listarSaves());
+    // saves de outros estados (antes da Fase 13) não abrem mais: o jogo é só o Rio
+    setSaves((await listarSaves()).filter((x) => x.save.init.sigla === 'RJ'));
     if (nuvemConfigurada()) listarNuvem().then(setNuvem).catch(() => setNuvem([]));
   };
   const carregarNuvem = async (x: SaveNuvem) => {
     try {
       const json = await baixarNuvem(x.id);
-      if (x.modo === 'presidente') { await restaurarPres(json, await carregarMacro()); irPara('presidente'); } else await carregar(JSON.parse(json) as SaveData);
+      if (x.modo === 'presidente') setMsg('O Modo Presidente saiu do jogo na Fase 13.'); else await carregar(JSON.parse(json) as SaveData);
     } catch (e) { setMsg(String(e)); }
   };
   const [msg, setMsg] = useState<string | null>(null);
   const arquivo = useRef<HTMLInputElement>(null);
 
   const carregar = async (save: SaveData) => {
+    if (save.init.sigla !== 'RJ') { setMsg('Este save é de outro estado: o jogo agora é só o Rio de Janeiro.'); return; }
     const d = await carregarUF(save.init.sigla);
     iniciar(d, save);
   };
 
   return (
     <div className="absolute inset-0 pointer-events-none">
+      <FundoRio />
       <div className="absolute inset-y-0 left-0 w-[min(520px,100%)] bg-gradient-to-r from-black/85 via-black/55 to-transparent pointer-events-auto flex flex-col px-10 sm:px-16 overflow-y-auto py-6 [&>*:first-child]:mt-auto [&>*:last-child]:mb-auto">
         <div className="surgir">
-          <div className="text-acento/80 text-xs tracking-[0.35em] uppercase mb-3">Simulador de governo · Brasil</div>
+          <div className="text-acento/80 text-xs tracking-[0.35em] uppercase mb-3">Simulador de governo · Rio de Janeiro</div>
           <h1 className="titulo text-7xl sm:text-8xl font-bold leading-[0.85] text-white">
             Nação<span className="text-acento">27</span>
           </h1>
           <p className="mt-5 text-sm text-suave max-w-sm leading-relaxed">
-            Você acabou de ganhar a eleição. Tem 4 anos, um orçamento apertado, uma Assembleia que não confia em você,
-            uma imprensa faminta e milhões de pessoas esperando milagre. <span className="text-texto">Boa sorte, Governador(a).</span>
+            Você acabou de ganhar a eleição no Rio. Tem 4 anos, um orçamento apertado, uma Alerj que não confia em você,
+            uma imprensa faminta e 17 milhões de fluminenses esperando milagre. <span className="text-texto">Boa sorte, Governador(a).</span>
           </p>
         </div>
 
         <nav className="mt-10 flex flex-col gap-1 max-w-sm surgir" style={{ animationDelay: '0.15s' }}>
-          <ItemMenu destaque titulo="Novo mandato" sub="Escolha um dos 27 estados e governe por 4 anos" onClick={() => { setModo('mandato'); irPara('selecao'); }} desativado={!indice} />
-          <ItemMenu titulo="Sandbox urbanista" sub="Dinheiro infinito. Só construir." onClick={() => { setModo('sandbox'); irPara('selecao'); }} desativado={!indice} />
-          <ItemMenu titulo="Presidente" sub="Congresso, STF, Banco Central e câmbio — com a economia real de hoje" onClick={() => { useApp.setState({ carreira: null, selecionada: null }); irPara('presidente-setup'); }} desativado={!indice} />
+          <ItemMenu destaque titulo="Novo mandato" sub="Governe o estado do Rio por 4 anos, a partir da capital real" onClick={() => novoJogoRio('mandato').catch((e) => setMsg(String(e)))} />
+          <ItemMenu titulo="Sandbox urbanista" sub="O Rio de verdade, dinheiro infinito. Só construir." onClick={() => novoJogoRio('sandbox').catch((e) => setMsg(String(e)))} />
           <ItemMenu titulo="Carregar jogo" sub="Saves locais, na nuvem ou arquivo .nacao" onClick={abrirSaves} />
-          <ItemMenu titulo="Conquistas" sub="Marcos de cidade, estado, Presidência e Brasil" onClick={() => setConquistas(true)} />
-          <ItemMenu titulo="Ranking" sub="Os melhores legados de governadores e presidentes" onClick={() => setRanking(true)} desativado={!nuvemConfigurada()} />
+          <ItemMenu titulo="Conquistas" sub="Marcos da cidade e do governo do estado" onClick={() => setConquistas(true)} />
+          <ItemMenu titulo="Ranking" sub="Os melhores legados de governadores do Rio" onClick={() => setRanking(true)} desativado={!nuvemConfigurada()} />
           <ItemMenu titulo="Opções" sub="Acessibilidade, gráficos e tutorial" onClick={() => setOpcoes(true)} />
         </nav>
 
@@ -88,8 +82,8 @@ export function MenuScreen() {
         {msg && <div className="mt-4 text-acento-2 text-sm max-w-sm">{msg}</div>}
 
         <div className="mt-6 text-[11px] text-suave/70 leading-relaxed max-w-sm">
-          Dados reais: IBGE (população 2026, PIB 2023, malhas), SICONFI/Tesouro (finanças 2024), INEP, SNIS, FBSP, TSE, Banco Central.<br />
-          Personagens e grupos são fictícios. v1.1 · Fase 11
+          Dados reais: IBGE, SICONFI/Tesouro, INEP, SNIS, FBSP, TSE; cidade do OpenStreetMap (© colaboradores do OSM).<br />
+          Personagens e grupos são fictícios. v1.3 · Fase 13
         </div>
       </div>
 
@@ -99,10 +93,7 @@ export function MenuScreen() {
         <div className="absolute inset-0 bg-black/60 pointer-events-auto flex items-center justify-center p-4" onClick={() => setRanking(false)}>
           <div className="painel rounded-xl p-6 w-full max-w-lg max-h-[85vh] overflow-auto surgir" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3"><h2 className="titulo text-2xl">Ranking</h2><button onClick={() => setRanking(false)} className="text-suave hover:text-white"><Icone nome="x" /></button></div>
-            <div className="titulo text-sm text-suave mb-1">Presidentes</div>
-            <Ranking modo="presidente" />
-            <div className="titulo text-sm text-suave mt-4 mb-1">Governadores</div>
-            <Ranking modo="governador" />
+            <Ranking />
           </div>
         </div>
       )}
@@ -113,17 +104,11 @@ export function MenuScreen() {
               <h2 className="titulo text-2xl">Carregar jogo</h2>
               <button onClick={() => setSaves(null)} className="text-suave hover:text-white"><Icone nome="x" /></button>
             </div>
-            {saves.length === 0 && savesPres.length === 0 && <p className="text-sm text-suave">Nenhum save local ainda.</p>}
+            {saves.length === 0 && <p className="text-sm text-suave">Nenhum save local ainda.</p>}
             <div className="flex flex-col gap-2 max-h-72 overflow-auto">
               {saves.map((s) => (
                 <button key={s.chave} onClick={() => carregar(s.save)} className="text-left px-4 py-3 rounded-lg border border-borda hover:bg-white/5">
                   <div className="font-semibold">{s.save.init.cidade} — {s.save.init.sigla} <span className="text-suave font-normal text-xs">({s.save.init.modo})</span></div>
-                  <div className="text-xs text-suave">{s.rotulo}</div>
-                </button>
-              ))}
-              {savesPres.map((s) => (
-                <button key={s.chave} onClick={() => carregarPres(s.save)} className="text-left px-4 py-3 rounded-lg border border-acento-2/30 hover:bg-white/5">
-                  <div className="font-semibold">🏛 Presidência</div>
                   <div className="text-xs text-suave">{s.rotulo}</div>
                 </button>
               ))}
@@ -134,7 +119,7 @@ export function MenuScreen() {
                 <Login s={sessaoNuvem}>
                   <div className="flex flex-col gap-1 mt-2 max-h-40 overflow-auto">
                     {nuvem?.length === 0 && <div className="text-xs text-suave">Nenhum save na nuvem.</div>}
-                    {nuvem?.map((x) => <button key={x.id} onClick={() => carregarNuvem(x)} className="text-left text-xs px-3 py-2 rounded-lg border border-borda hover:bg-white/5">{x.modo === 'presidente' ? '🏛 ' : ''}{x.rotulo} <span className="text-suave">· {new Date(x.criado_em).toLocaleDateString('pt-BR')}</span></button>)}
+                    {nuvem?.filter((x) => x.modo !== 'presidente').map((x) => <button key={x.id} onClick={() => carregarNuvem(x)} className="text-left text-xs px-3 py-2 rounded-lg border border-borda hover:bg-white/5">{x.rotulo} <span className="text-suave">· {new Date(x.criado_em).toLocaleDateString('pt-BR')}</span></button>)}
                   </div>
                 </Login>
               </div>
@@ -145,11 +130,26 @@ export function MenuScreen() {
             <input ref={arquivo} type="file" accept=".nacao,.json" className="hidden" onChange={async (e) => {
               const f = e.target.files?.[0];
               if (!f) return;
-              try { const s = await lerArquivoQualquer(f); if (s.formato === 'nacao27-presidente') await carregarPres(s); else await carregar(s); } catch (err) { setMsg(String(err)); setSaves(null); }
+              try { await carregar(await lerArquivoNacao(f)); } catch (err) { setMsg(String(err)); setSaves(null); }
             }} />
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Fundo do menu: baía ao entardecer com as silhuetas do Corcovado, do Morro da Urca e do Pão de Açúcar. */
+function FundoRio() {
+  return (
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_70%,#f2a46b_0%,#b45a5a_22%,#3a2c4a_48%,#0b1220_80%)]">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" className="absolute inset-0 w-full h-full" aria-hidden>
+        <path d="M0 640 L180 600 L260 520 L300 470 L330 450 L355 470 L380 520 L470 590 L560 610 L640 560 L700 430 L725 405 L745 400 L760 430 L800 560 L880 600 L960 560 L1020 470 L1060 360 L1085 300 L1110 280 L1130 300 L1150 380 L1190 520 L1260 580 L1380 560 L1460 600 L1600 590 L1600 900 L0 900 Z" fill="#0d1424" opacity="0.92" />
+        <path d="M0 700 L1600 700 L1600 900 L0 900 Z" fill="#0a101c" opacity="0.85" />
+        <line x1="760" y1="430" x2="1085" y2="300" stroke="#f5d6a8" strokeWidth="1.2" opacity="0.5" />
+        <rect x="905" y="362" width="10" height="7" rx="2" fill="#f5d6a8" opacity="0.8" />
+        <path d="M352 452 L352 432 M342 440 L362 440" stroke="#f5e2c0" strokeWidth="3" opacity="0.85" />
+      </svg>
     </div>
   );
 }

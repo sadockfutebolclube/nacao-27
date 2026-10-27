@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## 1.3.0 — Fase 13: só o Rio de Janeiro (27/10/2026)
+
+### Foco
+- O jogo agora é só o Rio: "Novo mandato" e "Sandbox" começam direto no estado do RJ, com a capital real. Saíram a escolha dos 27 estados, a escolha de município e o mapa do Brasil.
+- Saiu o Modo Presidente (Planalto, Congresso, STF, Banco Central, câmbio), com seus saves, eventos, dados macroeconômicos e scripts.
+- Conquistas: ficam as 15 da cidade e do governo do estado (saíram as da Presidência e as de "Brasil").
+- Menu novo, com a silhueta do Corcovado, da Urca e do Pão de Açúcar ao entardecer.
+- Dados: só a cidade real do Rio fica no jogo (2 MB, antes 37 MB com as 27 capitais). `npm run fetch-cidades` sem argumentos gera o Rio.
+- Saves de outros estados e da Presidência não abrem mais (o menu avisa).
+
+### Rio em larga escala
+- O mapa passou de 6 para 16 km, com 12 × 12 km construíveis: Centro, Zona Sul, Tijuca, Maracanã e parte da Zona Norte. São 153 mil prédios reais (38 mil com andares do OSM), 15 mil trechos e 1.000 km de ruas, 12 MB. A câmera começa na orla de Copacabana.
+- Prédios, ruas e lotes são desenhados por blocos perto da câmera: prédios em três níveis de detalhe (planta completa até 1,5 km, caixa até 3,5 km, só os altos até 9 km), montados aos poucos (6 ms por quadro); ruas em blocos de 1 km visíveis até 4,5 km; os prédios gerados pelo jogo só num raio de 2,5 km, remontados quando a câmera anda 400 m.
+- Corrigidos laços que cresciam com o quadrado do número de ruas (a página travava por mais de 45 s) e a leitura do relevo para um mapa de outro tamanho.
+- Mar pela linha de costa do OpenStreetMap: regiões separadas pela costa votam o que é mar, e o mar é nivelado (a batimetria do Terrarium tinha buracos de −30 m); praia em rampa e mar que aprofunda com a distância da costa.
+- O Worker manda o estado (7 MB) no máximo 4 vezes por segundo.
+- Ferramentas de dev: `localStorage['n27:desligar'] = 'Vias,Arvores'` tira componentes da cena; avisos `[lento]` no console para trechos acima de 50 ms e quadros acima de 1 s.
+
+### Verificado
+- 88 testes (saíram os 15 do Modo Presidente; entraram escala do Rio e plantas); typecheck estrito; no navegador, "Novo mandato" abre o Rio real sem erros no console, tela fluida (4 ms de atraso) com a cidade toda carregada.
+
+### Limitações
+- Só a Zona Sul, o Centro e a Zona Norte próxima: Barra, Zona Oeste e subúrbios distantes ficam fora do mapa.
+- Passo da simulação com 132 mil lotes: p90 de ~230 ms (mediana baixa); o relógio rápido pode engasgar em máquinas lentas.
+- Ruas ainda sem faixas, semáforos, túneis e viadutos de verdade (próximas fases).
+
 ## 1.2.0 — Fase 12: visual realista (27/10/2026)
 
 ### Prédios com a planta de verdade

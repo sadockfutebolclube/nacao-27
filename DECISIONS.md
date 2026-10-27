@@ -219,3 +219,12 @@ O pedido de "usar bastante o Google Maps" é atendido do único jeito que os ter
 
 ## D-072 · Carros e pessoas: PBR em vez de modelos baixados
 Não há modelos realistas de carros e pessoas brasileiros com licença livre e download automatizável (os pacotes CC0 conhecidos — Kenney, Quaternius — são estilizados). Os modelos procedurais da Fase 11 ganharam materiais físicos (verniz, vidro, cromo, borracha) e quinas arredondadas, que com o céu HDRI dão o salto maior de realismo pelo menor custo.
+
+## D-073 · Só o Rio de Janeiro
+A pedido do usuário, o jogo deixa de cobrir o Brasil inteiro para fazer uma cidade só, em larga escala e com detalhe. O jogador continua governador(a) — agora do estado do RJ —, porque orçamento, Alerj, eleição e segurança pública estaduais são o coração do jogo e o Rio é a capital. Saíram a escolha de UF e de município, o mapa do Brasil, o Modo Presidente e as 26 outras cidades reais. O código genérico (simulação de estado, eleição, dados por UF) e os dados das outras UFs usados nos testes do motor ficam; os scripts de dados continuam aceitando outros municípios.
+
+## D-074 · Rio em blocos, sem WebGPU por enquanto
+Para o Rio caber no navegador, a renderização passou a montar e mostrar só o que está perto da câmera (prédios em três níveis de detalhe, ruas em blocos de 1 km, prédios gerados em raio de 2,5 km) em vez de trocar de renderizador. Os gargalos medidos eram laços quadráticos e remontagens inteiras a cada atualização, não a contagem de triângulos; WebGPU só entra se, depois disso, os triângulos virarem o limite.
+
+## D-075 · A costa do OSM manda no mar
+A altitude do Terrarium (SRTM/GMTED) tem terra falsa e buracos no mar perto da costa. O gerador usa a linha de costa do OSM para dividir a grade em regiões (terra × mar, por voto das sementes de cada lado), nivela o mar em −3 m e deixa a própria linha de costa como areia a 0,6 m. O jogo aprofunda o mar pela distância da costa.

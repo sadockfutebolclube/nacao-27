@@ -1,7 +1,6 @@
 /** HUD da Visão Cidade: tudo em PT-BR, cara de jogo de estratégia (painéis translúcidos, números condensados). */
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { fmt, useApp } from '../../app/store';
-import type { SiglaUF } from '../../data/schemas';
 import { cidadao, bairroEm } from '../../data/nomes';
 import { arquetipoPorId, EQUIPAMENTOS, ZONES, type Rede } from '../../sim/catalog';
 import { mundo, pedirSave, setVelocidade, useGame, type Camada, type Ferramenta } from '../../sim/bridge';
@@ -22,7 +21,7 @@ import { predio as predioReal, TIPO_PREDIO } from '../../data/cidadeReal';
 import { useConquistas } from '../conquistas/Conquistas';
 import { ASSESSOR_CIDADE, DICAS_CIDADE, PASSOS_CIDADE } from '../assessor/roteiros';
 import { nuvemConfigurada, salvarNuvem } from '../../cloud/nuvem';
-import { Login, useSessao } from '../presidente/Nuvem';
+import { Login, useSessao } from '../nuvem/Nuvem';
 import { BarraLinha, FavelaInfo, PainelHabitacao, PainelSeguranca, PainelTransporte } from './PaineisCidade';
 import { TIPOS_LINHA } from '../../sim/city/transporte';
 import { GRUPOS as GRUPOS_CRIME, TERR_CELL, TERR_RES } from '../../sim/city/territorio';
@@ -724,14 +723,7 @@ function FimDeMandato() {
   const [fechado, setFechado] = useState(false);
   useEffect(() => { if (L) setVelocidade(0); }, [L?.motivo]);
   if (!L || !st || fechado) return null;
-  const presidencia = () => {
-    const e = st.estado;
-    if (!e) return;
-    const fimAno = Number(L.periodo.match(/(\d{4})\D*$/)?.[1] ?? e.ano);
-    useApp.setState({ carreira: { uf: (mundo.init?.sigla ?? 'DF') as SiglaUF, aprovacao: L.aprovacao.final, partido: e.partidoGov, ano: fimAno + 1 }, selecionada: null });
-    irPara('presidente-setup');
-  };
-  return <TelaLegado L={L} st={st} onMenu={() => irPara('menu')} onFechar={() => setFechado(true)} onPresidencia={st.estado ? presidencia : undefined} />;
+  return <TelaLegado L={L} st={st} onMenu={() => irPara('menu')} onFechar={() => setFechado(true)} />;
 }
 
 /** Aviso de eleição: convenção aberta, debate ao vivo ou dias até a urna. */

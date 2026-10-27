@@ -4,6 +4,7 @@
  * Fase 8: cada bioma tem sua flora — mata alta e densa na Amazônia, árvores baixas e tortas no Cerrado,
  * mandacarus e arbustos ralos na Caatinga, capões esparsos no Pampa, carandás no Pantanal.
  */
+import { medir } from '../medir';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Rng } from '../../sim/core/rng';
@@ -15,7 +16,8 @@ import { halfRoad, sampleByLength, edgeEnds } from '../../world/roads';
 import { sampleForest, sampleHeight, sampleSlope, sampleWaterDist, type Heightmap } from '../../world/terrain';
 import { geoPalmeira, mergeGeos } from './Vias';
 
-const MAX_ARVORES = 60_000;
+// Fase 13: o Rio tem 150 km² (com a Floresta da Tijuca); a amostragem é mais espaçada e o teto maior
+const MAX_ARVORES = 120_000;
 const GRADE = 4; // grade de ocupação (m)
 const RES = (BUILD_HALF * 2) / GRADE;
 
@@ -47,8 +49,8 @@ function gerar(hm: Heightmap): Arvore[] {
   const half = MAP_SIZE / 2 - 40;
   // primeiro a área do município (densa), depois a moldura de paisagem (mais esparsa, copas maiores)
   const passes: { passo: number; escala: number; dentro: boolean }[] = [
-    { passo: 9, escala: 1, dentro: true },
-    { passo: 15, escala: 1.5, dentro: false },
+    { passo: 18, escala: 1.25, dentro: true },
+    { passo: 30, escala: 1.8, dentro: false },
   ];
   for (const ps of passes) {
   const passo = ps.passo;
@@ -123,7 +125,7 @@ export function Arvores({ hm }: { hm: Heightmap }) {
   const wv = useGame((s) => s.worldVersion);
   const sv = useGame((s) => s.stateVersion);
   const mes = useGame((s) => s.stats?.mes ?? 1);
-  const arvores = useMemo(() => gerar(hm), [hm]);
+  const arvores = useMemo(() => medir('árvores: gerar', () => gerar(hm)), [hm]);
   const refs = { tronco: useRef<THREE.InstancedMesh>(null), copa: useRef<THREE.InstancedMesh>(null), ptronco: useRef<THREE.InstancedMesh>(null), pcopa: useRef<THREE.InstancedMesh>(null), cacto: useRef<THREE.InstancedMesh>(null) };
 
   const geos = useMemo(() => {
@@ -152,7 +154,7 @@ export function Arvores({ hm }: { hm: Heightmap }) {
   }), []);
   useEffect(() => () => { Object.values(geos).forEach((g) => g.dispose()); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
 
-  const ocupacao = useMemo(() => gradeOcupacao(), [wv]);
+  const ocupacao = useMemo(() => medir('árvores: ocupação', gradeOcupacao), [wv]);
 
   const assinatura = useRef('');
   useLayoutEffect(() => {

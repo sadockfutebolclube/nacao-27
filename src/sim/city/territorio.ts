@@ -9,7 +9,7 @@ import type { Rng } from '../core/rng';
 import type { Simulation } from '../simulation';
 
 export const TERR_CELL = 64;
-export const TERR_RES = (BUILD_HALF * 2) / TERR_CELL; // 48
+export const TERR_RES = (BUILD_HALF * 2) / TERR_CELL; // 192
 
 /** Nomes fictícios — nenhum grupo real. */
 export const GRUPOS = {

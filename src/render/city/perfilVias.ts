@@ -27,8 +27,13 @@ export function raioNo(g: RoadGraph, nodeId: number): number {
 
 export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil> {
   const out = new Map<number, Perfil>();
-  const raios = new Map<number, number>();
-  const raio = (id: number) => raios.get(id) ?? (raios.set(id, raioNo(g, id)), raios.get(id)!);
+  // raio de cada cruzamento num passe só (raioNo por nó varreria todas as vias: 15 mil no Rio)
+  const grau = new Map<number, number>(), meia = new Map<number, number>();
+  for (const e of g.edges.values()) for (const id of [e.a, e.b]) {
+    grau.set(id, (grau.get(id) ?? 0) + 1);
+    meia.set(id, Math.max(meia.get(id) ?? 0, ROAD_SPECS[e.type].width / 2));
+  }
+  const raio = (id: number) => ((grau.get(id) ?? 0) < 3 ? 0 : (meia.get(id) ?? 0) + 1.5);
   for (const e of g.edges.values()) {
     const [p0, c, p1] = edgeEnds(g, e);
     const { pts, length } = sampleByLength(p0, c, p1, 3);

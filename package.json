@@ -1,7 +1,7 @@
 {
   "name": "nacao-27",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "NAÇÃO 27 — city-builder e simulador de governo 100% brasileiro",
   "type": "module",
   "scripts": {
@@ -16,7 +16,6 @@
     "fetch-clima": "node node_modules/tsx/dist/cli.mjs scripts/fetch-clima.ts",
     "fetch-eleitorado": "node node_modules/tsx/dist/cli.mjs scripts/fetch-eleitorado.ts",
     "fetch-municipios": "node node_modules/tsx/dist/cli.mjs scripts/fetch-municipios.ts",
-    "fetch-macro": "node node_modules/tsx/dist/cli.mjs scripts/fetch-macro.ts",
     "fetch-cidades": "node node_modules/tsx/dist/cli.mjs scripts/fetch-cidades.ts",
     "fetch-assets": "node node_modules/tsx/dist/cli.mjs scripts/fetch-assets.ts"
   },

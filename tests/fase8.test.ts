@@ -64,7 +64,8 @@ describe('Fase 8 — municípios jogáveis', () => {
       for (let i = 0; i < hm.h.length; i += 97) if (!Number.isFinite(hm.h[i])) ok = false;
       expect(ok, nome).toBe(true);
     }
-  });
+    // Fase 13: o mapa tem 16 km (era 6 km); cinco terrenos procedurais levam mais tempo
+  }, 60_000);
 
   it('a cidade construída vira o reduto eleitoral do governador', () => {
     const e = new Estado({ ...initDe('PB'), sede: 'Campina Grande' });

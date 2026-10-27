@@ -1,11 +1,11 @@
 /** Composição da Visão Cidade: mundo, ferramentas e pós-processamento cinematográfico. */
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { useApp } from '../../app/store';
 import { DPR, useAutoQualidade, useNivel } from '../qualidade';
 import { Bloom, EffectComposer, N8AO, SMAA, TiltShift2, ToneMapping, Vignette, HueSaturation } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
 import * as THREE from 'three';
 import { useGame } from '../../sim/bridge';
 import type { Heightmap } from '../../world/terrain';
@@ -67,6 +67,24 @@ function MonitorDesempenho() {
   return <PerformanceMonitor bounds={() => [38, 58]} flipflops={3} onDecline={baixar} onIncline={subir} onFallback={() => useAutoQualidade.getState().fixar('media')} />;
 }
 
+/**
+ * Depuração (só no dev): `localStorage['n27:desligar'] = 'Vias,Arvores'` tira componentes da cena para achar
+ * o que pesa. Em produção tudo fica ligado.
+ */
+const DESLIGADOS = new Set(import.meta.env.DEV ? (() => { try { return (localStorage.getItem('n27:desligar') ?? '').split(',').map((x) => x.trim()).filter(Boolean); } catch { return []; } })() : []);
+const liga = (nome: string) => !DESLIGADOS.has(nome);
+
+/** Só no dev: avisa quando um quadro demora mais de 1 s (e quantos shaders já foram compilados). */
+function VigiaQuadros() {
+  const ultimo = useRef(0);
+  useFrame(({ gl }) => {
+    const agora = performance.now();
+    if (ultimo.current && agora - ultimo.current > 1000) console.warn(`[lento] quadro: ${Math.round(agora - ultimo.current)} ms · shaders ${gl.info.programs?.length ?? '?'}`);
+    ultimo.current = agora;
+  });
+  return null;
+}
+
 export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: number; inicio: [number, number] }) {
   const nivel = useNivel();
   return (
@@ -82,23 +100,24 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
     >
       <Suspense fallback={null}>
         <CeuLuz latitude={latitude} />
-        <Terreno hm={hm} />
-        <Agua hm={hm} />
-        <Vias hm={hm} />
-        <Edificios hm={hm} />
-        <PrediosReais />
-        <Equipamentos hm={hm} />
-        <Arvores hm={hm} />
-        <Favelas hm={hm} />
-        <TerritorioOverlay hm={hm} />
-        <TransporteRender hm={hm} />
-        <Veiculos />
-        <Pedestres />
-        <ClimaFx hm={hm} />
-        <Ferramentas hm={hm} />
+        {liga('Terreno') && <Terreno hm={hm} />}
+        {liga('Agua') && <Agua hm={hm} />}
+        {liga('Vias') && <Vias hm={hm} />}
+        {liga('Edificios') && <Edificios hm={hm} />}
+        {liga('PrediosReais') && <PrediosReais />}
+        {liga('Equipamentos') && <Equipamentos hm={hm} />}
+        {liga('Arvores') && <Arvores hm={hm} />}
+        {liga('Favelas') && <Favelas hm={hm} />}
+        {liga('TerritorioOverlay') && <TerritorioOverlay hm={hm} />}
+        {liga('TransporteRender') && <TransporteRender hm={hm} />}
+        {liga('Veiculos') && <Veiculos />}
+        {liga('Pedestres') && <Pedestres />}
+        {liga('ClimaFx') && <ClimaFx hm={hm} />}
+        {liga('Ferramentas') && <Ferramentas hm={hm} />}
         <CameraRig hm={hm} inicio={inicio} />
-        <PosProcesso />
+        {liga('PosProcesso') && <PosProcesso />}
         <MonitorDesempenho />
+        {import.meta.env.DEV && <VigiaQuadros />}
       </Suspense>
     </Canvas>
   );

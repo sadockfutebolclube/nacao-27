@@ -18,17 +18,20 @@ export interface LotGeom {
   d: number;
   /** Cota do piso (menor altura sob o lote). */
   baseY: number;
+  /** Fase 11: índice do prédio real (OSM) quando o lote é um prédio existente da cidade real */
+  real?: number;
 }
 
 export interface Footprint { x: number; z: number; angle: number; w: number; d: number }
 
-export const LOT_STRIDE = 7;
+/** x, z, ângulo, largura, profundidade, cota, aresta, prédio real (índice + 1; 0 = lote comum) */
+export const LOT_STRIDE = 8;
 
 export function packLots(lots: LotGeom[]): Float32Array {
   const out = new Float32Array(lots.length * LOT_STRIDE);
   lots.forEach((l, i) => {
     const o = i * LOT_STRIDE;
-    out[o] = l.x; out[o + 1] = l.z; out[o + 2] = l.angle; out[o + 3] = l.w; out[o + 4] = l.d; out[o + 5] = l.baseY; out[o + 6] = l.edge;
+    out[o] = l.x; out[o + 1] = l.z; out[o + 2] = l.angle; out[o + 3] = l.w; out[o + 4] = l.d; out[o + 5] = l.baseY; out[o + 6] = l.edge; out[o + 7] = l.real !== undefined ? l.real + 1 : 0;
   });
   return out;
 }
@@ -80,13 +83,24 @@ export function rasterizeRoads(g: RoadGraph, raster: Int32Array) {
 /** Código no raster para casas de ocupação informal (bloqueiam lotes, mas não umas às outras). */
 export const RASTER_INFORMAL = -3;
 
-export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], raster: Int32Array, informais: Footprint[] = []): LotGeom[] {
+export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], raster: Int32Array, informais: Footprint[] = [], fixos: (Footprint & { edge: number; ref: number })[] = []): LotGeom[] {
   raster.fill(0);
   rasterizeRoads(g, raster);
   for (const b of blockers) forRectCells(b, (idx) => { raster[idx] = -2; });
   for (const b of informais) forRectCells(b, (idx) => { if (raster[idx] === 0) raster[idx] = RASTER_INFORMAL; });
 
   const lots: LotGeom[] = [];
+  // Fase 11: prédios reais primeiro (lotes fixos). Ficam se a maior parte do terreno estiver livre e seco.
+  for (const f of fixos) {
+    let total = 0, livres = 0;
+    forRectCells(f, (idx) => { total++; if (raster[idx] === 0) livres++; });
+    if (!total || livres < total * 0.6) continue;
+    const hs = cornerHeights(hm, f);
+    if (Math.min(...hs) < 0.3 && hs[4] < 0.6) continue;
+    const id = lots.length + 1;
+    forRectCells(f, (idx) => { if (raster[idx] === 0) raster[idx] = id; });
+    lots.push({ edge: f.edge, side: 1, x: f.x, z: f.z, angle: f.angle, w: f.w, d: f.d, baseY: Math.max(0.3, Math.min(...hs)), real: f.ref });
+  }
   const edges = [...g.edges.values()].sort((a, b) => a.id - b.id);
   for (const e of edges) {
     const [p0, c, p1] = edgeEnds(g, e);

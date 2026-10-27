@@ -579,3 +579,32 @@ Ajustes da Fase 10: a crise fiscal pesa na aprovação (−6 por ponto de risco 
 
 ## Testes (`tests/fase10.test.ts`)
 Catálogo e armazenamento de conquistas, registro de partidas, conquistas da Presidência; roteiros do assessor (ids, avanço por ação, passos só com Estado, dicas que avaliam); qualidade automática nos limites; regressão de balanceamento (ajuste rende mais aprovação e menos dívida que o piloto automático).
+
+---
+
+# Parte X — Cidades reais (Fase 11)
+
+## Dados (`npm run fetch-cidades`)
+`scripts/fetch-cidades.ts` gera `public/data/cidades/{IBGE}.json` para as 27 capitais (ou qualquer município jogável com `-- <IBGE…>` / `--todos`), centrado na sede:
+- **Relevo**: tiles Terrarium z14 (~9,5 m/px), grade de 16 m sobre o mapa inteiro (6.144 m). No litoral o mar fica ≤ 0; no interior subtrai-se a altitude da parte mais baixa (−4 m), e rios, lagos e represas do OSM são rebaixados abaixo de 0.
+- **OpenStreetMap**: dos extratos regionais da Geofabrik (`data/osm-cache/{regiao}.osm.pbf`, lidos uma vez em fluxo por `scripts/lib/geofabrik.ts`) ou, se não estiverem lá, pelo Overpass. Ruas e prédios na área construível (3.072 m); água, mata, parques e uso do solo no mapa inteiro.
+- **Ruas → grafo do jogo**: nós nos cruzamentos e pontas; cada via é cortada a cada ~140 m ou 35° de curva em arestas curvas (ponto de controle passando pelo meio do trecho); nós a menos de 6 m são fundidos. Tronco/primária/secundária viram avenida; o resto, rua. Os nomes são os reais.
+- **Prédios**: OSM primeiro (tipo pela etiqueta `building`/`amenity`/`shop` ou pelo uso do solo; andares de `building:levels` ou `height`/3,1, senão estimados); depois os contornos de satélite da Microsoft onde o OSM não tem prédio (sem altura = casa ou sobrado). Cada contorno vira o menor retângulo envolvente, virado para a rua mais próxima. Quadras de casas geminadas que o satélite enxerga como um polígono só (residencial/comercial baixo, > 380 m²) são divididas em lotes de 8–12 m de frente, em uma a três fileiras.
+- Formato compacto (arrays planos, alturas em Int16 base64): ~1 MB por capital média.
+
+## No jogo
+- Na escolha do município, "🏙 real" marca as cidades disponíveis; a opção "Começar com a cidade real" vem ligada.
+- O relevo (`world/cidadeReal.ts → terrenoReal`) substitui o gerador procedural; a mata vem do OSM (e do bioma fora da área construível).
+- O grafo de ruas real é o ponto de partida: o jogador pode construir, demolir e zonear normalmente.
+- **Prédios reais são lotes fixos** (`computeLots` os coloca antes dos lotes gerados ao longo das ruas, se ≥ 60% do terreno estiver livre e seco). Nascem construídos e ocupados (85% da capacidade) com o arquétipo escolhido por tipo e andares (casa térrea → torre residencial; loja → escritórios; galpão/fábrica) e os andares reais. A simulação não os reconstrói; o jogador pode demolir (permanente, sai do arquivo no save) ou rezonear.
+- **Lacunas de dados**: onde nem o OSM nem o satélite têm prédio num raio de ~60 m, 80% dos lotes ao longo das ruas reais ganham casas (ruas) ou lojas (avenidas) na fundação, fora das áreas de mata. Contam como cidade existente (rede herdada, sem reconstrução automática). Caso típico: São Luís, quase sem cobertura de satélite.
+- **Rede herdada**: água, luz e esgoto que já existiam atendem os prédios originais. A capacidade é fixada na fundação (demanda inicial dos prédios reais + 5%; esgoto só na cobertura real da UF) e repartida entre os trechos da malha conforme a demanda deles. Crescimento novo precisa de rede nova.
+- Desenho: o prédio real ocupa o retângulo inteiro (97%), com a altura dos andares reais; a ficha mostra nome (quando o OSM tem), tipo e tamanho.
+- Saves guardam só o código IBGE, os prédios demolidos e a rede herdada; ruas, prédios e relevo são relidos do arquivo.
+- Desempenho: Aracaju (11 mil prédios, 12 mil lotes) monta em < 1 s e simula a ~7 ms por passo; o redesenho dos prédios é limitado a uma vez a cada 0,7 s.
+
+## Ruas vivas (Fase 11)
+Veículos procedurais detalhados (sedã, hatch, táxi, ônibus com letreiro, caminhão de entrega, moto com piloto; 216–296 triângulos) e pedestres instanciados nas calçadas (146 triângulos, animação de caminhada no shader, guarda-chuva na chuva), em quantidade proporcional à população e à hora do dia, só perto da câmera (até 1.500).
+
+## Testes (`tests/fase11.test.ts`, `tests/pedestres.test.ts`)
+Relevo/água/verde a partir do arquivo; grafo com nomes; arquétipos por tipo e andares; cidade que nasce construída, habitada e abastecida pela rede herdada; demolição permanente que sobrevive ao save; prédios sem rua de frente ficam de fora; arquivos gerados seguem o esquema; matemática da calçada dos pedestres.

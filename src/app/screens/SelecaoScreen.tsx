@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { carregarMunicipios, carregarUF } from '../../data/loader';
+import { carregarMunicipios, carregarUF, cidadesReais } from '../../data/loader';
 import type { MunicipioJogavel } from '../../data/municipios';
 import { deUF } from '../../data/nomes';
 import type { DadosUF, ResumoUF } from '../../data/schemas';
@@ -95,17 +95,27 @@ const TERRENO_NOME: Record<string, string> = {
 /** Fase 8: escolha do município onde a cidade será construída — terreno, bioma e clima próprios. */
 function EscolhaMunicipio({ lista, escolhido, onEscolher }: { lista: MunicipioJogavel[]; escolhido: MunicipioJogavel | null; onEscolher: (m: MunicipioJogavel) => void }) {
   const atual = escolhido ?? lista.find((m) => m.capital) ?? lista[0];
+  const [reais, setReais] = useState<string[]>([]);
+  useEffect(() => { cidadesReais().then(setReais).catch(() => undefined); }, []);
+  const querReal = useApp((s) => s.cidadeReal);
+  const temReal = reais.includes(atual.ibge);
   return (
     <div className="painel rounded-xl p-3 w-[min(760px,calc(100vw-2rem))] surgir">
       <div className="flex items-baseline justify-between gap-3 mb-2">
         <div className="titulo text-sm">Onde construir a sua cidade?</div>
         <div className="text-[11px] text-suave truncate">{atual.descricao}{atual.clima.estimado && atual.clima.dTemp !== 0 ? ` · clima ~${atual.clima.dTemp > 0 ? '+' : ''}${atual.clima.dTemp.toFixed(1).replace('.', ',')} °C${atual.clima.fChuva < 0.95 ? `, ${Math.round(atual.clima.fChuva * 100)}% da chuva` : ''} vs. capital` : ''}</div>
       </div>
+      {temReal && (
+        <label className="flex items-center gap-2 text-xs mb-2 cursor-pointer">
+          <input type="checkbox" checked={querReal} onChange={(e) => useApp.setState({ cidadeReal: e.target.checked })} />
+          Começar com a cidade real: ruas, prédios, relevo e rios de {atual.nome} (© OpenStreetMap). Desmarque para um terreno vazio.
+        </label>
+      )}
       <div className="flex flex-wrap gap-1.5">
         {lista.map((m) => (
           <button key={m.ibge} onClick={() => onEscolher(m)} title={m.descricao}
             className={`text-left rounded-lg px-2.5 py-1.5 border text-xs transition-colors ${m.ibge === atual.ibge ? 'border-acento bg-acento/15 text-white' : 'border-white/10 bg-white/5 text-suave hover:text-white hover:bg-white/10'}`}>
-            <div className="font-semibold">{m.nome}{m.capital && <span className="text-acento-2 font-normal"> ★ capital</span>}</div>
+            <div className="font-semibold">{m.nome}{m.capital && <span className="text-acento-2 font-normal"> ★ capital</span>}{reais.includes(m.ibge) && <span className="text-acento font-normal" title="Ruas e prédios reais do OpenStreetMap"> 🏙 real</span>}</div>
             <div className="text-[10px] opacity-80">{fmt.pessoas(m.populacao)} · {TERRENO_NOME[m.terreno.tipo] ?? m.terreno.tipo} · {BIOMA_NOME[m.bioma]}</div>
           </button>
         ))}

@@ -18,6 +18,7 @@ import { TelaLegado } from '../eleicao/Legado';
 import { TrilhaSonora } from './Trilha';
 import { OpcoesGerais } from '../Opcoes';
 import { Assessor } from '../assessor/Assessor';
+import { predio as predioReal, TIPO_PREDIO } from '../../data/cidadeReal';
 import { useConquistas } from '../conquistas/Conquistas';
 import { ASSESSOR_CIDADE, DICAS_CIDADE, PASSOS_CIDADE } from '../assessor/roteiros';
 import { nuvemConfigurada, salvarNuvem } from '../../cloud/nuvem';
@@ -341,6 +342,10 @@ function InfoLote() {
   const edgeId = L[sel * LOT_STRIDE + 6];
   const rua = mundo.roads.edges.get(edgeId)?.name ?? 'Rua sem nome';
   const numero = (Math.round(Math.abs(x * 3.1 + z * 1.7)) % 1900) + 10;
+  // Fase 11: prédio da cidade real (OpenStreetMap)
+  const refReal = L[sel * LOT_STRIDE + 7] - 1;
+  const pReal = refReal >= 0 && mundo.real ? predioReal(mundo.real, refReal) : null;
+  const nomeReal = pReal?.nome ?? null;
   const pessoa = cidadao(sel * 7919 + Math.round(S[o + 4] * 1000));
   // controle territorial na célula do lote
   const ti = Math.min(TERR_RES - 1, Math.max(0, Math.floor((x + BUILD_HALF) / TERR_CELL)));
@@ -371,8 +376,9 @@ function InfoLote() {
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[11px] text-suave">{rua}, {numero} — {bairro}</div>
-          <div className="titulo text-xl font-semibold mt-0.5">{a ? (abandonado ? `${a.nome} (abandonado)` : a.nome) : 'Lote vazio'}</div>
+          <div className="titulo text-xl font-semibold mt-0.5">{nomeReal ?? (a ? (abandonado ? `${a.nome} (abandonado)` : a.nome) : 'Lote vazio')}</div>
           <div className="text-xs text-suave">{ZONES[zona]?.nome ?? 'Sem zona'}{a ? ` · nível ${a.level} · ${andares} andar${andares > 1 ? 'es' : ''}` : ''}</div>
+          {pReal && <div className="text-[10px] text-acento-2 mt-0.5">Prédio real · {TIPO_PREDIO[pReal.tipo]} · {Math.round(pReal.w)}×{Math.round(pReal.d)} m · © OpenStreetMap</div>}
         </div>
         <button onClick={() => set({ loteSelecionado: -1 })} className="text-suave hover:text-white"><Icone nome="x" tamanho={18} /></button>
       </div>
@@ -666,6 +672,11 @@ export function Hud() {
         <AssessorCidade st={st} />
       </div>
       <BannerFesta st={st} />
+      {mundo.init?.cidadeReal && (
+        <div className="absolute right-2 bottom-10 text-[9px] text-white/55 pointer-events-none" style={{ textShadow: '0 1px 2px #000' }}>
+          Ruas e prédios © colaboradores do OpenStreetMap (ODbL) · contornos de satélite © Microsoft (ODbL) · relevo SRTM/Mapzen
+        </div>
+      )}
       {painel === 'nenhum' && !governo && <PainelDecisoes st={st} />}
       {painel !== 'nenhum' && (
         <div className="absolute right-3 top-24 painel rounded-xl p-5 pointer-events-auto surgir max-h-[calc(100%-12rem)] overflow-auto">

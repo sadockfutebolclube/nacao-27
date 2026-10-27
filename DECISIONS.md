@@ -189,3 +189,21 @@ Em vez de ajustar coeficientes isolados, simulamos estilos completos (piloto, ga
 
 ## D-062 · Versão 1.0
 Com as dez fases do roteiro entregues, o jogo passa a 1.0.0. "Carreira de vereador a presidente" e "Cenários" (crise hídrica, enchente do século, estado falido) saem do menu até existirem de verdade.
+
+## D-063 · OpenStreetMap, não Google 3D
+Extrair a geometria do Google Maps/3D Tiles é proibido pelos termos do Google. A cidade real usa dados abertos e editáveis: OpenStreetMap (ruas, nomes, prédios, água, verde), contornos de satélite da Microsoft (ODbL) e relevo SRTM/Mapzen. A atribuição aparece no jogo.
+
+## D-064 · Extratos regionais em vez de API
+O Overpass vive sobrecarregado (502/504 durante toda a coleta). Os cinco extratos regionais da Geofabrik (~2,1 GB) são baixados uma vez e lidos em fluxo, gerando o mesmo cache que o Overpass geraria — sem limite de consultas e reprodutível.
+
+## D-065 · Prédios reais como lotes fixos da simulação
+Em vez de uma "camada decorativa", cada prédio real é um lote do jogo, com zona, arquétipo, ocupação, água, luz, crime e serviços. A cidade existe de verdade para a simulação: o jogador herda população, empregos e problemas, e pode demolir ou transformar quarteirões. Um retângulo orientado aproxima o contorno; contornos muito irregulares perdem detalhe em troca de instanciamento barato.
+
+## D-066 · Completar o OSM com satélite e quebrar quadras
+O OSM brasileiro tem poucos prédios mapeados em muitas cidades (Aracaju: ~600 no centro). Os contornos da Microsoft preenchem o resto; como o satélite funde casas geminadas em polígonos de quadra, polígonos baixos e grandes são divididos em lotes de 8–12 m. Prédios sem altura conhecida viram casas ou sobrados — melhor errar para baixo do que encher a cidade de blocos de 5 andares.
+
+## D-067 · Rede herdada
+A cidade real já tem água, luz e esgoto (das companhias estaduais). Exigir que o jogador construa reservatórios para 100 mil pessoas no primeiro dia seria injogável; a rede herdada atende só os prédios originais, com a cobertura de esgoto real da UF, e o crescimento novo depende das obras do jogador.
+
+## D-068 · Agente para veículos e pedestres
+A pedido do usuário, um agente separado criou os modelos procedurais de veículos e os pedestres, em arquivos próprios (`Veiculos.tsx`, `Pedestres.tsx`), enquanto a importação da cidade real era feita em paralelo. Tudo procedural: nenhum modelo 3D baixado.

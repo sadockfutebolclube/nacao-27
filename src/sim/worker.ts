@@ -65,14 +65,14 @@ self.onmessage = (ev: MessageEvent<ToWorker>) => {
     switch (msg.type) {
       case 'init':
         vistos = { terr: -1, fav: -1, lin: -1, tran: -1 };
-        sim = new Simulation(msg.init);
+        sim = new Simulation(msg.init, undefined, msg.real ?? null);
         sim.noticia(`Posse do novo governo ${deUF(msg.init.sigla, msg.init.nomeEstado)}. Na capital, ${msg.init.cidade}, a expectativa é de obras já no primeiro mês.`, 'info', 'posse', 0);
         post({ type: 'ready', init: msg.init });
         sendState();
         break;
       case 'load':
         vistos = { terr: -1, fav: -1, lin: -1, tran: -1 };
-        sim = Simulation.deserialize(msg.save);
+        sim = Simulation.deserialize(msg.save, undefined, msg.real ?? null);
         post({ type: 'ready', init: msg.save.init });
         sendState();
         break;

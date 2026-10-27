@@ -25,6 +25,8 @@ interface AppState {
   daltonico: boolean;
   /** município onde a cidade será construída (null = capital) */
   municipio: MunicipioJogavel | null;
+  /** Fase 11: começar com a cidade real (ruas e prédios do OpenStreetMap), quando disponível */
+  cidadeReal: boolean;
   volumeMusica: number;
   volumeAmbiente: number;
   /** carreira (Fase 9): governador(a) que disputa a Presidência */
@@ -93,6 +95,7 @@ export const useApp = create<AppState>((set) => ({
   volumeAmbiente: prefs.volumeAmbiente ?? 0.6,
   setMunicipio: (municipio) => set({ municipio }),
   carreira: null,
+  cidadeReal: true,
   qualidade: prefs.qualidade ?? 'auto',
   reduzirMovimento: prefs.reduzirMovimento ?? prefereMenosMovimento(),
   tutorial: prefs.tutorial ?? true,

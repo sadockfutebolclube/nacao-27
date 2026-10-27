@@ -11,7 +11,8 @@
 | Prédios (fachadas, janelas, pastilhas, vitrines, obra) | `src/render/shaders/fachada.ts` | shader sobre `MeshStandardMaterial` |
 | Telhado colonial, caixa d'água, muro, toldo, chaminé, grua | `src/render/city/Edificios.tsx` | geometria instanciada |
 | Árvores, ipês, palmeiras, coqueiros | `src/render/city/Arvores.tsx`, `Vias.tsx` | geometria procedural |
-| Veículos (carro, moto, ônibus) | `src/render/city/Veiculos.tsx` | caixas instanciadas |
+| Veículos (sedã, hatch, táxi, ônibus, caminhão de entrega, moto com piloto) | `src/render/city/Veiculos.tsx` | geometria procedural instanciada (Fase 11) |
+| Pedestres (com guarda-chuva na chuva) | `src/render/city/Pedestres.tsx` | geometria procedural instanciada, animação no shader (Fase 11) |
 | Equipamentos (castelo d'água, ETA, ETE, subestação, solar, termelétrica, praça, parque) | `src/render/city/Equipamentos.tsx` | primitivas |
 | Ícones da HUD | `src/ui/Icone.tsx` | SVG próprio |
 | Céu | `@react-three/drei` `<Sky>` (modelo Preetham do three.js) | MIT |
@@ -33,3 +34,12 @@ three (MIT), @react-three/fiber (MIT), @react-three/drei (MIT), @react-three/pos
 
 ## Planejado (conferir a licença de cada pacote ao importar)
 Kenney (CC0), Quaternius (CC0), Poly Haven (CC0), ambientCG (CC0), Freesound (CC0/CC-BY — atribuir aqui).
+
+## Dados geográficos das cidades reais (Fase 11)
+| Dado | Fonte | Licença | Atribuição exigida |
+|---|---|---|---|
+| Ruas, nomes, prédios (tipo, andares, nomes), água, vegetação, uso do solo | OpenStreetMap, via extratos regionais da Geofabrik (`scripts/lib/geofabrik.ts`) ou Overpass | ODbL 1.0 | “© colaboradores do OpenStreetMap” — exibida no jogo |
+| Contornos de prédios detectados por satélite (onde o OSM não tem) | Microsoft Global ML Building Footprints (`scripts/lib/msbuildings.ts`) | ODbL 1.0 | “© Microsoft” — exibida no jogo |
+| Relevo | Tiles Terrarium (Mapzen/Tilezen no AWS Open Data: SRTM, GMTED2010, ETOPO1) | domínio público / atribuição | “SRTM/Mapzen” — exibida no jogo |
+
+Os arquivos derivados em `public/data/cidades/` são uma base derivada do OpenStreetMap e seguem a ODbL. O Google Maps/3D Tiles **não** é usado: os termos do Google proíbem extrair ou armazenar a geometria.

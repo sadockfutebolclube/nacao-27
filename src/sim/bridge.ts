@@ -2,6 +2,7 @@
  * Ponte entre a thread principal e o Worker. Dados volumosos (lotes, estado por lote) ficam
  * em `mundo` (mutável, sem re-render); a UI assina só versões e estatísticas via Zustand.
  */
+import type { CidadeReal } from '../data/cidadeReal';
 import { create } from 'zustand';
 import { emptyGraph, graphFromJSON, type RoadGraph, type RoadType } from '../world/roads';
 import type { Heightmap } from '../world/terrain';
@@ -11,6 +12,8 @@ import type { TipoLinha } from './city/transporte';
 export const mundo = {
   hm: null as Heightmap | null,
   init: null as SimInit | null,
+  /** Fase 11: dados da cidade real em jogo (nomes e andares dos prédios para a interface) */
+  real: null as CidadeReal | null,
   roads: emptyGraph() as RoadGraph,
   lots: new Float32Array(0) as Float32Array<ArrayBufferLike>,
   lotState: new Float32Array(0) as Float32Array<ArrayBufferLike>,
@@ -164,7 +167,8 @@ function post(msg: ToWorker) {
   worker?.postMessage(msg);
 }
 
-export function iniciarSimulacao(init: SimInit | null, save: SaveData | null) {
+export function iniciarSimulacao(init: SimInit | null, save: SaveData | null, real: CidadeReal | null = null) {
+  mundo.real = real;
   pararSimulacao();
   worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module', name: 'simulacao' });
   worker.onmessage = onMessage;
@@ -172,8 +176,8 @@ export function iniciarSimulacao(init: SimInit | null, save: SaveData | null) {
   useGame.setState({ pronto: false, stats: null, noticias: [], worldVersion: 0, stateVersion: 0, loteSelecionado: -1, favelaSelecionada: -1, ferramenta: { tipo: 'nenhuma' }, erroFatal: null });
   mundo.favelasCasas = new Float32Array(0); mundo.favelasMeta = []; mundo.linhas = []; mundo.transito = new Map();
   mundo.territorioF = new Float32Array(0); mundo.territorioM = new Float32Array(0);
-  if (save) post({ type: 'load', save });
-  else if (init) post({ type: 'init', init });
+  if (save) post({ type: 'load', save, real });
+  else if (init) post({ type: 'init', init, real });
   post({ type: 'speed', speed: useGame.getState().velocidade });
 }
 

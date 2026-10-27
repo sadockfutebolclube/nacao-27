@@ -40,7 +40,7 @@ function axes(lado: Lado, x: number, z: number): [number, number] {
   }
 }
 
-const DENSIDADE_MATA: Record<Bioma, number> = {
+export const DENSIDADE_MATA: Record<Bioma, number> = {
   'amazonia': 1.0, 'mata-atlantica': 0.85, 'cerrado': 0.5, 'caatinga': 0.38, 'pampa': 0.18, 'pantanal': 0.45,
 };
 
@@ -234,7 +234,7 @@ function morroAdd(morros: Morro[], x: number, z: number): number {
 }
 
 /** Transformada de distância em 2 passadas (chamfer) até a água (h < 0). */
-function waterDistance(h: Float32Array): Float32Array {
+export function waterDistance(h: Float32Array): Float32Array {
   const N = HM_VERTS;
   const d = new Float32Array(N * N);
   const INF = 2000;

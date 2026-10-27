@@ -1,3 +1,4 @@
+import type { CidadeReal } from '../data/cidadeReal';
 import type { NormaisUF } from '../data/clima';
 import type { ResumoClima } from './clima/clima';
 import type { TipoFesta } from './eventos/festas';
@@ -18,6 +19,8 @@ export interface SimInit {
   sigla: SiglaUF;
   nomeEstado: string;
   cidade: string;
+  /** Fase 11: código IBGE da cidade real (ruas e prédios do OpenStreetMap); ausente = mapa procedural */
+  cidadeReal?: string;
   /** a cidade construída é a capital? (Fase 8; ausente em saves antigos = sim) */
   capital?: boolean;
   terreno: Terreno;
@@ -136,8 +139,8 @@ export const LOT_STATE_STRIDE = 13;
 export const FLAG = { AGUA: 1, ENERGIA: 2, ESGOTO: 4, ABANDONADO: 8 } as const;
 
 export type ToWorker =
-  | { type: 'init'; init: SimInit }
-  | { type: 'load'; save: SaveData }
+  | { type: 'init'; init: SimInit; real?: CidadeReal | null }
+  | { type: 'load'; save: SaveData; real?: CidadeReal | null }
   | { type: 'speed'; speed: number }
   | { type: 'cmd'; id: number; cmd: Command }
   | { type: 'save'; id: number }
@@ -165,7 +168,7 @@ export interface SaveData {
   cooldown: [string, number][];
   pollution: number[];
   lotPol: number[];
-  cidade?: { territorio: unknown; favelas: unknown; transporte: unknown; contencao: boolean; crime?: number[]; clima?: unknown; eventos?: unknown; visuais?: unknown };
+  cidade?: { territorio: unknown; favelas: unknown; transporte: unknown; contencao: boolean; crime?: number[]; clima?: unknown; eventos?: unknown; visuais?: unknown; real?: unknown };
   tick: number;
   rng: [number, number, number, number];
   caixa: number;

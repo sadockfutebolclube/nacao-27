@@ -143,3 +143,9 @@ Kenney.nl (CC0), Quaternius (CC0), Poly Haven (CC0: HDRIs, texturas, modelos), a
 - **Orçamento** (aproximado, RTN 2025, % PIB): receita líquida 18,6; Previdência 8,1; pessoal 3,2; BPC 0,95; abono e seguro 0,75; transferência de renda 1,4; saúde 1,75; educação 1,15; investimentos 0,65; emendas 0,45; demais custeio 0,9.
 - **Macro**: regra de Taylor com juro neutro real ~5% (estimativas recentes do BC entre 4,75% e 5,25%); repasse cambial de ~10% em 12 meses; lei de Okun com coeficiente ~0,45.
 - **Supabase**: Row Level Security com `(select auth.uid())` nas políticas; login anônimo (`signInAnonymously`) e OTP por e-mail.
+
+## 12. Fase 11 — cidades reais
+- **OpenStreetMap** (ODbL): extratos regionais da Geofabrik (https://download.geofabrik.de/south-america/brazil.html — norte, nordeste, centro-oeste, sudeste, sul; ~2,1 GB em 27/10/2026), lidos com `osm-pbf-parser`. Overpass (overpass-api.de e espelhos) como alternativa — indisponível durante a coleta (fila cheia).
+- **Microsoft Global ML Building Footprints** (ODbL): índice `dataset-links.csv`, um arquivo por quadkey de nível 9 (Brasil: 1.154 arquivos; Aracaju 21 MB, Rio 170 MB, São Paulo 147 MB compactados). Altura quase sempre desconhecida no Brasil.
+- **Cobertura de prédios no OSM** é desigual: Aracaju tinha ~600 prédios mapeados nos 3 × 3 km centrais; o satélite acrescentou ~8.400 contornos.
+- **Relevo**: Terrarium z14 (~9,5 m/px no equador).

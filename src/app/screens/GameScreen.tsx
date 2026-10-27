@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { NormaisUF } from '../../data/clima';
-import { carregarClima, carregarEleitorado, carregarFiscal, carregarSocial } from '../../data/loader';
+import { carregarCidadeReal, carregarClima, carregarEleitorado, carregarFiscal, carregarSocial } from '../../data/loader';
+import type { CidadeReal } from '../../data/cidadeReal';
+import { centroReal, terrenoReal } from '../../world/cidadeReal';
 import { ajustarClima } from '../../data/municipios';
 import { registrarPartida } from '../../conquistas/conquistas';
 import { seedFromString } from '../../sim/core/rng';
@@ -19,6 +21,7 @@ export function GameScreen() {
   const modo = useApp((s) => s.modo);
   const save = useApp((s) => s.saveParaCarregar);
   const municipio = useApp((s) => s.municipio);
+  const querReal = useApp((s) => s.cidadeReal);
   const irPara = useApp((s) => s.irPara);
   const pronto = useGame((s) => s.pronto);
   const erroFatal = useGame((s) => s.erroFatal);
@@ -33,8 +36,9 @@ export function GameScreen() {
 
     // Fase 8: a cidade pode ser qualquer um dos municípios jogáveis da UF (padrão: a capital)
     const mun = municipio && municipio.ibge.startsWith(String(dados.id)) && !municipio.capital ? municipio : null;
-    const comecar = (estado: EstadoInit | undefined, clima?: NormaisUF | null) => {
+    const comecar = (estado: EstadoInit | undefined, clima?: NormaisUF | null, real: CidadeReal | null = null) => {
       const i: SimInit = save?.init ?? {
+        cidadeReal: real?.ibge,
         sigla: dados.sigla,
         nomeEstado: dados.nome,
         cidade: mun?.nome ?? dados.tracos.capital.nome,
@@ -54,28 +58,32 @@ export function GameScreen() {
       setInit(i);
       mundo.init = i;
       registrarPartida({ uf: i.sigla, regiao: i.regiao, bioma: i.bioma, interior: i.capital === false });
-      iniciarSimulacao(save ? null : i, save);
+      iniciarSimulacao(save ? null : i, save, real);
       // o relevo é gerado na thread principal depois do primeiro paint da tela de carregamento
       timer = setTimeout(() => {
-        const h = generateTerrain(i.seed, i.terreno, i.bioma);
+        const h = real ? terrenoReal(real, i.terreno, i.bioma, i.seed) : generateTerrain(i.seed, i.terreno, i.bioma);
         mundo.hm = h;
-        setInicio(pontoInicial(h));
+        setInicio(real ? centroReal(real) : pontoInicial(h));
         setHm(h);
       }, 60);
       useApp.setState({ tela: 'jogo' });
     };
 
-    if (save) comecar(save.init.estado);
-    else {
+    const ibgeSede = mun?.ibge ?? String(dados.tracos.capital.ibge);
+    if (save) {
+      // save de cidade real: recarrega ruas, prédios e relevo pelo código IBGE
+      if (save.init.cidadeReal) carregarCidadeReal(save.init.cidadeReal).then((r) => { if (!cancelado) comecar(save.init.estado, null, r); });
+      else comecar(save.init.estado);
+    } else {
       // dados fiscais reais (SICONFI) alimentam o Tesouro estadual
-      Promise.all([carregarFiscal(dados.sigla), carregarSocial(dados.sigla), carregarClima(dados.sigla), carregarEleitorado(dados.sigla)]).then(([fiscal, social, clima, eleitorado]) => {
+      Promise.all([carregarFiscal(dados.sigla), carregarSocial(dados.sigla), carregarClima(dados.sigla), carregarEleitorado(dados.sigla), querReal ? carregarCidadeReal(ibgeSede) : null]).then(([fiscal, social, clima, eleitorado, real]) => {
         if (cancelado) return;
         comecar(fiscal ? {
           sigla: dados.sigla, fiscal, populacao: dados.populacao.valor, pibNominal: dados.pib.total, idh: dados.indicadores.idh,
           homicidios: dados.indicadores.homicidios, idebEM: dados.indicadores.idebEM, esgoto: dados.indicadores.esgoto,
           dificuldade: dados.tracos.dificuldade, efeitos, social: social ?? undefined,
           regiao: dados.regiao.nome, cidades: dados.maioresMunicipios.map((m) => m.nome), sede: mun?.nome, populacoes: dados.maioresMunicipios.map((m) => m.populacao), eleitorado: eleitorado ?? undefined,
-        } : undefined, clima);
+        } : undefined, clima, real);
       });
     }
     return () => {
@@ -83,7 +91,7 @@ export function GameScreen() {
       clearTimeout(timer);
       pararSimulacao();
     };
-  }, [dados, modo, save, municipio]);
+  }, [dados, modo, save, municipio, querReal]);
 
   if (erroFatal) {
     return (

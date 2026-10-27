@@ -1,6 +1,10 @@
 /**
- * Amostra visual do tráfego (LOD de simulação): carros, motos e ônibus andando pela malha,
- * com faróis e lanternas à noite. A quantidade acompanha população e empregos simulados.
+ * Amostra visual do tráfego (LOD de simulação): sedãs, hatches, táxis, utilitários (VUC), ônibus
+ * urbanos e motos com piloto (e baú de entrega) andando pela malha, com faróis e lanternas à noite.
+ * Modelos low-poly procedurais (perfil lateral extrudado + vidros, rodas, para-choques, lanternas)
+ * mesclados numa geometria por tipo; a cor da lataria vem da instância e o resto (vidro, pneu,
+ * plástico) é cor fixa por vértice (atributo `aPinta` decide quem recebe a cor da instância).
+ * A quantidade acompanha população e empregos simulados.
  */
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
@@ -14,33 +18,233 @@ import { perfisAtuais } from './Vias';
 import { mergeGeos } from './Vias';
 
 const MAX = 700;
-const CORES_CARRO = ['#e8e8e8', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#1d3f73', '#e8e8e8', '#5a5f63', '#f2f2ee', '#3a5f3a', '#d9c39a'];
 
-interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: 0 | 1 | 2; faixa: number; ativo: boolean }
+/** 0 sedã · 1 ônibus · 2 moto · 3 hatch · 4 táxi · 5 utilitário/caminhão leve */
+type Tipo = 0 | 1 | 2 | 3 | 4 | 5;
+const TIPOS = 6;
 
-function geoCarro() {
-  const corpo = new THREE.BoxGeometry(1.8, 0.75, 4.2).translate(0, 0.55, 0);
-  const cabine = new THREE.BoxGeometry(1.6, 0.6, 2.2).translate(0, 1.2, -0.2);
-  return mergeGeos([corpo, cabine]);
+const paleta = (cs: string[]) => cs.map((c) => new THREE.Color(c));
+const CORES: Record<Tipo, THREE.Color[]> = {
+  0: paleta(['#e8e8e8', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#1d3f73', '#e8e8e8', '#5a5f63', '#f2f2ee', '#3a5f3a', '#d9c39a']),
+  1: paleta(['#f2f2ee', '#e0b030', '#2f6db5', '#c8302a', '#3a8a4a', '#f08a24', '#f2f2ee', '#8a8f96']),
+  2: paleta(['#c8202a', '#1b1b1e', '#f2f2ee', '#1d3f73', '#e0b030', '#c8202a']),
+  3: paleta(['#f2f2ee', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#e8e8e8', '#1d3f73', '#5a5f63', '#7a2030']),
+  4: paleta(['#f2c418', '#f4f4f0', '#f2c418']),
+  5: paleta(['#f2f2ee', '#c8302a', '#1d3f73', '#5a5f63', '#e8e8e8', '#2f6db5']),
+};
+
+/** Posição das luzes por tipo: frente (z), traseira (z), altura, largura relativa da barra. */
+const LUZES: Record<Tipo, { f: number; t: number; y: number; l: number }> = {
+  0: { f: 2.24, t: -2.24, y: 0.66, l: 1 },
+  1: { f: 6.08, t: -6.08, y: 0.75, l: 1.6 },
+  2: { f: 0.8, t: -1.0, y: 0.95, l: 0.3 },
+  3: { f: 1.98, t: -1.98, y: 0.7, l: 0.98 },
+  4: { f: 2.24, t: -2.24, y: 0.66, l: 1 },
+  5: { f: 3.36, t: -3.2, y: 0.85, l: 1.4 },
+};
+
+interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean }
+
+// ── geometria ────────────────────────────────────────────────────────────────
+
+// cores fixas em espaço linear (o renderizador converte para sRGB na saída)
+type RGB = [number, number, number];
+const BRANCO: RGB = [1, 1, 1];
+const VIDRO: RGB = [0.02, 0.03, 0.045];
+const PLASTICO: RGB = [0.03, 0.03, 0.035];
+const PNEU: RGB = [0.015, 0.015, 0.016];
+const CALOTA: RGB = [0.5, 0.52, 0.55];
+const FAROL: RGB = [0.95, 0.93, 0.82];
+const LANTERNA: RGB = [0.55, 0.03, 0.02];
+const JEANS: RGB = [0.04, 0.07, 0.16];
+const JAQUETA: RGB = [0.03, 0.03, 0.035];
+
+interface Parte {
+  g: THREE.BufferGeometry;
+  cor: RGB;
+  /** recebe a cor da instância (lataria) */
+  pinta?: boolean;
+  /** 1 = vidro iluminado por dentro à noite; 2 = letreiro aceso */
+  brilho?: number;
+  /** cor por vértice (sobrepõe `cor`) */
+  corV?: (x: number, y: number, z: number) => RGB;
 }
+
+const caixa = (w: number, h: number, d: number, x: number, y: number, z: number) => new THREE.BoxGeometry(w, h, d).translate(x, y, z);
+
+/** Silhueta lateral (x = comprimento, y = altura) extrudada na largura, centrada em x=0. */
+function perfil(pts: [number, number][], largura: number): THREE.BufferGeometry {
+  const forma = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+  const g = new THREE.ExtrudeGeometry(forma, { depth: largura, bevelEnabled: false, steps: 1 });
+  g.rotateY(-Math.PI / 2); // x da forma → z do mundo (frente = +z), extrusão → −x
+  g.translate(largura / 2, 0, 0);
+  return g;
+}
+
+/** Roda com eixo em X: pneu escuro e calota clara no centro das tampas (8 lados, 32 triângulos). */
+function roda(r: number, w: number, x: number, y: number, z: number): Parte {
+  const g = new THREE.CylinderGeometry(r, r, w, 8).rotateZ(Math.PI / 2).translate(x, y, z);
+  return { g, cor: PNEU, corV: (_x, vy, vz) => (Math.hypot(vy - y, vz - z) < r * 0.3 ? CALOTA : PNEU) };
+}
+
+/** Mescla as partes e grava `color` (cor fixa), `aPinta` (cor da instância) e `aBrilho`. */
+function montar(partes: Parte[]): THREE.BufferGeometry {
+  const geo = mergeGeos(partes.map((p) => p.g));
+  const n = geo.getAttribute('position').count;
+  const cor = new Float32Array(n * 3), pinta = new Float32Array(n), brilho = new Float32Array(n);
+  let k = 0;
+  for (const p of partes) {
+    const pos = p.g.getAttribute('position');
+    for (let i = 0; i < pos.count; i++, k++) {
+      const c = p.corV ? p.corV(pos.getX(i), pos.getY(i), pos.getZ(i)) : p.cor;
+      cor[k * 3] = c[0]; cor[k * 3 + 1] = c[1]; cor[k * 3 + 2] = c[2];
+      pinta[k] = p.pinta ? 1 : 0;
+      brilho[k] = p.brilho ?? 0;
+    }
+    p.g.dispose();
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(cor, 3));
+  geo.setAttribute('aPinta', new THREE.BufferAttribute(pinta, 1));
+  geo.setAttribute('aBrilho', new THREE.BufferAttribute(brilho, 1));
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+/** Sedã (~250 tri); com `taxi`, ganha o luminoso “TÁXI” no teto. */
+function geoSedan(taxi: boolean) {
+  const partes: Parte[] = [
+    { g: perfil([[-2.2, 0.32], [2.2, 0.32], [2.26, 0.6], [2.1, 0.8], [0.85, 0.96], [-1.55, 0.99], [-2.15, 0.93], [-2.27, 0.62]], 1.78), cor: BRANCO, pinta: true },
+    { g: perfil([[0.9, 0.95], [-1.5, 0.97], [-1.2, 1.4], [0.22, 1.42]], 1.6), cor: VIDRO },
+    { g: perfil([[-1.26, 1.38], [0.28, 1.38], [0.2, 1.48], [-1.18, 1.48]], 1.64), cor: BRANCO, pinta: true },
+    { g: caixa(1.84, 0.2, 0.14, 0, 0.42, 2.24), cor: PLASTICO },
+    { g: caixa(1.84, 0.2, 0.14, 0, 0.42, -2.25), cor: PLASTICO },
+    { g: caixa(0.38, 0.12, 0.08, 0.58, 0.68, 2.19), cor: FAROL },
+    { g: caixa(0.38, 0.12, 0.08, -0.58, 0.68, 2.19), cor: FAROL },
+    { g: caixa(0.36, 0.13, 0.08, 0.6, 0.75, -2.21), cor: LANTERNA },
+    { g: caixa(0.36, 0.13, 0.08, -0.6, 0.75, -2.21), cor: LANTERNA },
+    roda(0.33, 0.24, 0.8, 0.33, 1.38), roda(0.33, 0.24, -0.8, 0.33, 1.38),
+    roda(0.33, 0.24, 0.8, 0.33, -1.35), roda(0.33, 0.24, -0.8, 0.33, -1.35),
+  ];
+  if (taxi) partes.push({ g: caixa(0.62, 0.18, 0.26, 0, 1.57, -0.5), cor: [1, 0.97, 0.85], brilho: 2 });
+  return montar(partes);
+}
+
+/** Hatch compacto (~250 tri): traseira quase vertical. */
+function geoHatch() {
+  return montar([
+    { g: perfil([[-1.95, 0.32], [1.95, 0.32], [2.0, 0.6], [1.85, 0.8], [0.7, 0.96], [-1.9, 0.99], [-2.0, 0.62]], 1.74), cor: BRANCO, pinta: true },
+    { g: perfil([[0.75, 0.95], [-1.86, 0.97], [-1.78, 1.42], [0.05, 1.44]], 1.56), cor: VIDRO },
+    { g: perfil([[-1.84, 1.38], [0.1, 1.38], [0.02, 1.49], [-1.8, 1.49]], 1.6), cor: BRANCO, pinta: true },
+    { g: caixa(1.8, 0.2, 0.14, 0, 0.42, 2.0), cor: PLASTICO },
+    { g: caixa(1.8, 0.2, 0.14, 0, 0.42, -2.0), cor: PLASTICO },
+    { g: caixa(0.36, 0.12, 0.08, 0.57, 0.68, 1.93), cor: FAROL },
+    { g: caixa(0.36, 0.12, 0.08, -0.57, 0.68, 1.93), cor: FAROL },
+    { g: caixa(0.18, 0.3, 0.08, 0.72, 0.85, -1.95), cor: LANTERNA },
+    { g: caixa(0.18, 0.3, 0.08, -0.72, 0.85, -1.95), cor: LANTERNA },
+    roda(0.31, 0.22, 0.78, 0.31, 1.25), roda(0.31, 0.22, -0.78, 0.31, 1.25),
+    roda(0.31, 0.22, 0.78, 0.31, -1.25), roda(0.31, 0.22, -0.78, 0.31, -1.25),
+  ]);
+}
+
+/** Utilitário/VUC (~220 tri): cabine pintada, baú de carga claro, rodado duplo atrás. */
+function geoCaminhao() {
+  return montar([
+    { g: perfil([[1.9, 0.5], [3.3, 0.5], [3.3, 2.25], [3.12, 2.42], [1.9, 2.42]], 2.1), cor: BRANCO, pinta: true },
+    { g: caixa(2.12, 0.68, 0.92, 0, 1.82, 2.86), cor: VIDRO },
+    { g: caixa(2.3, 2.5, 5.0, 0, 1.9, -0.65), cor: [0.9, 0.9, 0.88] },
+    { g: caixa(1.5, 0.3, 6.3, 0, 0.62, 0.1), cor: PLASTICO },
+    { g: caixa(2.14, 0.25, 0.15, 0, 0.6, 3.33), cor: PLASTICO },
+    { g: caixa(0.32, 0.16, 0.06, 0.78, 0.85, 3.31), cor: FAROL },
+    { g: caixa(0.32, 0.16, 0.06, -0.78, 0.85, 3.31), cor: FAROL },
+    { g: caixa(0.3, 0.14, 0.06, 0.95, 0.8, -3.17), cor: LANTERNA },
+    { g: caixa(0.3, 0.14, 0.06, -0.95, 0.8, -3.17), cor: LANTERNA },
+    roda(0.45, 0.3, 0.92, 0.45, 2.55), roda(0.45, 0.3, -0.92, 0.45, 2.55),
+    roda(0.45, 0.5, 0.85, 0.45, -1.9), roda(0.45, 0.5, -0.85, 0.45, -1.9),
+  ]);
+}
+
+/** Ônibus urbano (~300 tri): faixa de janelas com colunas (acesa à noite), saia mais escura, letreiro, ar-condicionado. */
 function geoOnibus() {
-  return new THREE.BoxGeometry(2.5, 2.9, 12).translate(0, 1.75, 0);
+  return montar([
+    { g: perfil([[-6, 0.38], [6, 0.38], [6.05, 1.0], [6.02, 2.9], [5.8, 3.2], [-5.85, 3.2], [-6.02, 2.95]], 2.5), cor: BRANCO, pinta: true },
+    { g: caixa(2.54, 1.05, 12.12, 0, 2.08, 0), cor: VIDRO, brilho: 1 },
+    { g: caixa(2.53, 0.32, 12.08, 0, 0.78, 0), cor: [0.3, 0.3, 0.3], pinta: true },
+    { g: caixa(1.7, 0.28, 0.06, 0, 2.85, 6.04), cor: [1, 0.62, 0.1], brilho: 2 },
+    { g: caixa(1.6, 0.25, 2.5, 0, 3.32, -1), cor: [0.82, 0.83, 0.84] },
+    // colunas entre as janelas (uma caixa atravessa os dois lados)
+    ...[-3.9, -1.6, 0.7, 3.0].map((z): Parte => ({ g: caixa(2.58, 1.0, 0.14, 0, 2.08, z), cor: BRANCO, pinta: true })),
+    { g: caixa(2.54, 0.3, 0.14, 0, 0.5, 6.05), cor: PLASTICO },
+    { g: caixa(2.54, 0.3, 0.14, 0, 0.5, -6.04), cor: PLASTICO },
+    { g: caixa(0.3, 0.2, 0.06, 0.95, 0.78, -6.05), cor: LANTERNA },
+    { g: caixa(0.3, 0.2, 0.06, -0.95, 0.78, -6.05), cor: LANTERNA },
+    roda(0.52, 0.32, 1.05, 0.52, 3.7), roda(0.52, 0.32, -1.05, 0.52, 3.7),
+    roda(0.52, 0.5, 0.98, 0.52, -3.2), roda(0.52, 0.5, -0.98, 0.52, -3.2),
+  ]);
 }
+
+/** Moto com piloto de capacete e baú de entrega (~215 tri). */
 function geoMoto() {
-  return mergeGeos([new THREE.BoxGeometry(0.5, 0.9, 1.9).translate(0, 0.7, 0), new THREE.BoxGeometry(0.45, 0.6, 0.4).translate(0, 1.5, -0.1)]);
+  return montar([
+    roda(0.3, 0.1, 0, 0.3, 0.68), roda(0.3, 0.1, 0, 0.3, -0.66),
+    { g: caixa(0.28, 0.28, 0.85, 0, 0.68, 0.05), cor: BRANCO, pinta: true },
+    { g: caixa(0.34, 0.36, 0.22, 0, 0.92, 0.62), cor: BRANCO, pinta: true },
+    { g: new THREE.BoxGeometry(0.08, 0.6, 0.08).rotateX(-0.35).translate(0, 0.62, 0.66), cor: CALOTA },
+    { g: caixa(0.3, 0.1, 0.6, 0, 0.86, -0.3), cor: PLASTICO },
+    { g: caixa(0.44, 0.42, 0.42, 0, 1.12, -0.78), cor: BRANCO, pinta: true },
+    { g: caixa(0.62, 0.05, 0.05, 0, 1.08, 0.48), cor: PLASTICO },
+    // piloto
+    { g: caixa(0.36, 0.18, 0.5, 0, 0.98, -0.1), cor: JEANS },
+    { g: caixa(0.34, 0.48, 0.14, 0, 0.66, 0.2), cor: JEANS },
+    { g: new THREE.BoxGeometry(0.42, 0.6, 0.26).rotateX(0.3).translate(0, 1.36, -0.12), cor: JAQUETA },
+    { g: new THREE.BoxGeometry(0.1, 0.1, 0.62).rotateX(0.75).translate(0.24, 1.32, 0.2), cor: JAQUETA },
+    { g: new THREE.BoxGeometry(0.1, 0.1, 0.62).rotateX(0.75).translate(-0.24, 1.32, 0.2), cor: JAQUETA },
+    { g: new THREE.IcosahedronGeometry(0.17, 0).translate(0, 1.83, -0.05), cor: [0.02, 0.02, 0.025] },
+  ]);
 }
+
+/** Material único dos veículos: cor da instância só onde `aPinta`=1; vidros/letreiros brilham. */
+function materialVeiculo(uNoite: { value: number }) {
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uNoite = uNoite;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <color_pars_vertex>', '#include <color_pars_vertex>\nattribute float aPinta;\nattribute float aBrilho;\nvarying float vBrilho;')
+      .replace('#include <color_vertex>', `
+        vColor = vec4(color, 1.0);
+        #ifdef USE_INSTANCING_COLOR
+          vColor.rgb *= mix(vec3(1.0), instanceColor.rgb, aPinta);
+        #endif
+        vBrilho = aBrilho;`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uNoite;\nvarying float vBrilho;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        if (vBrilho > 1.5) totalEmissiveRadiance += diffuseColor.rgb * (0.35 + uNoite * 1.6);
+        else if (vBrilho > 0.5) totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * 0.55 * uNoite;`);
+  };
+  m.customProgramCacheKey = () => 'veiculo-pinta-brilho';
+  return m;
+}
+
+// ── componente ───────────────────────────────────────────────────────────────
 
 export function Veiculos() {
   const wv = useGame((s) => s.worldVersion);
   const tv = useGame((s) => s.transitoVersion);
-  const refs = { carro: useRef<THREE.InstancedMesh>(null), onibus: useRef<THREE.InstancedMesh>(null), moto: useRef<THREE.InstancedMesh>(null), luzF: useRef<THREE.InstancedMesh>(null), luzT: useRef<THREE.InstancedMesh>(null) };
-  const geos = useMemo(() => ({ carro: geoCarro(), onibus: geoOnibus(), moto: geoMoto(), luz: new THREE.BoxGeometry(1.5, 0.18, 0.12) }), []);
+  const refs = {
+    corpos: [useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null)],
+    luzF: useRef<THREE.InstancedMesh>(null), luzT: useRef<THREE.InstancedMesh>(null),
+  };
+  const geos = useMemo(() => ({
+    corpos: [geoSedan(false), geoOnibus(), geoMoto(), geoHatch(), geoSedan(true), geoCaminhao()],
+    luz: new THREE.BoxGeometry(1.5, 0.18, 0.12),
+  }), []);
+  const uNoite = useMemo(() => ({ value: 0 }), []);
   const mats = useMemo(() => ({
-    carro: new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.5 }),
+    corpo: materialVeiculo(uNoite),
     luzF: new THREE.MeshBasicMaterial({ color: '#fff3d0', toneMapped: false }),
     luzT: new THREE.MeshBasicMaterial({ color: '#ff2a1a', toneMapped: false }),
-  }), []);
-  useEffect(() => () => { Object.values(geos).forEach((g) => g.dispose()); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
+  }), [uNoite]);
+  useEffect(() => () => { geos.corpos.forEach((g) => g.dispose()); geos.luz.dispose(); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
 
   const rng = useMemo(() => new Rng(777), []);
   const carros = useRef<Carro[]>([]);
@@ -70,7 +274,7 @@ export function Veiculos() {
     for (const c of carros.current) if (!mundo.roads.edges.has(c.edge)) c.ativo = false;
   }, [wv]);
 
-  const tmp = useMemo(() => ({ p: { x: 0, y: 0, z: 0, tx: 0, tz: 0 }, m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), off: new THREE.Vector3(), eixo: new THREE.Vector3(0, 1, 0), c: new THREE.Color() }), []);
+  const tmp = useMemo(() => ({ p: { x: 0, y: 0, z: 0, tx: 0, tz: 0 }, m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), off: new THREE.Vector3(), eixo: new THREE.Vector3(0, 1, 0), n: new Int32Array(TIPOS) }), []);
 
   useFrame((_, dtReal) => {
     const g = useGame.getState();
@@ -82,13 +286,15 @@ export function Veiculos() {
     const alvo = edges.length ? Math.min(MAX, Math.round(porModelo || 6 + (st ? st.populacao / 90 + st.empregos / 160 : 0)), edges.length * 8) : 0;
     const lista = carros.current;
     // nasce/morre gradualmente
-    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, ativo: false });
+    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false });
     if (lista.length > alvo) lista.length = alvo;
 
-    const { p, m, q, v, s, off, eixo } = tmp;
-    let nC = 0, nO = 0, nM = 0, nL = 0;
-    const carro = refs.carro.current, onibus = refs.onibus.current, moto = refs.moto.current, lf = refs.luzF.current, lt = refs.luzT.current;
-    if (!carro || !onibus || !moto || !lf || !lt) return;
+    const { p, m, q, v, s, off, eixo, n } = tmp;
+    const corpos = refs.corpos.map((r) => r.current);
+    const lf = refs.luzF.current, lt = refs.luzT.current;
+    if (corpos.some((c) => !c) || !lf || !lt) return;
+    n.fill(0);
+    let nL = 0;
     const noite = ambiente.noite;
 
     for (let i = 0; i < lista.length; i++) {
@@ -106,9 +312,10 @@ export function Veiculos() {
         c.s = rng.range(0, pf.comprimento);
         c.dir = rng.chance(0.5) ? 1 : -1;
         const r = rng.next();
-        c.tipo = r < 0.08 ? 1 : r < 0.3 ? 2 : 0;
-        c.v = c.tipo === 1 ? 9 : rng.range(9, 15);
-        c.faixa = rng.int(0, 1);
+        c.tipo = r < 0.07 ? 1 : r < 0.27 ? 2 : r < 0.34 ? 5 : r < 0.4 ? 4 : r < 0.68 ? 3 : 0;
+        c.v = c.tipo === 1 ? 9 : c.tipo === 5 ? rng.range(8, 12) : rng.range(9, 15);
+        c.faixa = c.tipo === 1 || c.tipo === 5 ? 1 : rng.int(0, 1);
+        c.cor = rng.int(0, 9999);
         c.ativo = true;
       }
       const pf = perfisAtuais.get(c.edge);
@@ -137,36 +344,39 @@ export function Veiculos() {
       v.set(p.x + nx * faixaOff, p.y + 0.02, p.z + nz * faixaOff);
       q.setFromAxisAngle(eixo, Math.atan2(p.tx * c.dir, p.tz * c.dir));
       m.compose(v, q, s);
-      const cor = tmp.c.set(c.tipo === 1 ? (i % 3 ? '#f2f2ee' : '#e0b030') : CORES_CARRO[i % CORES_CARRO.length]);
-      if (c.tipo === 1) { onibus.setMatrixAt(nO, m); onibus.setColorAt(nO, cor); nO++; }
-      else if (c.tipo === 2) { moto.setMatrixAt(nM, m); moto.setColorAt(nM, cor); nM++; }
-      else { carro.setMatrixAt(nC, m); carro.setColorAt(nC, cor); nC++; }
+      const pal = CORES[c.tipo];
+      const im = corpos[c.tipo]!;
+      im.setMatrixAt(n[c.tipo], m); im.setColorAt(n[c.tipo], pal[c.cor % pal.length]);
+      n[c.tipo]++;
       if (noite > 0.05 && nL < MAX) {
-        const comp = c.tipo === 1 ? 6 : c.tipo === 2 ? 1 : 2.12;
-        off.set(0, 0.6, comp).applyQuaternion(q).add(v);
-        m.compose(off, q, s.set(c.tipo === 2 ? 0.3 : c.tipo === 1 ? 1.6 : 1, 1, 1));
+        const lz = LUZES[c.tipo];
+        off.set(0, lz.y, lz.f).applyQuaternion(q).add(v);
+        m.compose(off, q, s.set(lz.l, 1, 1));
         lf.setMatrixAt(nL, m);
-        off.set(0, 0.7, -comp).applyQuaternion(q).add(v);
+        off.set(0, lz.y + 0.05, lz.t).applyQuaternion(q).add(v);
         m.compose(off, q, s);
         lt.setMatrixAt(nL, m);
         s.set(1, 1, 1);
         nL++;
       }
     }
-    carro.count = nC; onibus.count = nO; moto.count = nM; lf.count = nL; lt.count = nL;
-    for (const im of [carro, onibus, moto, lf, lt]) {
+    for (let t = 0; t < TIPOS; t++) corpos[t]!.count = n[t];
+    lf.count = nL; lt.count = nL;
+    for (const im of [...corpos, lf, lt]) {
+      if (!im) continue;
       im.instanceMatrix.needsUpdate = true;
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
     }
+    uNoite.value = noite;
     mats.luzF.color.setScalar(1).multiplyScalar(1 + noite * 3);
     mats.luzT.color.setRGB(1 + noite * 2, 0.12, 0.08);
   });
 
   return (
     <group>
-      <instancedMesh ref={refs.carro} args={[geos.carro, mats.carro, MAX]} castShadow frustumCulled={false} />
-      <instancedMesh ref={refs.onibus} args={[geos.onibus, mats.carro, MAX]} castShadow frustumCulled={false} />
-      <instancedMesh ref={refs.moto} args={[geos.moto, mats.carro, MAX]} castShadow frustumCulled={false} />
+      {geos.corpos.map((geo, t) => (
+        <instancedMesh key={t} ref={refs.corpos[t]} args={[geo, mats.corpo, MAX]} castShadow frustumCulled={false} />
+      ))}
       <instancedMesh ref={refs.luzF} args={[geos.luz, mats.luzF, MAX]} frustumCulled={false} />
       <instancedMesh ref={refs.luzT} args={[geos.luz, mats.luzT, MAX]} frustumCulled={false} />
     </group>

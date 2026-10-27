@@ -68,6 +68,11 @@ Outros comandos:
 - Cuidado com a LRF (pessoal até 49% da RCL), os mínimos de saúde (12%) e educação (25%), o caixa e as greves.
 - Lance obras (hospitais, escolas, metrô, saneamento…), contingencie, faça reforma da Previdência, contrate crédito ou adira ao PROPAG/RRF.
 
+### Cidades reais (Fase 11)
+- As capitais começam com a cidade de verdade: ruas, prédios, relevo, rios e parques do OpenStreetMap, completados com contornos de satélite da Microsoft. Escolha "🏙 real" no município ou desmarque para jogar no terreno vazio.
+- Clique num prédio para ver o nome e o tipo; demolir um prédio real é permanente.
+- Para gerar outros municípios: baixe os extratos regionais da Geofabrik em `data/osm-cache/` (o script usa o Overpass se não estiverem lá) e rode `npm run fetch-cidades -- <código IBGE>`.
+
 ### Primeiros passos, opções e conquistas (Fase 10)
 - Na primeira partida, a assessora (ou o assessor, no Planalto) explica o que fazer e avança sozinha quando você faz. Recolha, desligue ou recomece em **Opções**.
 - **Opções** (menu ou Esc): tamanho da interface, daltonismo, alto contraste, reduzir movimento, qualidade gráfica (automática por padrão) e som.

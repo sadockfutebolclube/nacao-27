@@ -18,7 +18,9 @@ import {
   removeEdge, ROAD_SPECS, type RoadGraph,
 } from '../world/roads';
 import { insideFootprint, serviceFootprint } from '../world/services';
-import { generateTerrain, sampleHeight, sampleWaterDist, type Heightmap } from '../world/terrain';
+import { generateTerrain, sampleForest, sampleHeight, sampleWaterDist, type Heightmap } from '../world/terrain';
+import { arquetipoReal, grafoReal, lotesFixos, terrenoReal } from '../world/cidadeReal';
+import { predio, type CidadeReal } from '../data/cidadeReal';
 import { arquetipo, arquetipoPorId, CONSUMO, equipamento, LV_PARA_NIVEL, MAX_LEVEL, Zone } from './catalog';
 import { hash01, hash32, Rng } from './core/rng';
 import { Estado } from './estado/estado';
@@ -118,6 +120,16 @@ export class Simulation {
   populacaoInformal = 0;
   private rasterVias = new Int32Array(RASTER_RES * RASTER_RES);
 
+  // ── Fase 11: cidade real (OpenStreetMap) ──
+  /** dados da cidade real (ruas, prédios, relevo); null = mapa procedural */
+  real: CidadeReal | null = null;
+  /** prédios reais demolidos pelo jogador (índices no arquivo) */
+  reaisDemolidos = new Set<number>();
+  /** 1 = o lote ainda é o prédio original da cidade real */
+  realLote = new Uint8Array(0);
+  /** capacidade das redes que já existiam (companhias estaduais) — abastece os prédios reais */
+  herdada: { agua: number; energia: number; esgoto: number } | null = null;
+
   // ── Fase 6 ──
   clima: Clima;
   eventos: EstadoEventos = novoEstadoEventos();
@@ -130,10 +142,12 @@ export class Simulation {
   /** pior estiagem/enchente do mês (vai para o Estado no fechamento) */
   private climaMes = { estiagem: 0, enchente: 0 };
 
-  constructor(init: SimInit, hm?: Heightmap) {
+  constructor(init: SimInit, hm?: Heightmap, real?: CidadeReal | null) {
     this.init = init;
     this.rng = new Rng(init.seed);
-    this.hm = hm ?? generateTerrain(init.seed, init.terreno, init.bioma);
+    this.real = real ?? null;
+    this.hm = hm ?? (this.real ? terrenoReal(this.real, init.terreno, init.bioma, init.seed) : generateTerrain(init.seed, init.terreno, init.bioma));
+    if (this.real) this.graph = grafoReal(this.real, (i, av) => nomeRua(init.seed ^ (i * 2654435761), av));
     const divida = Math.max(0, init.efeitos.dividaInicial ?? 0);
     this.caixa = init.modo === 'sandbox' ? 0 : Math.round(60_000_000 * (1 - 0.4 * divida));
     // Água começa tão suja quanto o esgoto real da UF permite.
@@ -144,6 +158,36 @@ export class Simulation {
       this.atualizarSnapshotEstado();
     }
     this.rebuildLots();
+    if (this.real) this.preencherLacunas();
+  }
+
+  /**
+   * Cidade real: onde nem o OSM nem o satélite mapearam prédios (nenhum num raio de ~60 m), os lotes ao longo
+   * das ruas reais ganham casas (ruas) e lojas (avenidas) na fundação — rua existe porque tem gente morando.
+   * Áreas verdes (mata do OSM) e trechos já mapeados ficam como estão. Valor 2 em realLote = preenchimento.
+   */
+  private preencherLacunas() {
+    const grade = new Map<number, number>();
+    const k = (x: number, z: number) => (Math.floor(x / 60) + 100) * 1000 + (Math.floor(z / 60) + 100);
+    for (const l of this.lots) if (l.real !== undefined) grade.set(k(l.x, l.z), (grade.get(k(l.x, l.z)) ?? 0) + 1);
+    const perto = (x: number, z: number) => {
+      let n = 0;
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) n += grade.get(k(x + dx * 60, z + dz * 60)) ?? 0;
+      return n;
+    };
+    for (let i = 0; i < this.lots.length; i++) {
+      const l = this.lots[i];
+      if (l.real !== undefined || this.arch[i] || perto(l.x, l.z) > 0) continue;
+      if (sampleForest(this.hm, l.x, l.z) > 90 || !this.rng.chance(0.8)) continue;
+      const av = this.graph.edges.get(l.edge)?.type === 'avenida';
+      const zone = av ? Zone.Comercial : Zone.ResBaixa;
+      const a = arquetipo(zone, av ? 1 : this.rng.chance(0.35) ? 2 : 1);
+      this.zone[i] = zone; this.arch[i] = a.id; this.progress[i] = 1;
+      this.floors[i] = this.rng.int(a.andaresMin, a.andaresMax);
+      this.look[i] = this.rng.next();
+      this.occ[i] = Math.round((a.moradores || a.empregos) * 0.85);
+      this.realLote[i] = 2;
+    }
   }
 
   private atualizarSnapshotEstado() {
@@ -185,7 +229,7 @@ export class Simulation {
     const old = this.lots;
     const oldState = {
       zone: this.zone, arch: this.arch, progress: this.progress, floors: this.floors, look: this.look,
-      flags: this.flags, lv: this.lv, occ: this.occ, semUtil: this.semUtil,
+      flags: this.flags, lv: this.lv, occ: this.occ, semUtil: this.semUtil, realLote: this.realLote,
     };
     // vias e equipamentos passam por cima das casas informais (remoção forçada pela obra)
     this.rasterVias.fill(0);
@@ -193,12 +237,13 @@ export class Simulation {
     for (const fp of this.footprintsEquip()) forRectCells(fp, (idx) => { this.rasterVias[idx] = -2; });
     const removidas = this.favelas.removerSobre(this.rasterVias);
     if (removidas > 0) this.noticia(`Obra do governo derruba ${removidas} casas em área de ocupação. Moradores denunciam remoção sem aviso.`, 'alerta', 'remObra', 15);
-    const lots = computeLots(this.graph, this.hm, this.footprintsEquip(), this.raster, this.favelas.footprints());
+    const fixos = this.real ? lotesFixos(this.real, this.reaisDemolidos, (id) => this.graph.edges.has(id)) : [];
+    const lots = computeLots(this.graph, this.hm, this.footprintsEquip(), this.raster, this.favelas.footprints(), fixos);
     const n = lots.length;
     this.zone = new Uint8Array(n); this.arch = new Uint8Array(n); this.progress = new Float32Array(n);
     this.floors = new Uint8Array(n); this.look = new Float32Array(n); this.flags = new Uint8Array(n);
     this.lv = new Float32Array(n); this.occ = new Uint16Array(n); this.semUtil = new Uint16Array(n);
-    this.lotPol = new Float32Array(n); this.ordem = new Float32Array(n);
+    this.lotPol = new Float32Array(n); this.ordem = new Float32Array(n); this.realLote = new Uint8Array(n);
 
     // hash espacial dos lotes antigos (células de 8 m)
     const grid = new Map<number, number[]>();
@@ -227,12 +272,26 @@ export class Simulation {
         this.progress[i] = oldState.progress[match]; this.floors[i] = oldState.floors[match];
         this.look[i] = oldState.look[match]; this.flags[i] = oldState.flags[match];
         this.lv[i] = oldState.lv[match]; this.occ[i] = oldState.occ[match]; this.semUtil[i] = oldState.semUtil[match];
-      }
+        this.realLote[i] = oldState.realLote[match] ?? 0;
+      } else if (l.real !== undefined && this.real) this.ocuparPredioReal(i, l.real);
     }
     this.lots = lots;
     this.worldVersion++;
     this.servicosSociais.redimensionar(n);
     if (n && this.dia > 0) this.servicosSociais.atualizar(this, false);
+  }
+
+  /** Lote novo de um prédio real: já construído e ocupado (a cidade existe antes do jogador). */
+  private ocuparPredioReal(i: number, ref: number) {
+    const p = predio(this.real!, ref);
+    const { zone, arch } = arquetipoReal(p.tipo, p.andares, p.w * p.d);
+    const a = arquetipoPorId(arch);
+    this.zone[i] = zone; this.arch[i] = arch; this.progress[i] = 1;
+    this.floors[i] = Math.min(255, p.andares);
+    this.look[i] = hash01(ref * 7919 + 13);
+    this.occ[i] = Math.round((a.moradores || a.empregos) * 0.85);
+    this.lv[i] = 30 + Math.min(40, p.andares * 2);
+    this.realLote[i] = 1;
   }
 
   // ── Comandos do jogador ─────────────────────────────────────────────────────────
@@ -422,6 +481,12 @@ export class Simulation {
           return { ok: true };
         }
         const li = this.lotAt(cmd.x, cmd.z);
+        // prédio real: a demolição é permanente e libera o terreno
+        if (li >= 0 && this.lots[li].real !== undefined) {
+          this.reaisDemolidos.add(this.lots[li].real!);
+          this.rebuildLots();
+          return { ok: true };
+        }
         if (li >= 0 && (this.arch[li] || this.zone[li])) {
           this.demolir(li);
           this.zone[li] = Zone.None;
@@ -466,6 +531,7 @@ export class Simulation {
 
   private demolir(i: number) {
     this.arch[i] = 0; this.progress[i] = 0; this.floors[i] = 0; this.occ[i] = 0;
+    this.realLote[i] = 0;
     this.flags[i] &= ~FLAG.ABANDONADO;
     this.semUtil[i] = 0;
   }
@@ -696,6 +762,28 @@ export class Simulation {
       dem.set(c, d);
     }
 
+    // Fase 11: as redes que já existiam na cidade real atendem os prédios originais, proporcionalmente
+    if (this.real) {
+      const demReal = new Map<number, Cap>();
+      const totReal = { agua: 0, energia: 0, esgoto: 0 };
+      for (let i = 0; i < n; i++) {
+        if (!this.realLote[i]) continue;
+        const c = edgeComp.get(this.lots[i].edge);
+        if (c === undefined) continue;
+        const d = demReal.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
+        d.agua += cons[i].agua; d.energia += cons[i].energia; d.esgoto += cons[i].esgoto;
+        totReal.agua += cons[i].agua; totReal.energia += cons[i].energia; totReal.esgoto += cons[i].esgoto;
+        demReal.set(c, d);
+      }
+      // dimensionada uma vez, na fundação: 5% de folga; esgoto só na cobertura real da UF
+      this.herdada ??= { agua: totReal.agua * 1.05, energia: totReal.energia * 1.05, esgoto: totReal.esgoto * 1.05 * this.init.esgotoUF / 100 };
+      for (const [c, d] of demReal) {
+        const cap = capPorComp.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
+        for (const k of ['agua', 'energia', 'esgoto'] as const) if (totReal[k] > 0) cap[k] += this.herdada[k] * (d[k] / totReal[k]);
+        capPorComp.set(c, cap);
+      }
+    }
+
     const tot = { agua: [0, 0, 0, 0], energia: [0, 0, 0, 0], esgoto: [0, 0, 0, 0] };
     for (const cap of capPorComp.values()) { tot.agua[0] += cap.agua; tot.energia[0] += cap.energia; tot.esgoto[0] += cap.esgoto; }
     let esgotoBruto = 0;
@@ -878,6 +966,8 @@ export class Simulation {
       // mudança gradual (20%/dia), mas sempre ao menos 1 pessoa — evita travar no arredondamento
       const diff = Math.round(alvo) - this.occ[i];
       if (diff !== 0) this.occ[i] += Math.sign(diff) * Math.max(1, Math.round(Math.abs(diff) * 0.2));
+      // prédios reais não são reconstruídos pela simulação (só por decisão do jogador)
+      if (this.realLote[i]) continue;
       // evolução
       const prox = a.level + 1;
       const ss = this.servicosSociais;
@@ -1256,14 +1346,17 @@ export class Simulation {
       cidade: {
         territorio: this.territorio.serializar(), favelas: this.favelas.serializar(), transporte: this.transporte.serializar(), contencao: this.contencaoEncostas, crime: [...this.servicosSociais.crime],
         clima: { ...this.clima.serializar(), climaMes: this.climaMes, crimeExtra: this.crimeExtra }, eventos: JSON.parse(JSON.stringify(this.eventos)), visuais: this.visuais.map((v) => ({ ...v })),
+        real: this.real ? { demolidos: [...this.reaisDemolidos], herdada: this.herdada, realLote: [...this.realLote] } : undefined,
       },
       pollution: [...this.pollution], lotPol: [...this.lotPol],
     };
   }
 
-  static deserialize(s: SaveData, hm?: Heightmap): Simulation {
-    const sim = new Simulation(s.init, hm);
+  static deserialize(s: SaveData, hm?: Heightmap, real?: CidadeReal | null): Simulation {
+    const sim = new Simulation(s.init, hm, real);
     sim.graph = graphFromJSON(s.roads);
+    const sr = s.cidade?.real as { demolidos: number[]; herdada: Simulation['herdada']; realLote: number[] } | undefined;
+    if (sr) { sim.reaisDemolidos = new Set(sr.demolidos); sim.herdada = sr.herdada; }
     sim.services = s.services.map((x) => ({ ...x }));
     sim.nextService = s.nextService;
     if (s.cidade) {
@@ -1286,6 +1379,7 @@ export class Simulation {
       sim.zone[i] = s.lots.zone[i]; sim.arch[i] = s.lots.arch[i]; sim.progress[i] = s.lots.progress[i];
       sim.floors[i] = s.lots.floors[i]; sim.look[i] = s.lots.look[i]; sim.semUtil[i] = s.lots.semUtil[i];
       sim.occ[i] = s.lots.occ[i];
+      if (sr) sim.realLote[i] = sr.realLote[i] ?? 0;
       if (s.lots.abandonado[i]) sim.flags[i] |= FLAG.ABANDONADO;
     }
     sim.tick = s.tick; sim.rng = new Rng(s.rng); sim.caixa = s.caixa;

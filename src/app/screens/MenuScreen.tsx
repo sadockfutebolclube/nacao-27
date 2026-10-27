@@ -89,7 +89,7 @@ export function MenuScreen() {
 
         <div className="mt-6 text-[11px] text-suave/70 leading-relaxed max-w-sm">
           Dados reais: IBGE (população 2026, PIB 2023, malhas), SICONFI/Tesouro (finanças 2024), INEP, SNIS, FBSP, TSE, Banco Central.<br />
-          Personagens e grupos são fictícios. v1.0 · Fase 10
+          Personagens e grupos são fictícios. v1.1 · Fase 11
         </div>
       </div>
 

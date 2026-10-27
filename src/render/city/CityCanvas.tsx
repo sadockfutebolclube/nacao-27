@@ -19,6 +19,7 @@ import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
 import { Favelas } from './Favelas';
+import { Pedestres } from './Pedestres';
 import { TerritorioOverlay } from './TerritorioOverlay';
 import { TransporteRender } from './TransporteRender';
 import { Veiculos } from './Veiculos';
@@ -90,6 +91,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         <TerritorioOverlay hm={hm} />
         <TransporteRender hm={hm} />
         <Veiculos />
+        <Pedestres />
         <ClimaFx hm={hm} />
         <Ferramentas hm={hm} />
         <CameraRig hm={hm} inicio={inicio} />

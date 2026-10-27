@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 1.1.0 — Fase 11: cidades reais (27/10/2026)
+
+### Cidades reais
+- As 27 capitais começam com a cidade real: ruas com os nomes verdadeiros, prédios nos lugares certos (OpenStreetMap + contornos de satélite da Microsoft), relevo real (morros, vales, litoral), rios, lagos e parques.
+- Os prédios reais fazem parte da simulação: moradores, empregos, água, luz e esgoto da rede herdada, crime e serviços. Dá para demolir, rezonear e construir em volta.
+- Ficha do prédio com nome (quando o OSM tem), tipo e tamanho; selo "🏙 real" na escolha do município; opção de começar no terreno vazio.
+- `npm run fetch-cidades` gera qualquer município (`-- <IBGE>` ou `--todos`).
+
+### Ruas vivas
+- Veículos 3D novos: sedã, hatch, táxi, ônibus, caminhão de entrega e moto com piloto.
+- Pedestres nas calçadas, com guarda-chuva quando chove, mais gente de dia e nos horários de pico.
+
+### Outros
+- Projeto no GitHub (repositório privado).
+- Redesenho dos prédios limitado a 1×/0,7 s para cidades grandes.
+- Atribuição de dados (ODbL) na tela e em ASSETS_LICENSES.md.
+
+### Verificado
+- 97 testes (10 novos: cidade real e pedestres); typecheck estrito; build ok.
+- Dados das 27 capitais: de 1.235 (Palmas) a 40.049 prédios (Belém); São Paulo com 26.808, 17 mil deles com andares reais do OSM. 32 MB no total.
+- No navegador: Aracaju (casario dividido, ficha "Ocupação 1º de Maio (MOTU)" na Rua Amapá), São Paulo (21 mil prédios reais, 460 mil moradores), Rio (Maciço da Tijuca com relevo real), sem erros no console.
+
+### Limitações
+- São Luís, Teresina e Palmas têm poucos prédios nas bases abertas; ruas sem prédio mapeado por perto ganham casas e lojas genéricas.
+- O mapa cobre 6 km em volta da sede: no Rio e em João Pessoa o mar fica fora.
+- Contornos viram retângulos (prédios muito irregulares perdem detalhe).
+
 ## 1.0.0 — Fase 10: polimento (27/10/2026)
 
 ### Tutorial com assessor

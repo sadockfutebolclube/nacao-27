@@ -4,7 +4,7 @@
  * chaminé, obra com andaime e grua. Também as camadas de informação (água, luz, esgoto, valor…).
  */
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { arquetipoPorId, Zone, ZONES } from '../../sim/catalog';
 import { mundo, useGame, type Camada } from '../../sim/bridge';
@@ -51,8 +51,21 @@ function geoTelhado(): THREE.BufferGeometry {
 
 interface Dados { mat: THREE.Matrix4[]; cor: THREE.Color[]; fac?: number[] }
 
+/** Versão do estado com no máximo uma atualização a cada `ms` (cidades reais têm dezenas de milhares de prédios). */
+function useVersaoLenta(v: number, ms: number) {
+  const [lenta, setLenta] = useState(v);
+  const ultimo = useRef(0);
+  useEffect(() => {
+    const falta = ultimo.current + ms - performance.now();
+    if (falta <= 0) { ultimo.current = performance.now(); setLenta(v); return; }
+    const t = setTimeout(() => { ultimo.current = performance.now(); setLenta(v); }, falta);
+    return () => clearTimeout(t);
+  }, [v, ms]);
+  return lenta;
+}
+
 export function Edificios({ hm }: { hm: Heightmap }) {
-  const sv = useGame((s) => s.stateVersion);
+  const sv = useVersaoLenta(useGame((s) => s.stateVersion), 700);
   const wv = useGame((s) => s.worldVersion);
   const camada = useGame((s) => s.camada);
   const daltonico = useApp((s) => s.daltonico);
@@ -210,11 +223,13 @@ function montar(camada: Camada, alto: boolean): Record<Parte, Dados> {
     const x = L[lo], z = L[lo + 1], ang = L[lo + 2], w = L[lo + 3], d = L[lo + 4], baseY = L[lo + 5];
     const prog = S[o + 2], andares = Math.max(1, S[o + 3]), look = S[o + 4], flags = S[o + 5], lv = S[o + 6];
     const abandonado = (flags & FLAG.ABANDONADO) !== 0;
-    const W = Math.max(5, w * a.frente * (0.94 + 0.06 * look));
-    const D = Math.max(5, Math.min(d - a.recuo - 0.5, d * a.fundo * (0.92 + 0.16 * ((look * 7.3) % 1))));
+    // Fase 11: prédio real do OpenStreetMap ocupa o próprio contorno (retângulo orientado)
+    const real = L[lo + 7] > 0;
+    const W = real ? Math.max(3, w * 0.97) : Math.max(5, w * a.frente * (0.94 + 0.06 * look));
+    const D = real ? Math.max(3, d * 0.97) : Math.max(5, Math.min(d - a.recuo - 0.5, d * a.fundo * (0.92 + 0.16 * ((look * 7.3) % 1))));
     const H = andares * a.peDireito + (a.estilo === 'galpao' ? 0 : 0.8);
-    const frente = d / 2 - a.recuo;
-    const lz = frente - D / 2;
+    const frente = real ? d / 2 : d / 2 - a.recuo;
+    const lz = real ? 0 : frente - D / 2;
     const y0 = baseY - 0.6;
     const seed = (look * 1000) % 97;
 

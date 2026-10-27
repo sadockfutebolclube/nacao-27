@@ -1,0 +1,12 @@
+node_modules
+dist
+*.log
+.DS_Store
+data/clima-cache/
+.env
+.env.local
+data/cache/terrarium/
+data/tse-cache/
+data/cache/
+data/osm-cache/
+*.zip

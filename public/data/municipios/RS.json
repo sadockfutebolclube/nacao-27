@@ -1,0 +1,199 @@
+{
+ "sigla": "RS",
+ "geradoEm": "2026-10-26T22:43:29.102Z",
+ "municipios": [
+  {
+   "ibge": "4314902",
+   "nome": "Porto Alegre",
+   "populacao": 1388791,
+   "capital": true,
+   "lat": -30.0318,
+   "lon": -51.2065,
+   "elevacao": 27,
+   "desnivel": 54,
+   "distCostaKm": 8,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "W",
+     "tipo": "lago"
+    },
+    "relevo": 0.4
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Pampa · 27 m de altitude"
+  },
+  {
+   "ibge": "4305108",
+   "nome": "Caxias do Sul",
+   "populacao": 479604,
+   "capital": false,
+   "lat": -29.1629,
+   "lon": -51.1792,
+   "elevacao": 753,
+   "desnivel": 98,
+   "distCostaKm": 99,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3769230769230769
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -4.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 753 m de altitude · 99 km do mar"
+  },
+  {
+   "ibge": "4304606",
+   "nome": "Canoas",
+   "populacao": 359845,
+   "capital": false,
+   "lat": -29.9128,
+   "lon": -51.1857,
+   "elevacao": 16,
+   "desnivel": 25,
+   "distCostaKm": 18,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Pampa · 16 m de altitude"
+  },
+  {
+   "ibge": "4314407",
+   "nome": "Pelotas",
+   "populacao": 336150,
+   "capital": false,
+   "lat": -31.7649,
+   "lon": -52.3371,
+   "elevacao": 10,
+   "desnivel": 13,
+   "distCostaKm": 11,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Pampa · 10 m de altitude"
+  },
+  {
+   "ibge": "4316907",
+   "nome": "Santa Maria",
+   "populacao": 282397,
+   "capital": false,
+   "lat": -29.6868,
+   "lon": -53.8149,
+   "elevacao": 127,
+   "desnivel": 98,
+   "distCostaKm": 246,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3769230769230769
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": -0.6,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Pampa · 127 m de altitude · 246 km do mar"
+  },
+  {
+   "ibge": "4309209",
+   "nome": "Gravataí",
+   "populacao": 275432,
+   "capital": false,
+   "lat": -29.9413,
+   "lon": -50.9869,
+   "elevacao": 16,
+   "desnivel": 52,
+   "distCostaKm": 31,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 16 m de altitude · 31 km do mar"
+  },
+  {
+   "ibge": "4313409",
+   "nome": "Novo Hamburgo",
+   "populacao": 235801,
+   "capital": false,
+   "lat": -29.6875,
+   "lon": -51.1328,
+   "elevacao": 21,
+   "desnivel": 68,
+   "distCostaKm": 43,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.26153846153846155
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Pampa · 21 m de altitude · 43 km do mar"
+  },
+  {
+   "ibge": "4323002",
+   "nome": "Viamão",
+   "populacao": 231994,
+   "capital": false,
+   "lat": -30.0819,
+   "lon": -51.0194,
+   "elevacao": 78,
+   "desnivel": 63,
+   "distCostaKm": 20,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2423076923076923
+   },
+   "bioma": "pampa",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Pampa · 78 m de altitude"
+  }
+ ]
+}

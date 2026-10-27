@@ -1,0 +1,206 @@
+{
+ "id": 24,
+ "sigla": "RN",
+ "nome": "Rio Grande do Norte",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 3463737,
+  "ano": 2026,
+  "censo2022": 3302729
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 101740275000,
+  "perCapita": 29373,
+  "vab": {
+   "agro": 3141755000,
+   "industria": 14728097000,
+   "servicos": 32321163000,
+   "adminPublica": 20873310000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 52813,
+ "numMunicipios": 167,
+ "maioresMunicipios": [
+  {
+   "id": 2408102,
+   "nome": "Natal",
+   "populacao": 783196
+  },
+  {
+   "id": 2408003,
+   "nome": "Mossoró",
+   "populacao": 279100
+  },
+  {
+   "id": 2403251,
+   "nome": "Parnamirim",
+   "populacao": 273952
+  },
+  {
+   "id": 2412005,
+   "nome": "São Gonçalo do Amarante",
+   "populacao": 125691
+  },
+  {
+   "id": 2407104,
+   "nome": "Macaíba",
+   "populacao": 87634
+  },
+  {
+   "id": 2402600,
+   "nome": "Ceará-Mirim",
+   "populacao": 83662
+  },
+  {
+   "id": 2403608,
+   "nome": "Extremoz",
+   "populacao": 70452
+  },
+  {
+   "id": 2402006,
+   "nome": "Caicó",
+   "populacao": 63338
+  }
+ ],
+ "indicadores": {
+  "idh": 0.728,
+  "homicidios": 33.6,
+  "idebEM": 3.6,
+  "esgoto": 27,
+  "dividaRCL": 40
+ },
+ "tracos": {
+  "sigla": "RN",
+  "apelido": "Terra do Sol e das Dunas",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Natal",
+   "ibge": 2408102,
+   "lat": -5.7945,
+   "lon": -35.211
+  },
+  "biomas": [
+   "caatinga",
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "E",
+    "tipo": "mar"
+   },
+   "relevo": 0.35
+  },
+  "clima": "Tropical semiárido — ventos constantes, sol 300 dias por ano",
+  "sotaque": "potiguar",
+  "saudacao": "Bom dia, Governador! Vamo simbora que o vento tá a favor.",
+  "trilha": [
+   "forró",
+   "coco de zambê",
+   "xote"
+  ],
+  "festas": [
+   "Carnatal",
+   "São João de Mossoró"
+  ],
+  "arquitetura": "Dunas e falésias, Forte dos Reis Magos, casas de veraneio",
+  "tracos": [
+   {
+    "id": "eolica-rn",
+    "nome": "Capital do vento",
+    "tipo": "buff",
+    "descricao": "Maior produtor de energia eólica do país.",
+    "efeitos": {
+     "energiaLimpa": 0.5
+    }
+   },
+   {
+    "id": "sal-petroleo-rn",
+    "nome": "Sal e petróleo em terra",
+    "tipo": "buff",
+    "descricao": "Salinas e campos maduros de petróleo.",
+    "efeitos": {
+     "receitaRoyalties": 0.08
+    }
+   },
+   {
+    "id": "folha-rn",
+    "nome": "Folha atrasada",
+    "tipo": "nerf",
+    "descricao": "Histórico de salários atrasados de servidores.",
+    "efeitos": {
+     "custoPessoal": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Crise da previdência estadual",
+   "Seca",
+   "Ataques de facções"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

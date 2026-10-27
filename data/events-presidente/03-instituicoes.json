@@ -1,0 +1,55 @@
+[
+  {
+    "id": "pres-stf-julga-tema", "categoria": "stf", "titulo": "STF pauta julgamento polêmico", "tom": "alerta",
+    "texto": "O STF marca para a próxima semana um julgamento sobre um tema de costumes que divide o país. Aliados pedem que o governo se posicione.",
+    "cooldown": 14,
+    "escolhas": [
+      { "texto": "Declarar que 'é assunto do Judiciário'", "efeitos": { "aprovacao": 0 }, "resultado": "Neutralidade: ninguém fica satisfeito, ninguém fica furioso." },
+      { "texto": "Apoiar publicamente a corte", "se": ["ideologia == esquerda"], "efeitos": { "aprovacao": 0.5, "bancadas": { "evangelica": -0.12 } }, "resultado": "A base progressista aplaude; a bancada evangélica reage." },
+      { "texto": "Criticar o 'ativismo judicial'", "se": ["ideologia != esquerda"], "efeitos": { "aprovacao": 0.5, "bancadas": { "evangelica": 0.1 }, "credibilidade": -0.01 }, "resultado": "Conservadores aplaudem; ministros do STF respondem em nota." }
+    ]
+  },
+  {
+    "id": "pres-stf-inquerito", "categoria": "stf", "titulo": "Ministro do STF abre inquérito", "tom": "ruim",
+    "texto": "Um ministro do STF autoriza a PF a investigar aliados próximos do Planalto por suspeita de desvio de emendas.",
+    "se": ["escandalos >= 0.5"], "cooldown": 18, "efeitos": { "escandalo": 0.4, "aprovacao": -1.5 }
+  },
+  {
+    "id": "pres-stf-emendas", "categoria": "stf", "titulo": "STF trava as emendas Pix", "tom": "alerta",
+    "texto": "O STF suspende o pagamento de emendas sem transparência até que o Congresso crie regras de rastreio. {presidenteCamara} culpa o Planalto.",
+    "unico": true, "efeitos": { "camara": -0.05, "credibilidade": 0.01 }
+  },
+  {
+    "id": "pres-bc-ata-dura", "categoria": "bc", "titulo": "Ata do Copom endurece", "tom": "alerta",
+    "texto": "A ata do Copom fala em 'desancoragem das expectativas' e cita a política fiscal. {presidenteBC} sinaliza juros altos por mais tempo.",
+    "se": ["inflacao >= 5"], "cooldown": 8,
+    "escolhas": [
+      { "texto": "Respeitar o BC e reforçar o compromisso fiscal", "efeitos": { "credibilidade": 0.03, "cambio": -0.015 }, "resultado": "Curva de juros fecha um pouco.", "tomResultado": "bom" },
+      { "texto": "Reclamar do 'terrorismo do mercado'", "efeitos": { "credibilidade": -0.04, "cambio": 0.02, "aprovacao": 0.5 }, "resultado": "A base aplaude; o mercado piora." }
+    ]
+  },
+  {
+    "id": "pres-bc-reservas", "categoria": "bc", "titulo": "Usar as reservas?", "tom": "info",
+    "texto": "Aliados sugerem usar parte das reservas internacionais para abater a dívida ou financiar obras. {presidenteBC} se opõe.",
+    "se": ["divida >= 88"], "unico": true,
+    "escolhas": [
+      { "texto": "Arquivar a ideia", "efeitos": { "credibilidade": 0.02 }, "resultado": "O BC agradece a discrição." },
+      { "texto": "Defender a proposta em público", "efeitos": { "credibilidade": -0.06, "cambio": 0.04, "camara": 0.03 }, "resultado": "Ruído com o BC e com o mercado.", "tomResultado": "ruim" }
+    ]
+  },
+  {
+    "id": "pres-pix-elogiado", "categoria": "bc", "titulo": "Pix parcelado chega", "tom": "bom",
+    "texto": "O BC lança o Pix parcelado e a nova fase do open finance. Juros do crédito pessoal caem na concorrência.",
+    "unico": true, "efeitos": { "hiato": 0.15, "aprovacao": 1 }
+  },
+  {
+    "id": "pres-tse-campanha", "categoria": "politica", "titulo": "TSE multa a campanha", "tom": "ruim",
+    "texto": "O TSE multa a campanha governista por uso da máquina pública em inaugurações durante o período vedado.",
+    "se": ["anoEleitoral", "mes >= 7", "mes <= 10"], "cooldown": 30, "efeitos": { "aprovacao": -1 }
+  },
+  {
+    "id": "pres-pf-operacao", "categoria": "politica", "titulo": "Operação da PF no Congresso", "tom": "alerta",
+    "texto": "A Polícia Federal faz buscas em gabinetes de deputados da base por desvio de emendas. O centrão acusa o governo de 'não controlar a PF'.",
+    "cooldown": 18, "peso": 0.7, "efeitos": { "camara": -0.05, "aprovacao": 0.5 }
+  }
+]

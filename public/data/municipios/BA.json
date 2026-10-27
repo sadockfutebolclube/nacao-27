@@ -1,0 +1,203 @@
+{
+ "sigla": "BA",
+ "geradoEm": "2026-10-26T22:43:27.398Z",
+ "municipios": [
+  {
+   "ibge": "2927408",
+   "nome": "Salvador",
+   "populacao": 2559945,
+   "capital": true,
+   "lat": -12.9718,
+   "lon": -38.5011,
+   "elevacao": 67,
+   "desnivel": 59,
+   "distCostaKm": 5,
+   "terreno": {
+    "tipo": "litoral-morros",
+    "agua": {
+     "lado": "W",
+     "tipo": "baia"
+    },
+    "relevo": 0.5
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral com morros · Mata Atlântica · 67 m de altitude"
+  },
+  {
+   "ibge": "2910800",
+   "nome": "Feira de Santana",
+   "populacao": 663408,
+   "capital": false,
+   "lat": -12.2664,
+   "lon": -38.9663,
+   "elevacao": 227,
+   "desnivel": 65,
+   "distCostaKm": 91,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.25
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -1,
+    "fChuva": 0.96,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 227 m de altitude · 91 km do mar"
+  },
+  {
+   "ibge": "2933307",
+   "nome": "Vitória da Conquista",
+   "populacao": 398970,
+   "capital": false,
+   "lat": -14.8615,
+   "lon": -40.8442,
+   "elevacao": 880,
+   "desnivel": 137,
+   "distCostaKm": 194,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.5269230769230769
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -5,
+    "fChuva": 0.7,
+    "estimado": true
+   },
+   "descricao": "Planalto · Caatinga · 880 m de altitude · 194 km do mar"
+  },
+  {
+   "ibge": "2905701",
+   "nome": "Camaçari",
+   "populacao": 323676,
+   "capital": false,
+   "lat": -12.6996,
+   "lon": -38.3263,
+   "elevacao": 35,
+   "desnivel": 29,
+   "distCostaKm": 19,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 35 m de altitude"
+  },
+  {
+   "ibge": "2918407",
+   "nome": "Juazeiro",
+   "populacao": 257616,
+   "capital": false,
+   "lat": -9.41622,
+   "lon": -40.5033,
+   "elevacao": 369,
+   "desnivel": 20,
+   "distCostaKm": 412,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -1.9,
+    "fChuva": 0.35,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 369 m de altitude · 412 km do mar"
+  },
+  {
+   "ibge": "2919207",
+   "nome": "Lauro de Freitas",
+   "populacao": 221023,
+   "capital": false,
+   "lat": -12.8978,
+   "lon": -38.321,
+   "elevacao": 11,
+   "desnivel": 21,
+   "distCostaKm": 3,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 11 m de altitude"
+  },
+  {
+   "ibge": "2914802",
+   "nome": "Itabuna",
+   "populacao": 196041,
+   "capital": false,
+   "lat": -14.7876,
+   "lon": -39.2781,
+   "elevacao": 76,
+   "desnivel": 51,
+   "distCostaKm": 25,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.19615384615384615
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 76 m de altitude"
+  },
+  {
+   "ibge": "2913606",
+   "nome": "Ilhéus",
+   "populacao": 189259,
+   "capital": false,
+   "lat": -14.793,
+   "lon": -39.046,
+   "elevacao": 59,
+   "desnivel": 54,
+   "distCostaKm": 3,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.2076923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 59 m de altitude"
+  }
+ ]
+}

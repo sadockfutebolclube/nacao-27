@@ -1,0 +1,215 @@
+{
+ "id": 27,
+ "sigla": "AL",
+ "nome": "Alagoas",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 3221128,
+  "ano": 2026,
+  "censo2022": 3127683
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 89688932000,
+  "perCapita": 27844,
+  "vab": {
+   "agro": 16829603000,
+   "industria": 9432169000,
+   "servicos": 26317882000,
+   "adminPublica": 15912396000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 27880,
+ "numMunicipios": 102,
+ "maioresMunicipios": [
+  {
+   "id": 2704302,
+   "nome": "Maceió",
+   "populacao": 995134
+  },
+  {
+   "id": 2700300,
+   "nome": "Arapiraca",
+   "populacao": 243998
+  },
+  {
+   "id": 2707701,
+   "nome": "Rio Largo",
+   "populacao": 97742
+  },
+  {
+   "id": 2706307,
+   "nome": "Palmeira dos Índios",
+   "populacao": 73631
+  },
+  {
+   "id": 2704708,
+   "nome": "Marechal Deodoro",
+   "populacao": 62528
+  },
+  {
+   "id": 2709301,
+   "nome": "União dos Palmares",
+   "populacao": 60855
+  },
+  {
+   "id": 2706703,
+   "nome": "Penedo",
+   "populacao": 60183
+  },
+  {
+   "id": 2708600,
+   "nome": "São Miguel dos Campos",
+   "populacao": 53376
+  }
+ ],
+ "indicadores": {
+  "idh": 0.684,
+  "homicidios": 37.4,
+  "idebEM": 4,
+  "esgoto": 22,
+  "dividaRCL": 76
+ },
+ "tracos": {
+  "sigla": "AL",
+  "apelido": "Paraíso das Águas",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Maceió",
+   "ibge": 2704302,
+   "lat": -9.6658,
+   "lon": -35.7353
+  },
+  "biomas": [
+   "mata-atlantica",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "E",
+    "tipo": "mar"
+   },
+   "relevo": 0.35
+  },
+  "clima": "Tropical litorâneo — chuvas de abril a julho, sol forte no verão",
+  "sotaque": "alagoano",
+  "saudacao": "Ôxe, Governador, chegou foi cedo hoje!",
+  "trilha": [
+   "coco de roda",
+   "forró pé de serra",
+   "frevo"
+  ],
+  "festas": [
+   "São João",
+   "Réveillon nas piscinas naturais"
+  ],
+  "arquitetura": "Casario colonial em Penedo, prédios à beira-mar na Ponta Verde, casas coloridas de pescadores",
+  "tracos": [
+   {
+    "id": "piscinas-naturais",
+    "nome": "Piscinas naturais",
+    "tipo": "buff",
+    "descricao": "Turismo de praia forte o ano todo.",
+    "efeitos": {
+     "turismo": 0.3
+    }
+   },
+   {
+    "id": "afundamento-solo",
+    "nome": "Solo que afunda",
+    "tipo": "nerf",
+    "descricao": "Bairros inteiros afetados por subsidência ligada à mineração de sal-gema.",
+    "efeitos": {
+     "riscoGeologico": 0.3
+    }
+   },
+   {
+    "id": "cana",
+    "nome": "Cinturão da cana",
+    "tipo": "buff",
+    "descricao": "Usinas de açúcar e etanol sustentam o interior.",
+    "efeitos": {
+     "agro": 0.2
+    }
+   },
+   {
+    "id": "pobreza",
+    "nome": "Desigualdade histórica",
+    "tipo": "nerf",
+    "descricao": "Um dos menores IDHs do país; pressão por programas sociais.",
+    "efeitos": {
+     "demandaSocial": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Violência urbana",
+   "Analfabetismo",
+   "Subsidência em Maceió"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

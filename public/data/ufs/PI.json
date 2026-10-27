@@ -1,0 +1,208 @@
+{
+ "id": 22,
+ "sigla": "PI",
+ "nome": "Piauí",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 3392617,
+  "ano": 2026,
+  "censo2022": 3271199
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 80916856000,
+  "perCapita": 23851,
+  "vab": {
+   "agro": 7821682000,
+   "industria": 8222975000,
+   "servicos": 24184663000,
+   "adminPublica": 17259546000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 253072,
+ "numMunicipios": 224,
+ "maioresMunicipios": [
+  {
+   "id": 2211001,
+   "nome": "Teresina",
+   "populacao": 908012
+  },
+  {
+   "id": 2207702,
+   "nome": "Parnaíba",
+   "populacao": 171342
+  },
+  {
+   "id": 2208007,
+   "nome": "Picos",
+   "populacao": 87129
+  },
+  {
+   "id": 2208403,
+   "nome": "Piripiri",
+   "populacao": 68076
+  },
+  {
+   "id": 2203909,
+   "nome": "Floriano",
+   "populacao": 64614
+  },
+  {
+   "id": 2200400,
+   "nome": "Altos",
+   "populacao": 50509
+  },
+  {
+   "id": 2201200,
+   "nome": "Barras",
+   "populacao": 49856
+  },
+  {
+   "id": 2211100,
+   "nome": "União",
+   "populacao": 48067
+  }
+ ],
+ "indicadores": {
+  "idh": 0.69,
+  "homicidios": 27,
+  "idebEM": 4.2,
+  "esgoto": 13,
+  "dividaRCL": 63
+ },
+ "tracos": {
+  "sigla": "PI",
+  "apelido": "Terra do Sol",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Teresina",
+   "ibge": 2211001,
+   "lat": -5.0919,
+   "lon": -42.8034
+  },
+  "biomas": [
+   "cerrado",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "planicie",
+   "agua": {
+    "lado": "W",
+    "tipo": "rio"
+   },
+   "rio": true,
+   "relevo": 0.2
+  },
+  "clima": "Tropical quente — o 'B-R-O Bró' (set-dez) passa dos 40°C",
+  "sotaque": "piauiense",
+  "saudacao": "Bom dia, Governador, rapaz! Tá quente que só, mas bora.",
+  "trilha": [
+   "forró",
+   "baião",
+   "reggae"
+  ],
+  "festas": [
+   "Salinas Folia",
+   "Festival de Inverno de Pedro II"
+  ],
+  "arquitetura": "Casas térreas com varanda, Ponte Estaiada, cajueiros nas ruas",
+  "tracos": [
+   {
+    "id": "energia-pi",
+    "nome": "Sol e vento",
+    "tipo": "buff",
+    "descricao": "Explosão de parques solares e eólicos.",
+    "efeitos": {
+     "energiaLimpa": 0.45
+    }
+   },
+   {
+    "id": "matopiba",
+    "nome": "Fronteira do MATOPIBA",
+    "tipo": "buff",
+    "descricao": "Soja avançando no cerrado do sul do estado.",
+    "efeitos": {
+     "agro": 0.25,
+     "pressaoAmbiental": 0.15
+    }
+   },
+   {
+    "id": "calor-pi",
+    "nome": "Calor extremo",
+    "tipo": "nerf",
+    "descricao": "Ondas de calor sobrecarregam saúde e energia.",
+    "efeitos": {
+     "riscoCalor": 0.4
+    }
+   }
+  ],
+  "desafios": [
+   "Pobreza no interior",
+   "Calor extremo",
+   "Baixa arrecadação"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

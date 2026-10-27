@@ -1,0 +1,200 @@
+{
+ "sigla": "RN",
+ "geradoEm": "2026-10-26T22:43:28.953Z",
+ "municipios": [
+  {
+   "ibge": "2408102",
+   "nome": "Natal",
+   "populacao": 783196,
+   "capital": true,
+   "lat": -5.79357,
+   "lon": -35.1986,
+   "elevacao": 34,
+   "desnivel": 58,
+   "distCostaKm": 4,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "relevo": 0.35
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Caatinga · 34 m de altitude"
+  },
+  {
+   "ibge": "2408003",
+   "nome": "Mossoró",
+   "populacao": 279100,
+   "capital": false,
+   "lat": -5.18374,
+   "lon": -37.3474,
+   "elevacao": 25,
+   "desnivel": 30,
+   "distCostaKm": 35,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 25 m de altitude · 35 km do mar"
+  },
+  {
+   "ibge": "2403251",
+   "nome": "Parnamirim",
+   "populacao": 273952,
+   "capital": false,
+   "lat": -5.91116,
+   "lon": -35.271,
+   "elevacao": 55,
+   "desnivel": 22,
+   "distCostaKm": 14,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 55 m de altitude"
+  },
+  {
+   "ibge": "2412005",
+   "nome": "São Gonçalo do Amarante",
+   "populacao": 125691,
+   "capital": false,
+   "lat": -5.79068,
+   "lon": -35.3257,
+   "elevacao": 8,
+   "desnivel": 66,
+   "distCostaKm": 17,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.25384615384615383
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 8 m de altitude"
+  },
+  {
+   "ibge": "2407104",
+   "nome": "Macaíba",
+   "populacao": 87634,
+   "capital": false,
+   "lat": -5.85229,
+   "lon": -35.3552,
+   "elevacao": 29,
+   "desnivel": 48,
+   "distCostaKm": 20,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.18461538461538463
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 29 m de altitude"
+  },
+  {
+   "ibge": "2402600",
+   "nome": "Ceará-Mirim",
+   "populacao": 83662,
+   "capital": false,
+   "lat": -5.64323,
+   "lon": -35.4247,
+   "elevacao": 68,
+   "desnivel": 55,
+   "distCostaKm": 22,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.21153846153846154
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 68 m de altitude"
+  },
+  {
+   "ibge": "2403608",
+   "nome": "Extremoz",
+   "populacao": 70452,
+   "capital": false,
+   "lat": -5.70143,
+   "lon": -35.3048,
+   "elevacao": 47,
+   "desnivel": 36,
+   "distCostaKm": 10,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.13846153846153847
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 47 m de altitude"
+  },
+  {
+   "ibge": "2402006",
+   "nome": "Caicó",
+   "populacao": 63338,
+   "capital": false,
+   "lat": -6.45441,
+   "lon": -37.1067,
+   "elevacao": 149,
+   "desnivel": 26,
+   "distCostaKm": 163,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.7,
+    "fChuva": 0.85,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 149 m de altitude · 163 km do mar"
+  }
+ ]
+}

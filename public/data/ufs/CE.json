@@ -1,0 +1,207 @@
+{
+ "id": 23,
+ "sigla": "CE",
+ "nome": "Ceará",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 9302211,
+  "ano": 2026,
+  "censo2022": 8794957
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 232239257000,
+  "perCapita": 24966,
+  "vab": {
+   "agro": 10410358000,
+   "industria": 34230715000,
+   "servicos": 83990547000,
+   "adminPublica": 38425289000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 149497,
+ "numMunicipios": 184,
+ "maioresMunicipios": [
+  {
+   "id": 2304400,
+   "nome": "Fortaleza",
+   "populacao": 2582360
+  },
+  {
+   "id": 2303709,
+   "nome": "Caucaia",
+   "populacao": 380944
+  },
+  {
+   "id": 2307304,
+   "nome": "Juazeiro do Norte",
+   "populacao": 307928
+  },
+  {
+   "id": 2307650,
+   "nome": "Maracanaú",
+   "populacao": 253442
+  },
+  {
+   "id": 2312908,
+   "nome": "Sobral",
+   "populacao": 217690
+  },
+  {
+   "id": 2304202,
+   "nome": "Crato",
+   "populacao": 139781
+  },
+  {
+   "id": 2306405,
+   "nome": "Itapipoca",
+   "populacao": 137795
+  },
+  {
+   "id": 2307700,
+   "nome": "Maranguape",
+   "populacao": 108323
+  }
+ ],
+ "indicadores": {
+  "idh": 0.734,
+  "homicidios": 36.6,
+  "idebEM": 4.2,
+  "esgoto": 30,
+  "dividaRCL": 33
+ },
+ "tracos": {
+  "sigla": "CE",
+  "apelido": "Terra da Luz",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Fortaleza",
+   "ibge": 2304400,
+   "lat": -3.7319,
+   "lon": -38.5267
+  },
+  "biomas": [
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "N",
+    "tipo": "mar"
+   },
+   "relevo": 0.3
+  },
+  "clima": "Semiárido no interior, litoral de ventos fortes e sol o ano inteiro",
+  "sotaque": "cearense",
+  "saudacao": "Bom dia, macho véi! Digo, Governador. Que é que manda?",
+  "trilha": [
+   "forró",
+   "baião",
+   "reggae de Fortaleza"
+  ],
+  "festas": [
+   "Fortal",
+   "São João",
+   "Festival de Jericoacoara"
+  ],
+  "arquitetura": "Prédios à beira-mar na Av. Beira-Mar, jangadas, casas de taipa no sertão",
+  "tracos": [
+   {
+    "id": "eolica",
+    "nome": "Ventos de ouro",
+    "tipo": "buff",
+    "descricao": "Parques eólicos e hidrogênio verde no Pecém.",
+    "efeitos": {
+     "energiaLimpa": 0.4,
+     "industria": 0.1
+    }
+   },
+   {
+    "id": "educacao-ce",
+    "nome": "Modelo educacional",
+    "tipo": "buff",
+    "descricao": "Gestão escolar premiada; IDEB do fundamental entre os melhores.",
+    "efeitos": {
+     "educacao": 0.25
+    }
+   },
+   {
+    "id": "seca-ce",
+    "nome": "Açudes no vermelho",
+    "tipo": "nerf",
+    "descricao": "Segurança hídrica depende da transposição e de chuva.",
+    "efeitos": {
+     "riscoSeca": 0.4
+    }
+   }
+  ],
+  "desafios": [
+   "Facções em disputa territorial",
+   "Seca",
+   "Concentração na capital"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

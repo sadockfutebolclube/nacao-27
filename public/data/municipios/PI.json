@@ -1,0 +1,203 @@
+{
+ "sigla": "PI",
+ "geradoEm": "2026-10-26T22:43:28.776Z",
+ "municipios": [
+  {
+   "ibge": "2211001",
+   "nome": "Teresina",
+   "populacao": 908012,
+   "capital": true,
+   "lat": -5.09194,
+   "lon": -42.8034,
+   "elevacao": 88,
+   "desnivel": 29,
+   "distCostaKm": 267,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": {
+     "lado": "W",
+     "tipo": "rio"
+    },
+    "rio": true,
+    "relevo": 0.2
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planície · Cerrado · 88 m de altitude · 267 km do mar"
+  },
+  {
+   "ibge": "2207702",
+   "nome": "Parnaíba",
+   "populacao": 171342,
+   "capital": false,
+   "lat": -2.90585,
+   "lon": -41.7754,
+   "elevacao": 9,
+   "desnivel": 19,
+   "distCostaKm": 12,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "N",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Cerrado · 9 m de altitude"
+  },
+  {
+   "ibge": "2208007",
+   "nome": "Picos",
+   "populacao": 87129,
+   "capital": false,
+   "lat": -7.07721,
+   "lon": -41.467,
+   "elevacao": 205,
+   "desnivel": 62,
+   "distCostaKm": 463,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.23846153846153847
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.7,
+    "fChuva": 0.35,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 205 m de altitude · 463 km do mar"
+  },
+  {
+   "ibge": "2208403",
+   "nome": "Piripiri",
+   "populacao": 68076,
+   "capital": false,
+   "lat": -4.27157,
+   "lon": -41.7716,
+   "elevacao": 183,
+   "desnivel": 60,
+   "distCostaKm": 156,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.23076923076923078
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.6,
+    "fChuva": 0.79,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 183 m de altitude · 156 km do mar"
+  },
+  {
+   "ibge": "2203909",
+   "nome": "Floriano",
+   "populacao": 64614,
+   "capital": false,
+   "lat": -6.77182,
+   "lon": -43.0241,
+   "elevacao": 126,
+   "desnivel": 56,
+   "distCostaKm": 447,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2153846153846154
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 0.35,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 126 m de altitude · 447 km do mar"
+  },
+  {
+   "ibge": "2200400",
+   "nome": "Altos",
+   "populacao": 50509,
+   "capital": false,
+   "lat": -5.03888,
+   "lon": -42.4612,
+   "elevacao": 191,
+   "desnivel": 54,
+   "distCostaKm": 257,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2076923076923077
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.6,
+    "fChuva": 0.56,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 191 m de altitude · 257 km do mar"
+  },
+  {
+   "ibge": "2201200",
+   "nome": "Barras",
+   "populacao": 49856,
+   "capital": false,
+   "lat": -4.24468,
+   "lon": -42.2922,
+   "elevacao": 89,
+   "desnivel": 24,
+   "distCostaKm": 169,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 0.76,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 89 m de altitude · 169 km do mar"
+  },
+  {
+   "ibge": "2211100",
+   "nome": "União",
+   "populacao": 48067,
+   "capital": false,
+   "lat": -4.58571,
+   "lon": -42.8583,
+   "elevacao": 60,
+   "desnivel": 22,
+   "distCostaKm": 213,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 0.66,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 60 m de altitude · 213 km do mar"
+  }
+ ]
+}

@@ -1,0 +1,210 @@
+{
+ "sigla": "PA",
+ "geradoEm": "2026-10-26T22:43:28.374Z",
+ "municipios": [
+  {
+   "ibge": "1501402",
+   "nome": "Belém",
+   "populacao": 1396157,
+   "capital": true,
+   "lat": -1.4554,
+   "lon": -48.4898,
+   "elevacao": 21,
+   "desnivel": 15,
+   "distCostaKm": 62,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "W",
+     "tipo": "baia"
+    },
+    "relevo": 0.15
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Várzea de rio · Amazônia · 21 m de altitude · 62 km do mar"
+  },
+  {
+   "ibge": "1500800",
+   "nome": "Ananindeua",
+   "populacao": 510563,
+   "capital": false,
+   "lat": -1.36391,
+   "lon": -48.3743,
+   "elevacao": 20,
+   "desnivel": 13,
+   "distCostaKm": 50,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 20 m de altitude · 50 km do mar"
+  },
+  {
+   "ibge": "1506807",
+   "nome": "Santarém",
+   "populacao": 364298,
+   "capital": false,
+   "lat": -2.43849,
+   "lon": -54.6996,
+   "elevacao": 51,
+   "desnivel": 55,
+   "distCostaKm": 592,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.21153846153846154
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 51 m de altitude · 592 km do mar"
+  },
+  {
+   "ibge": "1505536",
+   "nome": "Parauapebas",
+   "populacao": 312427,
+   "capital": false,
+   "lat": -6.06781,
+   "lon": -49.9037,
+   "elevacao": 177,
+   "desnivel": 48,
+   "distCostaKm": 598,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.18461538461538463
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 177 m de altitude · 598 km do mar"
+  },
+  {
+   "ibge": "1504208",
+   "nome": "Marabá",
+   "populacao": 293344,
+   "capital": false,
+   "lat": -5.38075,
+   "lon": -49.1327,
+   "elevacao": 96,
+   "desnivel": 33,
+   "distCostaKm": 504,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12692307692307692
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 96 m de altitude · 504 km do mar"
+  },
+  {
+   "ibge": "1502400",
+   "nome": "Castanhal",
+   "populacao": 210592,
+   "capital": false,
+   "lat": -1.29797,
+   "lon": -47.9167,
+   "elevacao": 47,
+   "desnivel": 17,
+   "distCostaKm": 59,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 47 m de altitude · 59 km do mar"
+  },
+  {
+   "ibge": "1500107",
+   "nome": "Abaetetuba",
+   "populacao": 173638,
+   "capital": false,
+   "lat": -1.72183,
+   "lon": -48.8788,
+   "elevacao": 10,
+   "desnivel": 10,
+   "distCostaKm": 104,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "W",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Amazônia · 10 m de altitude · 104 km do mar"
+  },
+  {
+   "ibge": "1502103",
+   "nome": "Cametá",
+   "populacao": 145843,
+   "capital": false,
+   "lat": -2.24295,
+   "lon": -49.4979,
+   "elevacao": 10,
+   "desnivel": 21,
+   "distCostaKm": 191,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "E",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 10 m de altitude · 191 km do mar"
+  }
+ ]
+}

@@ -1,0 +1,208 @@
+{
+ "id": 25,
+ "sigla": "PB",
+ "nome": "Paraíba",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 4182828,
+  "ano": 2026,
+  "censo2022": 3974687
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 96963174000,
+  "perCapita": 23181,
+  "vab": {
+   "agro": 3190472000,
+   "industria": 10071555000,
+   "servicos": 32576427000,
+   "adminPublica": 21927900000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 56860,
+ "numMunicipios": 223,
+ "maioresMunicipios": [
+  {
+   "id": 2507507,
+   "nome": "João Pessoa",
+   "populacao": 906093
+  },
+  {
+   "id": 2504009,
+   "nome": "Campina Grande",
+   "populacao": 446720
+  },
+  {
+   "id": 2513703,
+   "nome": "Santa Rita",
+   "populacao": 162488
+  },
+  {
+   "id": 2510808,
+   "nome": "Patos",
+   "populacao": 108416
+  },
+  {
+   "id": 2501807,
+   "nome": "Bayeux",
+   "populacao": 83351
+  },
+  {
+   "id": 2503209,
+   "nome": "Cabedelo",
+   "populacao": 71364
+  },
+  {
+   "id": 2516201,
+   "nome": "Sousa",
+   "populacao": 70247
+  },
+  {
+   "id": 2503704,
+   "nome": "Cajazeiras",
+   "populacao": 66976
+  }
+ ],
+ "indicadores": {
+  "idh": 0.698,
+  "homicidios": 27.6,
+  "idebEM": 4,
+  "esgoto": 41,
+  "dividaRCL": -2
+ },
+ "tracos": {
+  "sigla": "PB",
+  "apelido": "Onde o sol nasce primeiro",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "João Pessoa",
+   "ibge": 2507507,
+   "lat": -7.1195,
+   "lon": -34.845
+  },
+  "biomas": [
+   "mata-atlantica",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "E",
+    "tipo": "mar"
+   },
+   "relevo": 0.3
+  },
+  "clima": "Tropical litorâneo — brisa marinha, chuvas de outono-inverno",
+  "sotaque": "paraibano",
+  "saudacao": "Bom dia, visse? O sol nasceu aqui primeiro, Governador.",
+  "trilha": [
+   "forró",
+   "coco",
+   "ciranda"
+  ],
+  "festas": [
+   "São João de Campina Grande",
+   "Festa das Neves"
+  ],
+  "arquitetura": "Orla com limite de altura, casario barroco, sítios do brejo",
+  "tracos": [
+   {
+    "id": "orla-baixa",
+    "nome": "Orla sem espigões",
+    "tipo": "buff",
+    "descricao": "Lei limita a altura na beira-mar: qualidade de vida alta.",
+    "efeitos": {
+     "turismo": 0.15,
+     "qualidadeVida": 0.1
+    }
+   },
+   {
+    "id": "campina-tech",
+    "nome": "Campina Grande tech",
+    "tipo": "buff",
+    "descricao": "Polo de tecnologia e o maior São João do mundo.",
+    "efeitos": {
+     "tecnologia": 0.2,
+     "turismo": 0.1
+    }
+   },
+   {
+    "id": "semiarido-pb",
+    "nome": "Semiárido",
+    "tipo": "nerf",
+    "descricao": "Interior depende da transposição do São Francisco.",
+    "efeitos": {
+     "riscoSeca": 0.35
+    }
+   }
+  ],
+  "desafios": [
+   "Seca no Cariri",
+   "Violência",
+   "Baixa renda"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

@@ -1,0 +1,205 @@
+{
+ "sigla": "RR",
+ "geradoEm": "2026-10-26T22:43:29.332Z",
+ "municipios": [
+  {
+   "ibge": "1400100",
+   "nome": "Boa Vista",
+   "populacao": 500965,
+   "capital": true,
+   "lat": 2.82384,
+   "lon": -60.6753,
+   "elevacao": 83,
+   "desnivel": 22,
+   "distCostaKm": 1045,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": {
+     "lado": "E",
+     "tipo": "rio"
+    },
+    "relevo": 0.2
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planície · Amazônia · 83 m de altitude · 1045 km do mar"
+  },
+  {
+   "ibge": "1400472",
+   "nome": "Rorainópolis",
+   "populacao": 38840,
+   "capital": false,
+   "lat": 0.939956,
+   "lon": -60.4389,
+   "elevacao": 76,
+   "desnivel": 27,
+   "distCostaKm": 1074,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 76 m de altitude · 1074 km do mar"
+  },
+  {
+   "ibge": "1400050",
+   "nome": "Alto Alegre",
+   "populacao": 24135,
+   "capital": false,
+   "lat": 2.98858,
+   "lon": -61.3072,
+   "elevacao": 135,
+   "desnivel": 26,
+   "distCostaKm": 1111,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 135 m de altitude · 1111 km do mar"
+  },
+  {
+   "ibge": "1400456",
+   "nome": "Pacaraima",
+   "populacao": 24132,
+   "capital": false,
+   "lat": 4.4799,
+   "lon": -61.1477,
+   "elevacao": 927,
+   "desnivel": 124,
+   "distCostaKm": 1082,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.47692307692307695
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -5.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Amazônia · 927 m de altitude · 1082 km do mar"
+  },
+  {
+   "ibge": "1400209",
+   "nome": "Caracaraí",
+   "populacao": 23061,
+   "capital": false,
+   "lat": 1.82766,
+   "lon": -61.1304,
+   "elevacao": 53,
+   "desnivel": 12,
+   "distCostaKm": 1118,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 53 m de altitude · 1118 km do mar"
+  },
+  {
+   "ibge": "1400175",
+   "nome": "Cantá",
+   "populacao": 21659,
+   "capital": false,
+   "lat": 2.60994,
+   "lon": -60.6058,
+   "elevacao": 85,
+   "desnivel": 51,
+   "distCostaKm": 1041,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.19615384615384615
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 85 m de altitude · 1041 km do mar"
+  },
+  {
+   "ibge": "1400308",
+   "nome": "Mucajaí",
+   "populacao": 20398,
+   "capital": false,
+   "lat": 2.43998,
+   "lon": -60.9096,
+   "elevacao": 80,
+   "desnivel": 22,
+   "distCostaKm": 1078,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 80 m de altitude · 1078 km do mar"
+  },
+  {
+   "ibge": "1400407",
+   "nome": "Normandia",
+   "populacao": 16908,
+   "capital": false,
+   "lat": 3.8853,
+   "lon": -59.6204,
+   "elevacao": 96,
+   "desnivel": 63,
+   "distCostaKm": 915,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2423076923076923
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 96 m de altitude · 915 km do mar"
+  }
+ ]
+}

@@ -1,0 +1,351 @@
+[
+  {
+    "id": "prefeito-capital-critica",
+    "categoria": "prefeitos",
+    "titulo": "{prefeito} ataca o governo na TV",
+    "texto": "Em entrevista à {tv}, o(a) prefeito(a) de {cidade} diz que o Estado \"abandonou a capital\" e que \"cada real da prefeitura vale por dois do governo\".",
+    "tom": "alerta",
+    "se": ["temEstado", "prefeitoRel <= -0.1"],
+    "cooldown": 8,
+    "prazoDias": 10,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Convidar para um café no Palácio",
+        "efeitos": { "prefeito": 0.15, "capital": -1 },
+        "resultado": "Café de duas horas termina com foto e promessa de \"agenda comum\".",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Responder à altura",
+        "efeitos": { "prefeito": -0.15, "grupos": { "classeMedia": 1 }, "imprensa": -0.02 },
+        "resultado": "Governador devolve: \"o prefeito deveria cuidar dos buracos antes de dar entrevista\"."
+      },
+      {
+        "texto": "Ignorar",
+        "efeitos": { "aprovacao": -1 },
+        "resultado": "O Palácio não comenta."
+      }
+    ]
+  },
+  {
+    "id": "prefeito-pede-verba",
+    "categoria": "prefeitos",
+    "titulo": "Prefeito de {cidade2} pede socorro financeiro",
+    "texto": "{prefeito2} diz que a prefeitura de {cidade2} não tem dinheiro para pagar o 13º dos servidores e pede um convênio emergencial.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "cooldown": 8,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Liberar convênio",
+        "efeitos": { "caixa": -0.0005, "prefeitos": 0.08 },
+        "resultado": "Convênio emergencial ajuda {cidade2} a pagar o 13º.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Exigir ajuste fiscal antes",
+        "efeitos": { "prefeitos": -0.05 },
+        "resultado": "Estado condiciona ajuda a plano de ajuste. {prefeito2} reclama de \"humilhação\"."
+      }
+    ]
+  },
+  {
+    "id": "prefeitos-marcha",
+    "categoria": "prefeitos",
+    "titulo": "Prefeitos marcham até o Palácio",
+    "texto": "Cem prefeitos do interior fazem marcha até o Palácio para cobrar repasses atrasados da saúde e transporte escolar.",
+    "tom": "alerta",
+    "se": ["temEstado", "prefeitosRel <= 0.05"],
+    "cooldown": 18,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Receber os prefeitos e regularizar os repasses",
+        "efeitos": { "caixa": -0.001, "prefeitos": 0.15 },
+        "resultado": "Repasses atrasados são quitados em 30 dias.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Mandar o secretário da Casa Civil atender",
+        "efeitos": { "prefeitos": -0.1 },
+        "resultado": "Prefeitos saem sem acordo e prometem fazer campanha contra o governo."
+      }
+    ]
+  },
+  {
+    "id": "consorcio-lixo",
+    "categoria": "prefeitos",
+    "titulo": "Lixões com prazo vencido",
+    "texto": "Trinta municípios ainda jogam lixo em lixões a céu aberto. O MP ameaça multar os prefeitos e pede ação do Estado.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Financiar consórcios regionais de aterros",
+        "efeitos": { "caixa": -0.0008, "prefeitos": 0.15, "bancadas": { "ambientalista": 0.1 }, "indicadores": { "mortalidadeInfantil": -0.01 } },
+        "resultado": "Seis consórcios regionais vão construir aterros sanitários.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com os municípios",
+        "efeitos": { "prefeitos": -0.05 },
+        "resultado": "Prefeitos pedem mais prazo à Justiça."
+      }
+    ]
+  },
+  {
+    "id": "prefeito-rival-candidato",
+    "categoria": "prefeitos",
+    "titulo": "{prefeito} lança pré-candidatura ao governo",
+    "texto": "Em evento lotado, o(a) prefeito(a) da capital se apresenta como pré-candidato(a) a governador: \"{cidade} cansou de esperar o Palácio\".",
+    "tom": "alerta",
+    "se": ["temEstado", "ano >= 2029", "prefeitoRel <= 0"],
+    "unico": true,
+    "efeitos": { "prefeito": -0.2, "capital": -3 }
+  },
+  {
+    "id": "metropolitano-integracao",
+    "categoria": "prefeitos",
+    "titulo": "Prefeitos querem bilhete único metropolitano",
+    "texto": "Prefeitos da região metropolitana propõem integração tarifária entre os ônibus municipais e as linhas estaduais. O Estado teria de bancar parte da conta.",
+    "tom": "info",
+    "se": ["temEstado", "linhas >= 1"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Criar o bilhete único metropolitano",
+        "efeitos": { "caixa": -0.0008, "prefeitos": 0.15, "aprovacaoCidade": 3, "grupos": { "baixaRenda": 3 } },
+        "resultado": "Bilhete único: duas conduções pelo preço de uma em toda a região metropolitana.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Estudar a proposta",
+        "efeitos": { "prefeitos": -0.03 },
+        "resultado": "Grupo de trabalho é criado. Os prefeitos não escondem a frustração."
+      }
+    ]
+  },
+  {
+    "id": "prefeito-aliado-preso",
+    "categoria": "prefeitos",
+    "titulo": "Prefeito aliado é preso",
+    "texto": "{prefeito2}, prefeito(a) de {cidade2} e aliado(a) do governo, foi preso numa operação contra desvio de verbas da merenda.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "cooldown": 30,
+    "efeitos": { "aprovacao": -1, "imprensa": -0.03 }
+  },
+  {
+    "id": "prefeita-escolas",
+    "categoria": "prefeitos",
+    "titulo": "Capital quer municipalizar escolas estaduais",
+    "texto": "A prefeitura de {cidade} propõe assumir 40 escolas estaduais de ensino fundamental, com repasse do Estado por aluno.",
+    "tom": "info",
+    "se": ["temEstado", "prefeitoRel >= 0"],
+    "peso": 0.5,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Aceitar a municipalização",
+        "efeitos": { "prefeito": 0.2, "grupos": { "servidores": -2 }, "bancadas": { "sindical": -0.1 } },
+        "resultado": "Acordo assinado; sindicato dos professores protesta contra a transferência.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Manter as escolas no Estado",
+        "efeitos": { "prefeito": -0.05 },
+        "resultado": "Governo prefere manter a rede estadual."
+      }
+    ]
+  },
+  {
+    "id": "presidente-visita",
+    "categoria": "federal",
+    "titulo": "Presidente {presidente} visita o estado",
+    "texto": "O Presidente da República vem inaugurar uma obra federal e convida o governador para o palanque.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Subir no palanque ao lado do Presidente",
+        "efeitos": { "presidente": 0.15 },
+        "resultado": "Foto do governador abraçado ao Presidente domina as redes.",
+        "depois": [{ "meses": 0.3, "chance": 1, "se": ["presidentePop >= 50"], "texto": "Com o Presidente popular no estado, a aparição rende pontos ao governador.", "tom": "bom", "efeitos": { "aprovacao": 2 } }, { "meses": 0.3, "chance": 1, "se": ["presidentePop < 45"], "texto": "Eleitores não perdoam a foto com o Presidente impopular: vaias no evento seguinte.", "tom": "ruim", "efeitos": { "aprovacao": -2 } }]
+      },
+      {
+        "texto": "Mandar um secretário representar o governo",
+        "efeitos": { "presidente": -0.08 },
+        "resultado": "Ausência do governador é notada no Planalto."
+      }
+    ]
+  },
+  {
+    "id": "corte-verbas-federais",
+    "categoria": "federal",
+    "titulo": "União corta convênios do estado",
+    "texto": "O Ministério da Fazenda bloqueou R$ 400 milhões em convênios com o estado. O governo fala em retaliação política.",
+    "tom": "ruim",
+    "se": ["temEstado", "presidenteRel <= -0.2"],
+    "cooldown": 18,
+    "efeitos": { "caixa": -0.002, "presidente": -0.05 }
+  },
+  {
+    "id": "pac-obra",
+    "categoria": "federal",
+    "titulo": "Governo federal anuncia obras no estado",
+    "texto": "Novo pacote federal de infraestrutura inclui duplicação de rodovia e saneamento na região metropolitana.",
+    "tom": "bom",
+    "se": ["temEstado", "presidenteRel >= 0.2"],
+    "cooldown": 18,
+    "efeitos": { "pib": 0.003, "caixa": 0.001, "indicadores": { "esgoto": -0.01 } }
+  },
+  {
+    "id": "briga-presidente",
+    "categoria": "federal",
+    "titulo": "Presidente critica o governador em rede nacional",
+    "texto": "Em entrevista, o Presidente {presidente} diz que o estado \"é mal administrado\" e que \"dinheiro federal não vai para quem desperdiça\".",
+    "tom": "ruim",
+    "se": ["temEstado", "alinhamento == opositor"],
+    "cooldown": 18,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Rebater: \"o estado sustenta o país\"",
+        "efeitos": { "presidente": -0.15, "aprovacao": 1, "grupos": { "classeMedia": 1 } },
+        "resultado": "Governador vira estrela da oposição nacional por um dia."
+      },
+      {
+        "texto": "Responder com dados e pedir diálogo",
+        "efeitos": { "presidente": 0.05, "imprensa": 0.03 },
+        "resultado": "Tom conciliador do governador é elogiado por colunistas."
+      }
+    ]
+  },
+  {
+    "id": "forca-nacional-oferta",
+    "categoria": "federal",
+    "titulo": "Ministério oferece a Força Nacional",
+    "texto": "Com a escalada da violência, o Ministério da Justiça oferece a Força Nacional por 90 dias. Aceitar é admitir que o Estado perdeu o controle?",
+    "tom": "info",
+    "se": ["temEstado", "homicidiosRel >= 1.08", "presidenteRel >= 0"],
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Aceitar",
+        "efeitos": { "forcaNacional": 3, "presidente": 0.08, "grupos": { "classeMedia": 2 }, "bancadas": { "bala": -0.05 } },
+        "resultado": "Força Nacional chega e ocupa as áreas mais críticas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recusar: \"nossas polícias dão conta\"",
+        "efeitos": { "bancadas": { "bala": 0.1 }, "presidente": -0.05 },
+        "resultado": "Governo recusa a oferta e promete resultados em 60 dias."
+      }
+    ]
+  },
+  {
+    "id": "pf-operacao-estado",
+    "categoria": "federal",
+    "titulo": "PF faz buscas na Secretaria de Saúde",
+    "texto": "Agentes da Polícia Federal cumprem mandados na Secretaria de Saúde por desvio de verbas federais do SUS em gestões anteriores.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "cooldown": 30,
+    "efeitos": { "imprensa": -0.03, "aprovacao": -1 }
+  },
+  {
+    "id": "programa-habitacional",
+    "categoria": "federal",
+    "titulo": "Novo programa habitacional federal",
+    "texto": "A União lança programa de moradia com contrapartida dos estados: cada real estadual atrai três federais.",
+    "tom": "info",
+    "se": ["temEstado", "anoMandato >= 1"],
+    "peso": 0.7,
+    "unico": true,
+    "prazoDias": 25,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Entrar com a contrapartida máxima",
+        "efeitos": { "caixa": -0.0015, "presidente": 0.1, "grupos": { "baixaRenda": 4 }, "indicadores": { "pobreza": -0.03 }, "flag": "habitacao-federal" },
+        "resultado": "Estado garante 30 mil moradias na primeira fase do programa.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Ficar de fora",
+        "efeitos": { "presidente": -0.03, "grupos": { "baixaRenda": -1 } },
+        "resultado": "Estado não adere; prefeitos negociam direto com Brasília."
+      }
+    ]
+  },
+  {
+    "id": "renegociacao-divida",
+    "categoria": "federal",
+    "titulo": "Renegociação da dívida com a União",
+    "texto": "O Tesouro Nacional abre rodada de renegociação das dívidas estaduais com desconto para quem investir em educação técnica.",
+    "tom": "info",
+    "se": ["temEstado", "dclPct >= 1"],
+    "peso": 0.5,
+    "unico": true,
+    "prazoDias": 25,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Aderir e investir em ensino técnico",
+        "efeitos": { "caixa": 0.001, "presidente": 0.05, "indicadores": { "evasao": -0.03 } },
+        "resultado": "Estado troca juros por vagas em escolas técnicas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Não aderir",
+        "efeitos": {},
+        "resultado": "Fazenda considera as condições desvantajosas."
+      }
+    ]
+  },
+  {
+    "id": "convite-planalto",
+    "categoria": "federal",
+    "titulo": "Convite para o Conselho da Federação",
+    "texto": "O Presidente reúne os 27 governadores em Brasília para discutir segurança pública. Ir significa dividir a foto — e o desgaste.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Ir e propor um fundo nacional de segurança",
+        "efeitos": { "presidente": 0.08, "imprensa": 0.02 },
+        "resultado": "Proposta do governador entra na carta final do encontro.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Boicotar o encontro",
+        "efeitos": { "presidente": -0.12, "grupos": { "classeMedia": 1 } },
+        "resultado": "Governador fica no estado \"trabalhando\"."
+      }
+    ]
+  }
+]

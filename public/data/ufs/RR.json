@@ -1,0 +1,205 @@
+{
+ "id": 14,
+ "sigla": "RR",
+ "nome": "Roraima",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 761012,
+  "ano": 2026,
+  "censo2022": 636707
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 25124805000,
+  "perCapita": 33015,
+  "vab": {
+   "agro": 1234388000,
+   "industria": 1535728000,
+   "servicos": 6368835000,
+   "adminPublica": 7170746000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 224529,
+ "numMunicipios": 15,
+ "maioresMunicipios": [
+  {
+   "id": 1400100,
+   "nome": "Boa Vista",
+   "populacao": 500965
+  },
+  {
+   "id": 1400472,
+   "nome": "Rorainópolis",
+   "populacao": 38840
+  },
+  {
+   "id": 1400050,
+   "nome": "Alto Alegre",
+   "populacao": 24135
+  },
+  {
+   "id": 1400456,
+   "nome": "Pacaraima",
+   "populacao": 24132
+  },
+  {
+   "id": 1400209,
+   "nome": "Caracaraí",
+   "populacao": 23061
+  },
+  {
+   "id": 1400175,
+   "nome": "Cantá",
+   "populacao": 21659
+  },
+  {
+   "id": 1400308,
+   "nome": "Mucajaí",
+   "populacao": 20398
+  },
+  {
+   "id": 1400407,
+   "nome": "Normandia",
+   "populacao": 16908
+  }
+ ],
+ "indicadores": {
+  "idh": 0.699,
+  "homicidios": 33,
+  "idebEM": 3.8,
+  "esgoto": 63,
+  "dividaRCL": 10
+ },
+ "tracos": {
+  "sigla": "RR",
+  "apelido": "Extremo Norte",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Boa Vista",
+   "ibge": 1400100,
+   "lat": 2.8235,
+   "lon": -60.6758
+  },
+  "biomas": [
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "planicie",
+   "agua": {
+    "lado": "E",
+    "tipo": "rio"
+   },
+   "relevo": 0.2
+  },
+  "clima": "Equatorial com savana (lavrado) — estações invertidas em relação ao resto do país",
+  "sotaque": "roraimense",
+  "saudacao": "Bom dia, Governador. O Monte Roraima mandou lembranças.",
+  "trilha": [
+   "forró",
+   "música indígena macuxi",
+   "reggae"
+  ],
+  "festas": [
+   "Arraial Boa Vista Junina",
+   "Festejo de São José"
+  ],
+  "arquitetura": "Traçado radial em leque, casas térreas, malocas nas comunidades indígenas",
+  "tracos": [
+   {
+    "id": "migracao-venezuela",
+    "nome": "Porta de entrada",
+    "tipo": "nerf",
+    "descricao": "Fluxo migratório da Venezuela pressiona saúde e abrigos.",
+    "efeitos": {
+     "demandaSocial": 0.35
+    }
+   },
+   {
+    "id": "linhao",
+    "nome": "Fora do sistema elétrico",
+    "tipo": "nerf",
+    "descricao": "Energia cara e termelétricas a diesel.",
+    "efeitos": {
+     "riscoApagao": 0.3
+    }
+   },
+   {
+    "id": "terras-indigenas",
+    "nome": "Terras indígenas",
+    "tipo": "neutro",
+    "descricao": "Garimpo ilegal em território yanomami é crise humanitária.",
+    "efeitos": {
+     "pressaoAmbiental": 0.4
+    }
+   }
+  ],
+  "desafios": [
+   "Garimpo ilegal",
+   "Isolamento energético",
+   "Crise migratória"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

@@ -1,0 +1,440 @@
+[
+  {
+    "id": "greve-professores",
+    "categoria": "servicos",
+    "titulo": "Professores ameaçam greve",
+    "texto": "O sindicato dos professores da rede estadual aprovou indicativo de greve: querem o piso nacional e reajuste da inflação. Assembleia marcada para segunda.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Conceder o piso em duas parcelas",
+        "efeitos": { "caixa": -0.002, "grupos": { "servidores": 4 }, "bancadas": { "sindical": 0.2 }, "indicadores": { "ideb": 0.01 } },
+        "resultado": "Acordo fechado: piso em duas parcelas. Aulas seguem normalmente.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Oferecer bônus por desempenho no lugar do reajuste",
+        "efeitos": { "caixa": -0.0006, "grupos": { "servidores": -1, "classeMedia": 1 }, "bancadas": { "sindical": -0.1 } },
+        "resultado": "Sindicato rejeita o bônus, mas parte da categoria volta às aulas."
+      },
+      {
+        "texto": "Não negociar sob ameaça",
+        "efeitos": { "greve": "educacao", "grupos": { "servidores": -4 }, "bancadas": { "sindical": -0.25 } },
+        "resultado": "Professores entram em greve por tempo indeterminado. Pais sem saber onde deixar os filhos.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "greve-rodoviarios",
+    "categoria": "servicos",
+    "titulo": "Rodoviários param a capital",
+    "texto": "Motoristas e cobradores de ônibus cruzaram os braços por atraso salarial das empresas. {cidade} amanheceu com pontos lotados e trânsito parado.",
+    "tom": "ruim",
+    "se": ["linhas >= 1"],
+    "peso": 1.2,
+    "cooldown": 12,
+    "prazoDias": 5,
+    "padrao": 1,
+    "efeitos": { "aprovacaoCidade": -2 },
+    "escolhas": [
+      {
+        "texto": "Subsídio emergencial às empresas para pagar os salários",
+        "efeitos": { "caixaCidade": -6000000, "aprovacaoCidade": 2 },
+        "resultado": "Subsídio paga os salários atrasados e os ônibus voltam às ruas em 24 horas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Intervir na concessão",
+        "efeitos": { "aprovacaoCidade": 1, "grupos": { "empresariado": -2 } },
+        "resultado": "Prefeitura e Estado intervêm na empresa e assumem a folha; empresários prometem ir à Justiça."
+      }
+    ]
+  },
+  {
+    "id": "pane-metro",
+    "categoria": "servicos",
+    "titulo": "Pane no metrô",
+    "texto": "Uma falha elétrica parou o metrô por quatro horas no pico da manhã. Passageiros andaram pelos trilhos dentro do túnel.",
+    "tom": "ruim",
+    "se": ["metro"],
+    "peso": 1.5,
+    "cooldown": 8,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "aprovacaoCidade": -2 },
+    "escolhas": [
+      {
+        "texto": "Auditoria e plano de manutenção",
+        "efeitos": { "caixaCidade": -4000000, "aprovacaoCidade": 1 },
+        "resultado": "Auditoria independente vai revisar o sistema elétrico do metrô.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Culpar o \"vandalismo\"",
+        "efeitos": { "imprensa": -0.05 },
+        "resultado": "Operadora fala em furto de cabos. Ninguém acredita."
+      }
+    ]
+  },
+  {
+    "id": "falta-remedios",
+    "categoria": "servicos",
+    "titulo": "Falta de remédios na farmácia do Estado",
+    "texto": "Pacientes transplantados e com câncer estão há semanas sem medicamentos de alto custo. Uma fila se forma às 4h da manhã na farmácia estadual.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Compra emergencial",
+        "efeitos": { "caixa": -0.0006, "aprovacao": 1, "indicadores": { "filaCirurgias": -0.02 } },
+        "resultado": "Compra emergencial regulariza o estoque em dez dias.",
+        "tomResultado": "bom",
+        "depois": [{ "meses": 4, "chance": 0.25, "texto": "{blog} mostra que a compra emergencial de remédios saiu 60% mais cara que a ata de preços.", "tom": "ruim", "efeitos": { "aprovacao": -2 } }]
+      },
+      {
+        "texto": "Esperar a licitação normal",
+        "efeitos": { "aprovacao": -2, "indicadores": { "esperaEmergencia": 0.03 } },
+        "resultado": "Defensoria obtém liminares; o juiz manda bloquear R$ 5 milhões do Estado.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "teto-escola",
+    "categoria": "servicos",
+    "titulo": "Teto de escola desaba",
+    "texto": "Parte do teto de uma sala de aula da Escola Estadual do {bairro} caiu durante a madrugada. Se fosse durante a aula, poderia ter sido uma tragédia.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Vistoria em todas as escolas e programa de reformas",
+        "efeitos": { "caixa": -0.001, "aprovacao": 2, "indicadores": { "evasao": -0.02 } },
+        "resultado": "Engenheiros vistoriam 1.200 escolas; 90 entram em reforma emergencial.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Interditar a sala e reformar só essa escola",
+        "efeitos": { "caixa": -0.00005 },
+        "resultado": "Sala interditada. Pais denunciam rachaduras em outras unidades.",
+        "depois": [{ "meses": 6, "chance": 0.3, "texto": "Marquise de outra escola estadual desaba e fere dois alunos. A {tv} lembra que o alerta havia sido dado.", "tom": "ruim", "efeitos": { "aprovacao": -4 } }]
+      }
+    ]
+  },
+  {
+    "id": "hospital-sem-ar",
+    "categoria": "servicos",
+    "titulo": "Hospital sem ar-condicionado no verão",
+    "texto": "Com 38°C lá fora, o centro cirúrgico do hospital estadual está a 31°C. Cirurgias canceladas e médicos operando com ventiladores.",
+    "tom": "ruim",
+    "se": ["temEstado", "tMax >= 32"],
+    "quando": "diario",
+    "chance": 0.02,
+    "cooldown": 12,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Contratar climatização emergencial",
+        "efeitos": { "caixa": -0.0002, "indicadores": { "filaCirurgias": -0.02 } },
+        "resultado": "Aparelhos instalados em uma semana; cirurgias reagendadas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Remanejar pacientes para outros hospitais",
+        "efeitos": { "indicadores": { "filaCirurgias": 0.05, "esperaEmergencia": 0.03 } },
+        "resultado": "Pacientes transferidos; a fila de cirurgias cresce."
+      }
+    ]
+  },
+  {
+    "id": "upa-superlotada",
+    "categoria": "servicos",
+    "titulo": "UPA superlotada: pacientes no chão",
+    "texto": "Reportagem da {tv} mostra pacientes em macas no corredor e no chão de uma UPA. Espera de 12 horas para atendimento.",
+    "tom": "ruim",
+    "se": ["temEstado", "esperaRel >= 1.05"],
+    "peso": 1.5,
+    "cooldown": 8,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -2 },
+    "escolhas": [
+      {
+        "texto": "Contratar médicos temporários e abrir leitos de retaguarda",
+        "efeitos": { "caixa": -0.0008, "indicadores": { "esperaEmergencia": -0.08 } },
+        "resultado": "Retaguarda de 200 leitos desafoga as UPAs.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Visitar a UPA de surpresa e cobrar a direção",
+        "efeitos": { "aprovacao": 1, "imprensa": 0.02 },
+        "resultado": "Governador aparece de madrugada na UPA e demite o diretor ao vivo."
+      }
+    ]
+  },
+  {
+    "id": "enfermagem-piso",
+    "categoria": "servicos",
+    "titulo": "Enfermagem cobra o piso salarial",
+    "texto": "Técnicos e enfermeiros da rede estadual fazem paralisação de advertência: o piso da enfermagem ainda não é pago integralmente.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Pagar o piso com complementação federal",
+        "efeitos": { "caixa": -0.0012, "grupos": { "servidores": 3 }, "presidente": 0.03 },
+        "resultado": "Estado completa o piso com a assistência financeira da União.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Alegar falta de caixa",
+        "efeitos": { "greve": "saude", "grupos": { "servidores": -3 } },
+        "resultado": "Enfermagem entra em greve; só emergências funcionam.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "merenda-estragada",
+    "categoria": "servicos",
+    "titulo": "Merenda estragada intoxica alunos",
+    "texto": "Quarenta alunos passaram mal depois do almoço numa escola estadual. A carne estava vencida, segundo a Vigilância Sanitária.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Romper o contrato da fornecedora e comprar da agricultura familiar",
+        "efeitos": { "caixa": -0.0001, "aprovacao": 1, "bancadas": { "ruralista": 0.05 } },
+        "resultado": "Merenda passa a ter 40% de produtos da agricultura familiar local.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Multar a empresa e manter o contrato",
+        "efeitos": { "imprensa": -0.04 },
+        "resultado": "Empresa multada continua fornecendo. Pais fazem protesto na porta da escola."
+      }
+    ]
+  },
+  {
+    "id": "samu-ambulancias",
+    "categoria": "servicos",
+    "titulo": "Metade das ambulâncias do SAMU paradas",
+    "texto": "Sem manutenção, 30 das 60 ambulâncias do SAMU metropolitano estão quebradas. Paciente infartado esperou 2 horas.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.8,
+    "cooldown": 18,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Comprar 40 ambulâncias novas",
+        "efeitos": { "caixa": -0.0004, "indicadores": { "esperaEmergencia": -0.05 }, "prefeitos": 0.05 },
+        "resultado": "Ambulâncias novas entregues aos municípios com festa e fotos.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Cobrar a manutenção dos municípios",
+        "efeitos": { "prefeitos": -0.1 },
+        "resultado": "Estado diz que a gestão do SAMU é municipal; prefeitos discordam."
+      }
+    ]
+  },
+  {
+    "id": "fila-cirurgias",
+    "categoria": "servicos",
+    "titulo": "Fila de cirurgias passa de dois anos",
+    "texto": "Pacientes à espera de cirurgias de catarata, hérnia e joelho esperam em média 26 meses. Alguns morreram na fila.",
+    "tom": "ruim",
+    "se": ["temEstado", "filaRel >= 1.0"],
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Mutirão com hospitais filantrópicos",
+        "efeitos": { "caixa": -0.0008, "indicadores": { "filaCirurgias": -0.15 }, "aprovacao": 2 },
+        "resultado": "Santas Casas operam em três turnos e zeram a fila de catarata.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Fila única regulada online e transparente",
+        "efeitos": { "caixa": -0.0001, "indicadores": { "filaCirurgias": -0.04 }, "imprensa": 0.03 },
+        "resultado": "Fila de cirurgias fica pública na internet; acabam os \"fura-filas\"."
+      }
+    ]
+  },
+  {
+    "id": "sarampo",
+    "categoria": "servicos",
+    "titulo": "Volta do sarampo",
+    "texto": "Com a cobertura vacinal abaixo de 80%, o estado registra o primeiro surto de sarampo em dez anos. Bebês estão entre os internados.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "cooldown": 30,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Vacinação nas escolas, igrejas e feiras",
+        "efeitos": { "caixa": -0.0002, "indicadores": { "mortalidadeInfantil": -0.02 }, "aprovacao": 1 },
+        "resultado": "Vacinação de casa em casa leva a cobertura a 95% em três meses.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Campanha publicitária",
+        "efeitos": { "caixa": -0.00005, "indicadores": { "mortalidadeInfantil": 0.02 } },
+        "resultado": "Comerciais na TV; boatos antivacina no {zap} competem com a campanha."
+      }
+    ]
+  },
+  {
+    "id": "vazamento-prova",
+    "categoria": "servicos",
+    "titulo": "Prova do concurso de professores vazou",
+    "texto": "O gabarito do concurso estadual de professores circulou no {zap} na véspera. A banca suspende o resultado.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "cooldown": 36,
+    "efeitos": { "aprovacao": -2, "grupos": { "servidores": -2 } }
+  },
+  {
+    "id": "creche-vagas",
+    "categoria": "servicos",
+    "titulo": "Fila por vaga em creche",
+    "texto": "Quinze mil crianças esperam vaga em creche na região metropolitana. Mães não conseguem trabalhar.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Cofinanciar 60 creches com as prefeituras",
+        "efeitos": { "caixa": -0.0012, "prefeitos": 0.15, "grupos": { "baixaRenda": 3 }, "indicadores": { "pobreza": -0.02 } },
+        "resultado": "Programa estadual cofinancia creches; prefeitos disputam as unidades.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Creche é responsabilidade municipal",
+        "efeitos": { "prefeitos": -0.05 },
+        "resultado": "Governo lembra que a educação infantil é atribuição dos municípios."
+      }
+    ]
+  },
+  {
+    "id": "detran-sistema",
+    "categoria": "servicos",
+    "titulo": "Sistema do Detran fora do ar",
+    "texto": "Há nove dias ninguém consegue tirar documento, transferir veículo ou marcar prova de habilitação. Despachantes cobram por fora para \"furar a fila\".",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "efeitos": { "aprovacao": -1, "grupos": { "classeMedia": -2 } }
+  },
+  {
+    "id": "obra-escola-parada",
+    "categoria": "servicos",
+    "titulo": "Escola prometida há 6 anos vira matagal",
+    "texto": "A obra da escola técnica do {bairro}, anunciada pelo governo anterior, está abandonada. Moradores plantaram uma horta no canteiro.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Retomar a obra",
+        "efeitos": { "caixa": -0.0006, "aprovacao": 1, "prefeito": 0.05 },
+        "resultado": "Governo retoma a escola técnica com prazo de 14 meses.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Culpar o governo anterior",
+        "efeitos": { "aprovacao": 1, "base": -0.02 },
+        "resultado": "Governador mostra a obra abandonada em vídeo: \"herança maldita\"."
+      }
+    ]
+  },
+  {
+    "id": "transporte-escolar",
+    "categoria": "servicos",
+    "titulo": "Ônibus escolar sem freio",
+    "texto": "Ônibus escolar contratado pelo Estado perde o freio numa estrada de terra no interior. Doze alunos feridos; o veículo tinha 28 anos.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "cooldown": 30,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Renovar a frota escolar",
+        "efeitos": { "caixa": -0.0008, "prefeitos": 0.1, "indicadores": { "evasao": -0.03 } },
+        "resultado": "Estado compra 500 ônibus escolares novos para o interior.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Fiscalizar as empresas contratadas",
+        "efeitos": { "caixa": -0.00005 },
+        "resultado": "Detran retira 140 ônibus escolares de circulação."
+      }
+    ]
+  },
+  {
+    "id": "esgoto-praia",
+    "categoria": "servicos",
+    "titulo": "Língua negra na praia",
+    "texto": "Esgoto escorre a céu aberto até o mar no {bairro}. Turistas fotografam a mancha escura na areia; a hashtag viraliza.",
+    "tom": "ruim",
+    "se": ["litoral", "esgoto <= 0.6", "pop >= 2000"],
+    "peso": 1.2,
+    "cooldown": 12,
+    "efeitos": { "aprovacaoCidade": -2, "aprovacao": -1 }
+  },
+  {
+    "id": "mutirao-saude",
+    "categoria": "positivo",
+    "titulo": "Carreta da saúde faz 10 mil exames",
+    "texto": "Carretas com mamógrafo e consultórios percorreram o interior: 10 mil exames em um mês, com fila na madrugada em cada cidade.",
+    "tom": "bom",
+    "se": ["temEstado", "aprovacao >= 30"],
+    "peso": 0.5,
+    "cooldown": 18,
+    "efeitos": { "aprovacao": 1, "prefeitos": 0.05, "indicadores": { "filaCirurgias": -0.02 } }
+  },
+  {
+    "id": "ideb-destaque",
+    "categoria": "positivo",
+    "titulo": "Escola estadual do interior é a melhor do país",
+    "texto": "Uma escola estadual de tempo integral do interior tirou a maior nota do Brasil no IDEB. A diretora vira celebridade.",
+    "tom": "bom",
+    "se": ["temEstado", "ideb >= 4.3"],
+    "cooldown": 24,
+    "efeitos": { "aprovacao": 2, "grupos": { "classeMedia": 2 }, "imprensa": 0.05 }
+  }
+]

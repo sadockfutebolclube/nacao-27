@@ -1,0 +1,362 @@
+[
+  {
+    "id": "carnaval-patrocinio",
+    "categoria": "festa",
+    "titulo": "{festa}: começou a folia",
+    "texto": "Trios elétricos, blocos e escolas de samba tomam {cidade}. A rede hoteleira está lotada e a polícia espera um milhão de foliões por dia.",
+    "tom": "bom",
+    "se": ["festa == carnaval", "festaComeca", "festaTurismo >= 0.6"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 2,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "carnaval", "dias": 5 } },
+    "escolhas": [
+      {
+        "texto": "Patrocínio estadual e reforço de 8 mil policiais",
+        "detalhe": "0,03% da RCL. Mais turistas, menos ocorrências.",
+        "efeitos": { "caixa": -0.0003, "pib": 0.002, "aprovacao": 2, "crime": -0.02, "flag": "carnaval-patrocinado" },
+        "resultado": "Carnaval sem grandes ocorrências e com recorde de turistas estrangeiros.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Policiamento normal e nenhum centavo para festa",
+        "efeitos": { "crime": 0.02, "grupos": { "classeMedia": 1 } },
+        "resultado": "Governo não patrocina o Carnaval: \"prioridade é a saúde\".",
+        "depois": [{ "meses": 0.2, "chance": 0.5, "texto": "Arrastões e brigas em blocos sem policiamento; {tv} cobre a \"quarta-feira de cinzas da segurança\".", "tom": "ruim", "efeitos": { "aprovacao": -3 } }]
+      }
+    ]
+  },
+  {
+    "id": "carnaval-rua",
+    "categoria": "festa",
+    "titulo": "Carnaval de rua em {cidade}",
+    "texto": "Blocos de bairro, marchinhas e muito confete nas ruas. Ambulantes vendem tudo o que é gelado.",
+    "tom": "bom",
+    "se": ["festa == carnaval", "festaComeca", "festaTurismo < 0.6"],
+    "quando": "diario",
+    "cooldown": 6,
+    "efeitos": { "visual": { "tipo": "carnaval", "dias": 4 }, "aprovacaoCidade": 1 }
+  },
+  {
+    "id": "carnaval-desfile-acidente",
+    "categoria": "festa",
+    "titulo": "Carro alegórico fere pessoas na avenida",
+    "texto": "Um carro alegórico perdeu o controle na dispersão do desfile e prensou integrantes da escola contra a grade. Há feridos graves.",
+    "tom": "ruim",
+    "se": ["festa == carnaval", "festaTurismo >= 0.9"],
+    "quando": "diario",
+    "chance": 0.08,
+    "cooldown": 24,
+    "efeitos": { "aprovacao": -1, "imprensa": -0.02 }
+  },
+  {
+    "id": "sao-joao",
+    "categoria": "festa",
+    "titulo": "{festa}: arraiá começa",
+    "texto": "Quadrilhas, fogueiras e forró pé-de-serra. O São João movimenta a economia do interior e lota as estradas.",
+    "tom": "bom",
+    "se": ["festa == junina", "festaComeca"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 2,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "junina", "dias": 6 } },
+    "escolhas": [
+      {
+        "texto": "Patrocinar o São João no interior e a malha rodoviária",
+        "efeitos": { "caixa": -0.0003, "prefeitos": 0.1, "pib": 0.002, "aprovacao": 2 },
+        "resultado": "Governo patrocina festas em 80 cidades e reforça a fiscalização nas estradas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com as prefeituras",
+        "efeitos": { "prefeitos": -0.05 },
+        "resultado": "Prefeitos reclamam do \"São João sem governo\"."
+      }
+    ]
+  },
+  {
+    "id": "fogos-balao",
+    "categoria": "festa",
+    "titulo": "Balão junino cai e provoca incêndio",
+    "texto": "Um balão de grandes proporções caiu sobre uma área de mata perto de {cidade}. Bombeiros lutam contra as chamas a noite toda.",
+    "tom": "ruim",
+    "se": ["festa == junina", "secura >= 0.4"],
+    "quando": "diario",
+    "chance": 0.1,
+    "cooldown": 12,
+    "efeitos": { "visual": { "tipo": "incendio", "dias": 2 }, "aprovacaoCidade": -1 }
+  },
+  {
+    "id": "reveillon",
+    "categoria": "festa",
+    "titulo": "Réveillon: a virada em {cidade}",
+    "texto": "Milhões esperam a virada com fogos, branco e pulinhos nas ondas. O transporte vai funcionar a noite toda.",
+    "tom": "bom",
+    "se": ["festa == reveillon", "festaComeca"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 1,
+    "padrao": 0,
+    "efeitos": { "visual": { "tipo": "fogos", "dias": 1 } },
+    "escolhas": [
+      {
+        "texto": "Metrô e ônibus 24h e policiamento reforçado",
+        "efeitos": { "caixa": -0.0001, "aprovacao": 1, "aprovacaoCidade": 2 },
+        "resultado": "Virada tranquila: transporte de madrugada levou 2 milhões de pessoas para casa.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Esquema normal",
+        "efeitos": { "aprovacaoCidade": -1 },
+        "resultado": "Filas de horas nos pontos depois dos fogos."
+      }
+    ]
+  },
+  {
+    "id": "parintins",
+    "categoria": "festa",
+    "titulo": "Festival de Parintins: Garantido x Caprichoso",
+    "texto": "O bumbódromo está lotado para a disputa dos bois. Turistas chegam de barco de todo o país.",
+    "tom": "bom",
+    "se": ["festa == boi", "festaComeca", "festaTurismo >= 0.8"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 2,
+    "padrao": 0,
+    "efeitos": { "visual": { "tipo": "fogos", "dias": 3 } },
+    "escolhas": [
+      {
+        "texto": "Patrocinar o festival e os barcos de linha",
+        "efeitos": { "caixa": -0.0002, "pib": 0.002, "aprovacao": 2, "prefeitos": 0.05 },
+        "resultado": "Festival recorde: transmissão nacional e 100 mil visitantes na ilha.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Manter o apoio do ano passado",
+        "efeitos": {},
+        "resultado": "Festival acontece com o apoio de sempre."
+      }
+    ]
+  },
+  {
+    "id": "bumba-meu-boi",
+    "categoria": "festa",
+    "titulo": "Bumba-meu-boi toma as ruas",
+    "texto": "Os batalhões de boi, com matracas e pandeirões, se apresentam pelos arraiais da capital até de madrugada.",
+    "tom": "bom",
+    "se": ["festa == boi", "festaComeca", "festaTurismo < 0.8"],
+    "quando": "diario",
+    "cooldown": 6,
+    "efeitos": { "visual": { "tipo": "junina", "dias": 5 }, "aprovacaoCidade": 1 }
+  },
+  {
+    "id": "festa-religiosa",
+    "categoria": "festa",
+    "titulo": "{festa} reúne multidão",
+    "texto": "Romeiros de todo o estado chegam a {cidade} para a {festa}. A procissão ocupa quilômetros de ruas.",
+    "tom": "info",
+    "se": ["festa == religiosa", "festaComeca"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 2,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Apoiar a estrutura: saúde, banheiros e segurança",
+        "efeitos": { "caixa": -0.00005, "aprovacao": 1, "bancadas": { "evangelica": -0.02 } },
+        "resultado": "Postos de saúde e hidratação atendem os romeiros ao longo do trajeto.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Estado laico: só o policiamento de rotina",
+        "efeitos": { "grupos": { "classeMedia": -1 } },
+        "resultado": "Romeiros reclamam da falta de estrutura; a arquidiocese lamenta."
+      }
+    ]
+  },
+  {
+    "id": "festa-cultural",
+    "categoria": "festa",
+    "titulo": "{festa} começa",
+    "texto": "A programação da {festa} atrai visitantes e movimenta bares, hotéis e o comércio de {cidade}.",
+    "tom": "bom",
+    "se": ["festa == cultural", "festaComeca"],
+    "quando": "diario",
+    "cooldown": 6,
+    "efeitos": { "pib": 0.0005, "aprovacaoCidade": 1, "visual": { "tipo": "fogos", "dias": 1 } }
+  },
+  {
+    "id": "festa-agro",
+    "categoria": "festa",
+    "titulo": "{festa}: o agro em exposição",
+    "texto": "Leilões de gado, máquinas agrícolas e shows sertanejos. A feira deve movimentar bilhões em negócios.",
+    "tom": "bom",
+    "se": ["festa == agro", "festaComeca", "temEstado"],
+    "quando": "diario",
+    "cooldown": 6,
+    "prazoDias": 3,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Ir à feira e anunciar crédito para o produtor",
+        "efeitos": { "caixa": -0.0003, "bancadas": { "ruralista": 0.15 }, "pib": 0.001 },
+        "resultado": "Governador anuncia linha de crédito no palco da feira e é aplaudido.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Mandar o secretário de Desenvolvimento",
+        "efeitos": { "bancadas": { "ruralista": -0.05 } },
+        "resultado": "Ausência do governador é comentada nos estandes."
+      }
+    ]
+  },
+  {
+    "id": "show-internacional",
+    "categoria": "festa",
+    "titulo": "{festa}: o mundo olha para {cidade}",
+    "texto": "Atrações internacionais, 100 mil pessoas por dia e transmissão para dezenas de países.",
+    "tom": "bom",
+    "se": ["festa == show", "festaComeca"],
+    "quando": "diario",
+    "cooldown": 6,
+    "efeitos": { "pib": 0.001, "aprovacaoCidade": 1, "visual": { "tipo": "fogos", "dias": 3 } }
+  },
+  {
+    "id": "show-proposta",
+    "categoria": "cultura",
+    "titulo": "Produtora quer megashow gratuito na orla",
+    "texto": "Uma produtora propõe trazer uma estrela pop internacional para um show gratuito na praia. Pede R$ 20 milhões do Estado; promete R$ 300 milhões para a economia.",
+    "tom": "info",
+    "se": ["temEstado", "litoral"],
+    "peso": 0.5,
+    "cooldown": 24,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Topar",
+        "efeitos": { "caixa": -0.0003, "pib": 0.002, "aprovacao": 2, "grupos": { "classeMedia": 1 }, "visual": { "tipo": "fogos", "dias": 1 } },
+        "resultado": "Show reúne 1,5 milhão na areia; imagens rodam o mundo.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recusar: \"não é prioridade\"",
+        "efeitos": { "grupos": { "classeMedia": -1 } },
+        "resultado": "O show vai para o estado vizinho."
+      }
+    ]
+  },
+  {
+    "id": "museu-incendio",
+    "categoria": "cultura",
+    "titulo": "Incêndio no museu estadual",
+    "texto": "Um curto-circuito provocou incêndio no museu histórico do estado. Parte do acervo de 150 anos virou cinza. O alvará dos bombeiros estava vencido.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.3,
+    "unico": true,
+    "prazoDias": 8,
+    "padrao": 0,
+    "efeitos": { "visual": { "tipo": "incendio", "dias": 2 }, "aprovacao": -2 },
+    "escolhas": [
+      {
+        "texto": "Reconstrução com campanha internacional",
+        "efeitos": { "caixa": -0.0004, "imprensa": 0.04 },
+        "resultado": "Museu será reconstruído com apoio da UNESCO e doações.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Abrir sindicância",
+        "efeitos": { "imprensa": -0.05 },
+        "resultado": "Sindicância aponta \"falhas de gestões anteriores\"."
+      }
+    ]
+  },
+  {
+    "id": "patrimonio-casarao",
+    "categoria": "cultura",
+    "titulo": "Casarão histórico desaba no centro",
+    "texto": "Um casarão tombado do século XIX desabou depois de anos de abandono no centro histórico de {cidade}.",
+    "tom": "ruim",
+    "se": ["chuva7d >= 40"],
+    "peso": 0.4,
+    "cooldown": 24,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Programa de restauro do centro histórico",
+        "efeitos": { "caixaCidade": -5000000, "aprovacaoCidade": 2 },
+        "resultado": "Programa de restauro vai recuperar 30 casarões com uso habitacional.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Cobrar os proprietários",
+        "efeitos": {},
+        "resultado": "Proprietários são notificados; a maioria nunca foi encontrada."
+      }
+    ]
+  },
+  {
+    "id": "lei-incentivo-cultura",
+    "categoria": "cultura",
+    "titulo": "Artistas cobram a lei de incentivo",
+    "texto": "Músicos, atores e produtores fazem ato em frente à Secretaria de Cultura: o edital de fomento está atrasado há oito meses.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Lançar o edital e ampliar o fomento",
+        "efeitos": { "caixa": -0.0002, "imprensa": 0.04, "grupos": { "classeMedia": 1 } },
+        "resultado": "Edital de R$ 50 milhões contempla 600 projetos culturais.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Adiar para o ano que vem",
+        "efeitos": { "imprensa": -0.03 },
+        "resultado": "Artistas fazem um \"velório da cultura\" na escadaria do teatro estadual."
+      }
+    ]
+  },
+  {
+    "id": "escola-samba-verba",
+    "categoria": "cultura",
+    "titulo": "Escolas de samba pedem verba",
+    "texto": "Presidentes das escolas de samba e um conhecido mecenas do Carnaval pedem subvenção estadual para os desfiles.",
+    "tom": "info",
+    "se": ["temEstado", "mes in 10,11", "tracos has turismo"],
+    "peso": 0.6,
+    "cooldown": 10,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Conceder a subvenção com prestação de contas",
+        "efeitos": { "caixa": -0.0001, "pib": 0.001, "flag": "samba-subvencao" },
+        "resultado": "Escolas recebem subvenção com auditoria das contas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Negar",
+        "efeitos": { "grupos": { "baixaRenda": -1 } },
+        "resultado": "Comunidades das escolas protestam."
+      }
+    ]
+  },
+  {
+    "id": "festival-cinema-premio",
+    "categoria": "positivo",
+    "titulo": "Filme rodado no estado ganha prêmio internacional",
+    "texto": "Um longa filmado em {cidade} com apoio do fundo estadual de audiovisual foi premiado num grande festival europeu.",
+    "tom": "bom",
+    "se": ["temEstado"],
+    "peso": 0.3,
+    "unico": true,
+    "efeitos": { "imprensa": 0.04, "grupos": { "classeMedia": 1 } }
+  }
+]

@@ -1,0 +1,403 @@
+[
+  {
+    "id": "fabrica-fecha",
+    "categoria": "economia",
+    "titulo": "Fábrica anuncia fechamento e 3 mil demissões",
+    "texto": "Uma montadora de eletrodomésticos vai transferir a produção para o estado vizinho, que ofereceu 20 anos de isenção de ICMS. Três mil empregos em jogo.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 18,
+    "prazoDias": 15,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Cobrir a oferta do vizinho com incentivo fiscal",
+        "detalhe": "Renúncia de ICMS por 15 anos. Mantém os empregos agora.",
+        "efeitos": { "caixa": -0.001, "grupos": { "empresariado": 3, "baixaRenda": 2 }, "bancadas": { "empresarial": 0.15 } },
+        "resultado": "Empresa fica no estado em troca de incentivo. Economistas criticam a \"guerra fiscal\".",
+        "tomResultado": "alerta"
+      },
+      {
+        "texto": "Requalificar os trabalhadores e atrair outra empresa",
+        "efeitos": { "caixa": -0.0003, "indicadores": { "desemprego": 0.03 }, "grupos": { "baixaRenda": -1 } },
+        "resultado": "Governo monta programa de requalificação com o Sistema S para os demitidos.",
+        "depois": [{ "meses": 8, "chance": 0.5, "texto": "Fabricante de painéis solares ocupa o galpão da antiga montadora e contrata 1.800 pessoas.", "tom": "bom", "efeitos": { "aprovacao": 3, "indicadores": { "desemprego": -0.03 } } }]
+      },
+      {
+        "texto": "Não entrar em leilão de incentivos",
+        "efeitos": { "indicadores": { "desemprego": 0.05 }, "pib": -0.002, "grupos": { "empresariado": -2, "baixaRenda": -2 } },
+        "resultado": "A fábrica fecha. Ônibus fretados levam máquinas para o estado vizinho.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "empresa-incentivo",
+    "categoria": "economia",
+    "titulo": "Gigante de tecnologia quer data center no estado",
+    "texto": "Uma empresa global de nuvem procura local para um data center de R$ 4 bilhões. Pede isenção de ICMS na energia e terreno doado.",
+    "tom": "info",
+    "se": ["temEstado", "anoMandato >= 1"],
+    "peso": 0.7,
+    "cooldown": 30,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Aceitar as condições",
+        "efeitos": { "caixa": -0.0005, "pib": 0.004, "grupos": { "empresariado": 3 }, "imprensa": 0.05 },
+        "resultado": "Data center anunciado com pompa: 800 empregos diretos e conexão com cabo submarino.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Negociar contrapartidas (energia renovável e vagas locais)",
+        "efeitos": {},
+        "resultado": "Governo apresenta contraproposta.",
+        "depois": [
+          { "meses": 2, "chance": 0.6, "texto": "Acordo fechado: data center virá com 100% de energia renovável e cota de contratação local.", "tom": "bom", "efeitos": { "pib": 0.004, "aprovacao": 2 } },
+          { "meses": 2, "chance": 0.4, "texto": "Empresa escolhe o estado vizinho para o data center. \"Faltou agilidade\", diz a federação das indústrias.", "tom": "ruim", "efeitos": { "grupos": { "empresariado": -3 } } }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "petroleo-despenca",
+    "categoria": "economia",
+    "titulo": "Petróleo despenca e royalties derretem",
+    "texto": "O barril caiu 30% em um mês. Com a receita de royalties em queda livre, a Fazenda refaz as contas do ano.",
+    "tom": "ruim",
+    "se": ["temEstado", "petroleo"],
+    "peso": 1.2,
+    "cooldown": 24,
+    "efeitos": { "caixa": -0.003, "pib": -0.003 }
+  },
+  {
+    "id": "petroleo-dispara",
+    "categoria": "positivo",
+    "titulo": "Petróleo dispara e royalties batem recorde",
+    "texto": "Com a alta do barril, a arrecadação de royalties e participações especiais é a maior em uma década.",
+    "tom": "bom",
+    "se": ["temEstado", "petroleo"],
+    "cooldown": 24,
+    "efeitos": { "caixa": 0.003, "pib": 0.002 }
+  },
+  {
+    "id": "greve-caminhoneiros",
+    "categoria": "economia",
+    "titulo": "Greve de caminhoneiros para o país",
+    "texto": "Bloqueios em rodovias de todo o Brasil. Postos sem combustível, supermercados sem hortifrúti e hospitais racionando oxigênio.",
+    "tom": "ruim",
+    "peso": 0.4,
+    "cooldown": 36,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Escoltar caminhões de combustível e oxigênio",
+        "efeitos": { "aprovacao": 1, "pib": -0.002 },
+        "resultado": "PM escolta comboios de combustível para hospitais e transporte público.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Reduzir o ICMS do diesel temporariamente",
+        "efeitos": { "caixa": -0.0015, "grupos": { "empresariado": 2 }, "pib": -0.001 },
+        "resultado": "Estado corta o ICMS do diesel por 60 dias; caminhoneiros liberam as estradas locais."
+      }
+    ]
+  },
+  {
+    "id": "crise-nacional",
+    "categoria": "economia",
+    "titulo": "Recessão nacional derruba a arrecadação",
+    "texto": "O PIB do país recuou dois trimestres seguidos. O ICMS caiu 6% em termos reais e prefeituras atrasam salários.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "cooldown": 36,
+    "efeitos": { "pib": -0.008, "caixa": -0.002, "indicadores": { "desemprego": 0.06 } }
+  },
+  {
+    "id": "alta-dolar",
+    "categoria": "economia",
+    "titulo": "Dólar dispara",
+    "texto": "Com a moeda americana em alta recorde, importados encarecem, mas exportadores do agro e da indústria comemoram.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "cooldown": 24,
+    "efeitos": { "pib": 0.001, "grupos": { "classeMedia": -1, "empresariado": 1 } }
+  },
+  {
+    "id": "safra-recorde",
+    "categoria": "positivo",
+    "titulo": "Safra recorde",
+    "texto": "Chuva na hora certa e preço internacional alto: a safra de grãos do estado é a maior da história.",
+    "tom": "bom",
+    "se": ["temEstado", "tracos has agro", "estiagem <= 0.2"],
+    "peso": 1.2,
+    "cooldown": 12,
+    "efeitos": { "pib": 0.005, "caixa": 0.001, "bancadas": { "ruralista": 0.05 } }
+  },
+  {
+    "id": "praga-lavoura",
+    "categoria": "economia",
+    "titulo": "Praga nas lavouras",
+    "texto": "Uma infestação de cigarrinha ameaça o milho em 40 municípios. Produtores pedem estado de emergência fitossanitária.",
+    "tom": "alerta",
+    "se": ["temEstado", "tracos has agro"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Força-tarefa da agência de defesa agropecuária",
+        "efeitos": { "caixa": -0.0003, "bancadas": { "ruralista": 0.15 }, "pib": -0.001 },
+        "resultado": "Agência estadual monitora lavouras e distribui controle biológico.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com o Ministério da Agricultura",
+        "efeitos": { "bancadas": { "ruralista": -0.1 }, "pib": -0.004 },
+        "resultado": "A praga avança; quebra de safra de 15% no milho.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "guerra-fiscal",
+    "categoria": "economia",
+    "titulo": "Estado vizinho oferece ICMS zero para atacadistas",
+    "texto": "Distribuidoras ameaçam levar os centros de distribuição para o vizinho, que zerou o ICMS do atacado. A federação do comércio pede reação.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Igualar o benefício",
+        "efeitos": { "caixa": -0.0015, "grupos": { "empresariado": 3 } },
+        "resultado": "Estado entra na guerra fiscal do atacado.",
+        "tomResultado": "alerta"
+      },
+      {
+        "texto": "Acionar o STF contra o benefício irregular",
+        "efeitos": { "grupos": { "empresariado": -1 } },
+        "resultado": "Procuradoria do Estado entra com ação no Supremo.",
+        "depois": [{ "meses": 10, "chance": 0.6, "texto": "STF derruba o benefício do estado vizinho: \"guerra fiscal sem aprovação do Confaz é inconstitucional\".", "tom": "bom", "efeitos": { "caixa": 0.001, "grupos": { "empresariado": 1 } } }]
+      }
+    ]
+  },
+  {
+    "id": "inflacao-alimentos",
+    "categoria": "economia",
+    "titulo": "Preço da comida dispara",
+    "texto": "Feijão, arroz e carne subiram 20% em seis meses. A cesta básica consome metade do salário mínimo em {cidade}.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Zerar o ICMS da cesta básica",
+        "efeitos": { "caixa": -0.0015, "grupos": { "baixaRenda": 4, "classeMedia": 1 }, "indicadores": { "pobreza": -0.04 } },
+        "resultado": "ICMS zero em 20 itens da cesta básica. Supermercados prometem repassar.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Ampliar os restaurantes populares",
+        "efeitos": { "caixa": -0.0005, "grupos": { "baixaRenda": 2 }, "indicadores": { "pobreza": -0.02 } },
+        "resultado": "Restaurantes populares a R$ 1 ganham 30 novas unidades."
+      }
+    ]
+  },
+  {
+    "id": "eolica-solar",
+    "categoria": "positivo",
+    "titulo": "Investidores querem parques eólicos e solares",
+    "texto": "Consórcio europeu quer instalar 2 GW de energia eólica e solar no interior. Pede licenciamento rápido e linhas de transmissão.",
+    "tom": "bom",
+    "se": ["temEstado", "regiao in Nordeste,Sul,Centro-Oeste,Sudeste"],
+    "peso": 0.6,
+    "cooldown": 30,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Licenciamento expresso com regras ambientais claras",
+        "efeitos": { "pib": 0.004, "grupos": { "empresariado": 2 }, "bancadas": { "ambientalista": 0.05 } },
+        "resultado": "Primeiros parques começam a ser erguidos em um ano.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Exigir consulta às comunidades e repartição de renda",
+        "efeitos": { "pib": 0.002, "prefeitos": 0.1, "grupos": { "baixaRenda": 1 } },
+        "resultado": "Projeto sai com arrendamento justo para agricultores e fundo para os municípios."
+      }
+    ]
+  },
+  {
+    "id": "mineradora-projeto",
+    "categoria": "economia",
+    "titulo": "Mineradora quer abrir mina em área de manancial",
+    "texto": "Projeto de R$ 3 bilhões promete 2 mil empregos, mas fica na cabeceira do rio que abastece a região metropolitana.",
+    "tom": "alerta",
+    "se": ["temEstado", "tracos has riscoBarragem"],
+    "peso": 0.8,
+    "cooldown": 36,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Licenciar",
+        "efeitos": { "pib": 0.003, "grupos": { "empresariado": 2 }, "bancadas": { "ambientalista": -0.3 }, "imprensa": -0.05 },
+        "resultado": "Licença concedida. MP entra com ação civil pública.",
+        "tomResultado": "alerta"
+      },
+      {
+        "texto": "Negar a licença",
+        "efeitos": { "grupos": { "empresariado": -2 }, "bancadas": { "ambientalista": 0.2 }, "imprensa": 0.04 },
+        "resultado": "Governo nega a licença: \"água vale mais que minério\".",
+        "tomResultado": "bom"
+      }
+    ]
+  },
+  {
+    "id": "turismo-recorde",
+    "categoria": "positivo",
+    "titulo": "Turismo bate recorde",
+    "texto": "Ocupação hoteleira acima de 90% e voos lotados: {cidade} recebeu mais turistas estrangeiros do que nunca.",
+    "tom": "bom",
+    "se": ["tracos has turismo"],
+    "cooldown": 18,
+    "efeitos": { "pib": 0.002, "aprovacaoCidade": 1, "grupos": { "empresariado": 1 } }
+  },
+  {
+    "id": "call-center-demite",
+    "categoria": "economia",
+    "titulo": "Call center troca atendentes por robôs",
+    "texto": "A maior central de atendimento do estado demite 2.500 pessoas e passa a usar inteligência artificial. Sindicato fala em \"desastre social\".",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "cooldown": 30,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Programa de requalificação digital",
+        "efeitos": { "caixa": -0.0003, "indicadores": { "desemprego": 0.01 }, "grupos": { "baixaRenda": 1 } },
+        "resultado": "Bolsas de formação em programação e manutenção para os demitidos.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Lamentar e seguir",
+        "efeitos": { "indicadores": { "desemprego": 0.03 }, "grupos": { "baixaRenda": -2 } },
+        "resultado": "Demitidos fazem fila no SINE."
+      }
+    ]
+  },
+  {
+    "id": "porto-ferrovia",
+    "categoria": "economia",
+    "titulo": "Grupo logístico propõe ferrovia até o porto",
+    "texto": "Um consórcio quer construir uma ferrovia de 400 km ligando o interior ao porto, em concessão de 35 anos. Precisa de garantia do Estado.",
+    "tom": "info",
+    "se": ["temEstado", "anoMandato >= 2"],
+    "peso": 0.5,
+    "unico": true,
+    "prazoDias": 25,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Dar a garantia e licenciar",
+        "efeitos": { "pib": 0.005, "caixa": -0.0008, "grupos": { "empresariado": 4 }, "bancadas": { "ruralista": 0.15 } },
+        "resultado": "Contrato assinado; obras começam no próximo ano.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recusar a garantia",
+        "efeitos": { "grupos": { "empresariado": -2 } },
+        "resultado": "Sem garantia estadual, o consórcio desiste."
+      }
+    ]
+  },
+  {
+    "id": "startup-unicornio",
+    "categoria": "positivo",
+    "titulo": "Startup local vira unicórnio",
+    "texto": "Uma fintech nascida em uma incubadora de {cidade} foi avaliada em US$ 1 bilhão. Os fundadores agradecem à universidade estadual.",
+    "tom": "bom",
+    "se": ["pop >= 0"],
+    "peso": 0.5,
+    "unico": true,
+    "efeitos": { "pib": 0.001, "imprensa": 0.04, "grupos": { "classeMedia": 1 } }
+  },
+  {
+    "id": "shopping-novo",
+    "categoria": "economia",
+    "titulo": "Novo shopping quer viaduto de acesso",
+    "texto": "Um grupo varejista vai abrir um shopping com 3 mil empregos em {cidade}, mas exige que o Estado construa o viaduto de acesso.",
+    "tom": "info",
+    "se": ["pop >= 5000"],
+    "peso": 0.6,
+    "cooldown": 36,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Construir o viaduto",
+        "efeitos": { "caixaCidade": -15000000, "aprovacaoCidade": 1, "pib": 0.001 },
+        "resultado": "Viaduto anunciado; shopping abre em 18 meses.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Exigir que o empreendedor pague a contrapartida",
+        "efeitos": {},
+        "resultado": "Prefeitura e Estado exigem contrapartida viária do empreendimento.",
+        "depois": [{ "meses": 3, "chance": 0.5, "texto": "O grupo aceita pagar o viaduto como contrapartida e o shopping sai do papel.", "tom": "bom", "efeitos": { "pib": 0.001 } }]
+      }
+    ]
+  },
+  {
+    "id": "investimento-estrangeiro",
+    "categoria": "positivo",
+    "titulo": "Investimento estrangeiro recorde",
+    "texto": "O estado atraiu o maior volume de investimento estrangeiro direto da sua história, puxado por energia e logística.",
+    "tom": "bom",
+    "se": ["temEstado", "aprovacao >= 45"],
+    "peso": 0.5,
+    "cooldown": 24,
+    "efeitos": { "pib": 0.003, "grupos": { "empresariado": 2 } }
+  },
+  {
+    "id": "reforma-tributaria-ibs",
+    "categoria": "federal",
+    "titulo": "Transição do IBS: estado perde arrecadação?",
+    "texto": "Com a reforma tributária, o ICMS dá lugar gradualmente ao IBS. Estudo da Fazenda estima que o estado perde receita na transição se não aderir ao fundo de compensação.",
+    "tom": "info",
+    "se": ["temEstado", "ano >= 2029"],
+    "unico": true,
+    "prazoDias": 25,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Aderir ao fundo de compensação e cumprir as regras",
+        "efeitos": { "presidente": 0.05, "caixa": 0.0005 },
+        "resultado": "Estado adere ao fundo de compensação dos benefícios fiscais.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Brigar no STF por uma fatia maior",
+        "efeitos": { "presidente": -0.1, "grupos": { "empresariado": 1 } },
+        "resultado": "Procuradoria contesta os critérios do Conselho Federativo no STF."
+      }
+    ]
+  }
+]

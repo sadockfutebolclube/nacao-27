@@ -1,0 +1,204 @@
+{
+ "id": 50,
+ "sigla": "MS",
+ "nome": "Mato Grosso do Sul",
+ "regiao": {
+  "sigla": "CO",
+  "nome": "Centro-Oeste"
+ },
+ "populacao": {
+  "valor": 2946317,
+  "ano": 2026,
+  "censo2022": 2757013
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 184402118000,
+  "perCapita": 62587,
+  "vab": {
+   "agro": 32138407000,
+   "industria": 25468390000,
+   "servicos": 47448446000,
+   "adminPublica": 20888757000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 358295,
+ "numMunicipios": 79,
+ "maioresMunicipios": [
+  {
+   "id": 5002704,
+   "nome": "Campo Grande",
+   "populacao": 970843
+  },
+  {
+   "id": 5003702,
+   "nome": "Dourados",
+   "populacao": 266950
+  },
+  {
+   "id": 5008305,
+   "nome": "Três Lagoas",
+   "populacao": 145514
+  },
+  {
+   "id": 5006606,
+   "nome": "Ponta Porã",
+   "populacao": 99572
+  },
+  {
+   "id": 5003207,
+   "nome": "Corumbá",
+   "populacao": 96334
+  },
+  {
+   "id": 5005707,
+   "nome": "Naviraí",
+   "populacao": 53307
+  },
+  {
+   "id": 5006200,
+   "nome": "Nova Andradina",
+   "populacao": 51081
+  },
+  {
+   "id": 5007901,
+   "nome": "Sidrolândia",
+   "populacao": 50079
+  }
+ ],
+ "indicadores": {
+  "idh": 0.742,
+  "homicidios": 21.2,
+  "idebEM": 4.1,
+  "esgoto": 57,
+  "dividaRCL": 25
+ },
+ "tracos": {
+  "sigla": "MS",
+  "apelido": "Pantanal Sul",
+  "dificuldade": 2,
+  "capital": {
+   "nome": "Campo Grande",
+   "ibge": 5002704,
+   "lat": -20.4697,
+   "lon": -54.6201
+  },
+  "biomas": [
+   "cerrado",
+   "pantanal",
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "planicie",
+   "agua": null,
+   "relevo": 0.25
+  },
+  "clima": "Tropical — verão chuvoso, frentes frias que derrubam a temperatura de uma vez",
+  "sotaque": "sul-mato-grossense",
+  "saudacao": "Bom dia, Governador! Tereré gelado tá na mesa.",
+  "trilha": [
+   "polca paraguaia",
+   "chamamé",
+   "sertanejo"
+  ],
+  "festas": [
+   "Festival de Inverno de Bonito",
+   "Festa da Linguiça de Maracaju"
+  ],
+  "arquitetura": "Cidade de avenidas largas, ipês nos canteiros, galpões de celulose",
+  "tracos": [
+   {
+    "id": "celulose",
+    "nome": "Vale da Celulose",
+    "tipo": "buff",
+    "descricao": "Fábricas bilionárias de celulose geram empregos.",
+    "efeitos": {
+     "industria": 0.25
+    }
+   },
+   {
+    "id": "fronteira-ms",
+    "nome": "Fronteira seca",
+    "tipo": "nerf",
+    "descricao": "Rota de contrabando e drogas com o Paraguai e a Bolívia.",
+    "efeitos": {
+     "criminalidade": 0.2
+    }
+   },
+   {
+    "id": "bonito",
+    "nome": "Bonito e Pantanal",
+    "tipo": "buff",
+    "descricao": "Ecoturismo de classe mundial.",
+    "efeitos": {
+     "turismo": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Fronteira com tráfico",
+   "Conflitos fundiários indígenas",
+   "Queimadas no Pantanal"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

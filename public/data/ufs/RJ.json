@@ -1,0 +1,227 @@
+{
+ "id": 33,
+ "sigla": "RJ",
+ "nome": "Rio de Janeiro",
+ "regiao": {
+  "sigla": "SE",
+  "nome": "Sudeste"
+ },
+ "populacao": {
+  "valor": 17225410,
+  "ano": 2026,
+  "censo2022": 16055174
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 1172871443000,
+  "perCapita": 68090,
+  "vab": {
+   "agro": 4375467000,
+   "industria": 292743437000,
+   "servicos": 377139326000,
+   "adminPublica": 145587874000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 43499,
+ "numMunicipios": 92,
+ "maioresMunicipios": [
+  {
+   "id": 3304557,
+   "nome": "Rio de Janeiro",
+   "populacao": 6731133
+  },
+  {
+   "id": 3304904,
+   "nome": "São Gonçalo",
+   "populacao": 959977
+  },
+  {
+   "id": 3301702,
+   "nome": "Duque de Caxias",
+   "populacao": 866167
+  },
+  {
+   "id": 3303500,
+   "nome": "Nova Iguaçu",
+   "populacao": 843367
+  },
+  {
+   "id": 3301009,
+   "nome": "Campos dos Goytacazes",
+   "populacao": 519378
+  },
+  {
+   "id": 3300456,
+   "nome": "Belford Roxo",
+   "populacao": 518442
+  },
+  {
+   "id": 3303302,
+   "nome": "Niterói",
+   "populacao": 516820
+  },
+  {
+   "id": 3305109,
+   "nome": "São João de Meriti",
+   "populacao": 466487
+  }
+ ],
+ "indicadores": {
+  "idh": 0.762,
+  "homicidios": 26.8,
+  "idebEM": 3.9,
+  "esgoto": 66,
+  "dividaRCL": 211
+ },
+ "tracos": {
+  "sigla": "RJ",
+  "apelido": "Cidade Maravilhosa",
+  "dificuldade": 5,
+  "capital": {
+   "nome": "Rio de Janeiro",
+   "ibge": 3304557,
+   "lat": -22.9068,
+   "lon": -43.1729
+  },
+  "biomas": [
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "litoral-morros",
+   "agua": {
+    "lado": "S",
+    "tipo": "mar"
+   },
+   "relevo": 0.95
+  },
+  "clima": "Tropical atlântico — verão de 40°C, temporais de fim de tarde, ressacas no inverno",
+  "sotaque": "carioca",
+  "saudacao": "Fala, Governador! Tá geral esperando o senhor. Qual é a boa de hoje?",
+  "trilha": [
+   "samba",
+   "bossa nova",
+   "funk instrumental"
+  ],
+  "festas": [
+   "Carnaval na Sapucaí",
+   "Réveillon de Copacabana",
+   "Rock in Rio"
+  ],
+  "arquitetura": "Calçadão de pedra portuguesa, prédios caixote dos anos 70, comunidades nos morros, casarões imperiais",
+  "tracos": [
+   {
+    "id": "royalties",
+    "nome": "Royalties do pré-sal",
+    "tipo": "buff",
+    "descricao": "Petróleo da Bacia de Campos e Santos irriga o caixa — enquanto o barril colaborar.",
+    "efeitos": {
+     "receitaRoyalties": 0.25
+    }
+   },
+   {
+    "id": "cartao-postal",
+    "nome": "Cartão-postal do Brasil",
+    "tipo": "buff",
+    "descricao": "Turismo internacional, eventos gigantes e mídia global.",
+    "efeitos": {
+     "turismo": 0.4
+    }
+   },
+   {
+    "id": "crise-fiscal-rj",
+    "nome": "Crise fiscal histórica",
+    "tipo": "nerf",
+    "descricao": "Regime de Recuperação Fiscal, previdência deficitária e dívida altíssima.",
+    "efeitos": {
+     "dividaInicial": 0.6,
+     "custoPessoal": 0.25
+    }
+   },
+   {
+    "id": "territorio-rj",
+    "nome": "Território dividido",
+    "tipo": "nerf",
+    "descricao": "Grupos armados controlam áreas inteiras; operações têm alto custo humano.",
+    "efeitos": {
+     "criminalidade": 0.4
+    }
+   },
+   {
+    "id": "morros-rj",
+    "nome": "Temporais e encostas",
+    "tipo": "nerf",
+    "descricao": "Chuvas de verão causam enchentes e deslizamentos.",
+    "efeitos": {
+     "riscoEnchente": 0.35,
+     "riscoDeslizamento": 0.45
+    }
+   }
+  ],
+  "desafios": [
+   "Controle territorial armado",
+   "Crise fiscal",
+   "Mobilidade metropolitana",
+   "Baía de Guanabara poluída"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

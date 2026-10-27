@@ -1,0 +1,199 @@
+{
+ "sigla": "RO",
+ "geradoEm": "2026-10-26T22:43:29.201Z",
+ "municipios": [
+  {
+   "ibge": "1100205",
+   "nome": "Porto Velho",
+   "populacao": 520379,
+   "capital": true,
+   "lat": -8.76077,
+   "lon": -63.8999,
+   "elevacao": 89,
+   "desnivel": 35,
+   "distCostaKm": 1527,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "W",
+     "tipo": "rio"
+    },
+    "relevo": 0.2
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Várzea de rio · Amazônia · 89 m de altitude · 1527 km do mar"
+  },
+  {
+   "ibge": "1100122",
+   "nome": "Ji-Paraná",
+   "populacao": 140800,
+   "capital": false,
+   "lat": -10.8777,
+   "lon": -61.9322,
+   "elevacao": 139,
+   "desnivel": 32,
+   "distCostaKm": 1231,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12307692307692308
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 139 m de altitude · 1231 km do mar"
+  },
+  {
+   "ibge": "1100304",
+   "nome": "Vilhena",
+   "populacao": 110708,
+   "capital": false,
+   "lat": -12.7502,
+   "lon": -60.1488,
+   "elevacao": 581,
+   "desnivel": 54,
+   "distCostaKm": 978,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.2076923076923077
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -3.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Amazônia · 581 m de altitude · 978 km do mar"
+  },
+  {
+   "ibge": "1100023",
+   "nome": "Ariquemes",
+   "populacao": 109731,
+   "capital": false,
+   "lat": -9.90571,
+   "lon": -63.0325,
+   "elevacao": 135,
+   "desnivel": 31,
+   "distCostaKm": 1385,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 135 m de altitude · 1385 km do mar"
+  },
+  {
+   "ibge": "1100049",
+   "nome": "Cacoal",
+   "populacao": 98884,
+   "capital": false,
+   "lat": -11.4343,
+   "lon": -61.4562,
+   "elevacao": 195,
+   "desnivel": 30,
+   "distCostaKm": 1159,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.7,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 195 m de altitude · 1159 km do mar"
+  },
+  {
+   "ibge": "1100288",
+   "nome": "Rolim de Moura",
+   "populacao": 63336,
+   "capital": false,
+   "lat": -11.7271,
+   "lon": -61.7714,
+   "elevacao": 213,
+   "desnivel": 45,
+   "distCostaKm": 1180,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.17307692307692307
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 213 m de altitude · 1180 km do mar"
+  },
+  {
+   "ibge": "1100114",
+   "nome": "Jaru",
+   "populacao": 55774,
+   "capital": false,
+   "lat": -10.4318,
+   "lon": -62.4788,
+   "elevacao": 172,
+   "desnivel": 40,
+   "distCostaKm": 1305,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.15384615384615385
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 172 m de altitude · 1305 km do mar"
+  },
+  {
+   "ibge": "1100106",
+   "nome": "Guajará-Mirim",
+   "populacao": 43633,
+   "capital": false,
+   "lat": -10.7889,
+   "lon": -65.3296,
+   "elevacao": 123,
+   "desnivel": 18,
+   "distCostaKm": 1581,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 123 m de altitude · 1581 km do mar"
+  }
+ ]
+}

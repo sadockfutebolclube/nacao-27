@@ -1,0 +1,622 @@
+[
+  {
+    "id": "enchente-capital",
+    "categoria": "desastre",
+    "titulo": "Enchente em {cidade}",
+    "texto": "A chuva dos últimos dias transbordou rios e galerias. Ruas do {bairro} viraram canais, carros boiam e a Defesa Civil fala em centenas de desalojados.",
+    "tom": "ruim",
+    "se": ["enchente >= 0.45"],
+    "quando": "diario",
+    "chance": 0.9,
+    "cooldown": 2,
+    "prazoDias": 6,
+    "padrao": 2,
+    "efeitos": { "visual": { "tipo": "alagamento", "dias": 4 }, "aprovacaoCidade": -2 },
+    "escolhas": [
+      {
+        "texto": "Decretar calamidade e montar gabinete de crise",
+        "detalhe": "Libera o socorro federal e compra emergencial sem licitação. Gasto de 0,2% da RCL.",
+        "efeitos": { "caixa": -0.002, "aprovacao": 3, "calamidade": 3, "imprensa": 0.05 },
+        "resultado": "Governador decreta calamidade, vai às áreas atingidas de galochas e anuncia aluguel social para os desabrigados.",
+        "tomResultado": "bom",
+        "depois": [{ "meses": 3, "chance": 0.35, "texto": "{blog} revela compras emergenciais sem licitação a preços acima do mercado na enchente de {cidade}.", "tom": "ruim", "efeitos": { "aprovacao": -2, "imprensa": -0.08 } }]
+      },
+      {
+        "texto": "Mandar a Defesa Civil e acompanhar do Palácio",
+        "detalhe": "Resposta técnica, sem holofote. Gasto pequeno.",
+        "efeitos": { "caixa": -0.0005, "aprovacao": -1 },
+        "resultado": "Defesa Civil estadual retira famílias das áreas de risco. A oposição cobra a presença do governador."
+      },
+      {
+        "texto": "Culpar a prefeitura pela drenagem",
+        "detalhe": "Não custa nada. Custa a relação com {prefeito}.",
+        "efeitos": { "prefeito": -0.25, "aprovacao": -3 },
+        "resultado": "\"A drenagem urbana é responsabilidade do município\", diz o Palácio. {prefeito} responde ao vivo na {tv}: \"Cadê o governador?\"",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "deslizamento-encosta",
+    "categoria": "desastre",
+    "titulo": "Deslizamento no {favela}",
+    "texto": "Depois da chuva forte, a encosta cedeu no {favela}. Bombeiros procuram vítimas entre os escombros enquanto vizinhos cavam com as mãos.",
+    "tom": "ruim",
+    "se": ["chuva3d >= 90", "favelaRisco >= 0.3"],
+    "quando": "diario",
+    "chance": 0.25,
+    "cooldown": 6,
+    "prazoDias": 10,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -3, "indicadores": { "mortalidadeInfantil": 0.02 } },
+    "escolhas": [
+      {
+        "texto": "Programa emergencial de contenção de encostas",
+        "detalhe": "Muros de arrimo e sirenes nas comunidades de risco. 0,15% da RCL.",
+        "efeitos": { "caixa": -0.0015, "aprovacao": 2, "grupos": { "baixaRenda": 3 }, "flag": "encostas-emergencial" },
+        "resultado": "Governo anuncia sirenes e muros de contenção no {favela} e em outras 12 comunidades.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Remover as famílias da área de risco",
+        "detalhe": "Aluguel social e interdição. Movimentos de moradia vão protestar.",
+        "efeitos": { "caixa": -0.0006, "grupos": { "baixaRenda": -3, "classeMedia": 1 } },
+        "resultado": "Defesa Civil interdita 200 casas no {favela}; moradores dizem que o aluguel social não paga nem um quarto."
+      }
+    ]
+  },
+  {
+    "id": "temporal-arvores",
+    "categoria": "desastre",
+    "titulo": "Temporal derruba árvores e deixa bairros sem luz",
+    "texto": "Ventos de 80 km/h derrubaram dezenas de árvores sobre a fiação em {cidade}. O {bairro} está há 30 horas sem energia e a concessionária não dá prazo.",
+    "tom": "ruim",
+    "se": ["chuvaHoje >= 45"],
+    "quando": "diario",
+    "chance": 0.35,
+    "cooldown": 4,
+    "prazoDias": 5,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "apagao", "dias": 2 }, "aprovacaoCidade": -1 },
+    "escolhas": [
+      {
+        "texto": "Multar a concessionária e exigir plano de poda",
+        "efeitos": { "aprovacao": 2, "grupos": { "empresariado": -1 } },
+        "resultado": "Agência reguladora estadual multa a distribuidora e exige plano de manejo de árvores.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Esperar a concessionária resolver",
+        "efeitos": { "aprovacao": -1 },
+        "resultado": "Energia volta aos poucos. Comerciantes contabilizam o prejuízo das geladeiras."
+      }
+    ]
+  },
+  {
+    "id": "estiagem-racionamento",
+    "categoria": "desastre",
+    "titulo": "Reservatórios no limite: racionamento?",
+    "texto": "Sem chuva há semanas, a companhia de águas diz que os reservatórios que abastecem {cidade} estão abaixo de 30%. Técnicos recomendam rodízio no abastecimento.",
+    "tom": "alerta",
+    "se": ["estiagem >= 0.55"],
+    "quando": "diario",
+    "chance": 0.2,
+    "cooldown": 10,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Decretar rodízio e campanha de economia",
+        "detalhe": "Impopular agora, evita o colapso depois.",
+        "efeitos": { "aprovacao": -2, "grupos": { "classeMedia": -2 }, "flag": "racionamento" },
+        "resultado": "Rodízio de água começa: bairros ficam 36 horas sem abastecimento a cada três dias. Vendas de caixa d'água disparam.",
+        "depois": [{ "meses": 2, "chance": 0.8, "texto": "Com o rodízio, reservatórios param de cair e o pior cenário é evitado. Técnicos elogiam a decisão.", "tom": "bom", "efeitos": { "aprovacao": 2, "limparFlag": "racionamento" } }]
+      },
+      {
+        "texto": "Torcer pela chuva e não racionar",
+        "efeitos": {},
+        "resultado": "Governo descarta racionamento \"neste momento\".",
+        "depois": [{ "meses": 1, "chance": 0.6, "se": ["estiagem >= 0.4"], "texto": "Colapso no abastecimento: torneiras secam em metade de {cidade} sem aviso. Carros-pipa disputados a tapa.", "tom": "ruim", "efeitos": { "aprovacao": -6, "grupos": { "baixaRenda": -3 } } }]
+      },
+      {
+        "texto": "Contratar carros-pipa e obra emergencial de adutora",
+        "detalhe": "0,25% da RCL. Rápido, caro e sujeito a superfaturamento.",
+        "efeitos": { "caixa": -0.0025, "aprovacao": 1 },
+        "resultado": "Governo anuncia adutora emergencial e frota de carros-pipa para os bairros mais altos.",
+        "depois": [{ "meses": 4, "chance": 0.3, "texto": "TCE aponta sobrepreço de 40% no contrato emergencial da adutora.", "tom": "ruim", "efeitos": { "aprovacao": -2 } }]
+      }
+    ]
+  },
+  {
+    "id": "seca-sertao",
+    "categoria": "desastre",
+    "titulo": "Seca no sertão: 80 municípios em emergência",
+    "texto": "Açudes secos, gado morrendo e famílias andando quilômetros atrás de água. Prefeitos do interior pedem socorro ao Palácio.",
+    "tom": "ruim",
+    "se": ["regiao == Nordeste", "estiagem >= 0.35"],
+    "quando": "diario",
+    "chance": 0.15,
+    "cooldown": 12,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Operação carro-pipa e cisternas",
+        "detalhe": "0,2% da RCL. Pede reconhecimento federal de emergência.",
+        "efeitos": { "caixa": -0.002, "prefeitos": 0.15, "grupos": { "baixaRenda": 4 }, "calamidade": 3 },
+        "resultado": "Governo distribui cisternas de placas e reforça a operação carro-pipa no sertão.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com a União e as prefeituras",
+        "efeitos": { "prefeitos": -0.15, "grupos": { "baixaRenda": -3 }, "pib": -0.003 },
+        "resultado": "Prefeitos do semiárido acusam o governador de \"esquecer o interior\".",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "onda-de-calor",
+    "categoria": "clima",
+    "titulo": "Onda de calor: sensação térmica passa dos 50°C",
+    "texto": "Terceiro dia seguido de calor extremo em {cidade}. Emergências recebem idosos desidratados e escolas sem ar-condicionado liberam os alunos mais cedo.",
+    "tom": "alerta",
+    "se": ["diasCalor >= 3"],
+    "quando": "diario",
+    "chance": 0.5,
+    "cooldown": 3,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Pontos de hidratação e horário especial nas escolas",
+        "efeitos": { "caixa": -0.0003, "aprovacao": 1, "indicadores": { "esperaEmergencia": -0.03 } },
+        "resultado": "Tendas de hidratação nas praças e aulas encerradas ao meio-dia durante a onda de calor.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Manter tudo normal",
+        "efeitos": { "indicadores": { "esperaEmergencia": 0.06 } },
+        "resultado": "Pais reclamam das salas de aula \"virando forno\". Vídeo de aluno desmaiando viraliza.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "apagao-calor",
+    "categoria": "desastre",
+    "titulo": "Apagão no pico do calor",
+    "texto": "Com todos os ares-condicionados ligados, a rede elétrica não aguentou: um apagão atinge metade de {cidade} no fim da tarde.",
+    "tom": "ruim",
+    "se": ["calor >= 0.6", "pop >= 300"],
+    "quando": "diario",
+    "chance": 0.2,
+    "cooldown": 6,
+    "efeitos": { "visual": { "tipo": "apagao", "dias": 1 }, "aprovacao": -2, "aprovacaoCidade": -3 }
+  },
+  {
+    "id": "queimadas-fumaca",
+    "categoria": "desastre",
+    "titulo": "Fumaça das queimadas cobre {cidade}",
+    "texto": "O céu ficou alaranjado ao meio-dia. A qualidade do ar está entre as piores do mundo, o aeroporto opera por instrumentos e as emergências enchem de crianças com crise respiratória.",
+    "tom": "ruim",
+    "se": ["fumaca >= 0.5"],
+    "quando": "diario",
+    "chance": 0.4,
+    "cooldown": 6,
+    "prazoDias": 10,
+    "padrao": 2,
+    "efeitos": { "visual": { "tipo": "fumaca", "dias": 5 } },
+    "escolhas": [
+      {
+        "texto": "Brigadas, aviões-tanque e multa pesada para quem queima",
+        "detalhe": "0,1% da RCL. O agro vai reclamar da fiscalização.",
+        "efeitos": { "caixa": -0.001, "aprovacao": 2, "bancadas": { "ruralista": -0.1, "ambientalista": 0.15 } },
+        "resultado": "Governo contrata brigadistas e aviões e anuncia multas recordes por queimada ilegal.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir apoio do governo federal",
+        "efeitos": { "presidente": 0.05 },
+        "resultado": "Governador pede ajuda a Brasília; Ibama e Força Nacional ambiental reforçam o combate."
+      },
+      {
+        "texto": "Dizer que é fenômeno natural da estação",
+        "efeitos": { "aprovacao": -3, "imprensa": -0.1, "bancadas": { "ruralista": 0.05 } },
+        "resultado": "\"Todo ano é assim\", diz o Palácio. Ambientalistas e a {tv} mostram satélites com centenas de focos criminosos.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "queimadas-pressao-internacional",
+    "categoria": "desastre",
+    "titulo": "Queimadas viram assunto internacional",
+    "texto": "Jornais europeus publicam imagens de satélite do estado em chamas. Fundos de investimento ameaçam vetar crédito a empresas da região.",
+    "tom": "alerta",
+    "se": ["fumaca >= 0.4", "bioma in amazonia,pantanal"],
+    "quando": "diario",
+    "chance": 0.08,
+    "cooldown": 12,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Moratória de licenças de desmate por um ano",
+        "efeitos": { "pib": -0.004, "bancadas": { "ruralista": -0.3, "ambientalista": 0.3 }, "imprensa": 0.1, "aprovacao": 1 },
+        "resultado": "Estado suspende novas licenças de supressão vegetal. Ruralistas prometem derrubar o decreto na ALE.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Defender o produtor e atacar a \"campanha estrangeira\"",
+        "efeitos": { "bancadas": { "ruralista": 0.2, "ambientalista": -0.3 }, "imprensa": -0.15, "pib": -0.002 },
+        "resultado": "Governador acusa ONGs estrangeiras de \"campanha contra o agro\". Duas tradings suspendem compras no estado.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "ressaca-litoral",
+    "categoria": "desastre",
+    "titulo": "Ressaca destrói trecho da orla",
+    "texto": "Ondas de quatro metros invadiram a avenida da orla de {cidade}, arrancaram o calçadão e jogaram areia nos prédios. A prefeitura interditou o trecho.",
+    "tom": "ruim",
+    "se": ["ressaca >= 1", "litoral"],
+    "quando": "diario",
+    "chance": 0.25,
+    "cooldown": 8,
+    "prazoDias": 10,
+    "padrao": 1,
+    "efeitos": { "aprovacaoCidade": -1 },
+    "escolhas": [
+      {
+        "texto": "Obra de engorda da praia e enrocamento",
+        "detalhe": "0,12% da RCL; estudos dizem que resolve por 20 anos.",
+        "efeitos": { "caixa": -0.0012, "aprovacao": 1, "prefeito": 0.1 },
+        "resultado": "Estado assume a obra de proteção costeira em parceria com a prefeitura.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recuperar só o calçadão",
+        "efeitos": { "caixa": -0.0002 },
+        "resultado": "O calçadão é refeito. Oceanógrafos avisam: \"na próxima ressaca, cai de novo\".",
+        "depois": [{ "meses": 12, "chance": 0.5, "texto": "Nova ressaca leva o calçadão recém-reformado de {cidade}. \"Dinheiro jogado no mar\", ironiza {jornal}.", "tom": "ruim", "efeitos": { "aprovacao": -2 } }]
+      }
+    ]
+  },
+  {
+    "id": "geada-agro",
+    "categoria": "clima",
+    "titulo": "Geada queima lavouras",
+    "texto": "A massa de ar polar trouxe geada negra ao interior. Produtores de café, trigo e hortaliças calculam perdas de até 40%.",
+    "tom": "ruim",
+    "se": ["geada >= 0.6", "regiao in Sul,Sudeste"],
+    "quando": "diario",
+    "chance": 0.3,
+    "cooldown": 12,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Linha de crédito emergencial do banco estadual",
+        "efeitos": { "caixa": -0.0008, "bancadas": { "ruralista": 0.2 }, "pib": -0.001 },
+        "resultado": "Agricultores atingidos pela geada terão crédito com juros subsidiados.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Prorrogar o ICMS dos produtores atingidos",
+        "efeitos": { "caixa": -0.0004, "bancadas": { "ruralista": 0.1 }, "pib": -0.002 },
+        "resultado": "Secretaria da Fazenda adia o ICMS dos produtores por seis meses."
+      }
+    ]
+  },
+  {
+    "id": "frio-moradores-de-rua",
+    "categoria": "clima",
+    "titulo": "Frio extremo: moradores de rua morrem de hipotermia",
+    "texto": "A madrugada mais fria do ano em {cidade} matou três pessoas em situação de rua. Igrejas e voluntários improvisam abrigos.",
+    "tom": "ruim",
+    "se": ["tMin <= 6"],
+    "quando": "diario",
+    "chance": 0.4,
+    "cooldown": 8,
+    "prazoDias": 5,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Abrir ginásios estaduais como abrigos e distribuir cobertores",
+        "efeitos": { "caixa": -0.0001, "aprovacao": 2, "grupos": { "baixaRenda": 2 } },
+        "resultado": "Ginásios estaduais viram abrigos noturnos durante a onda de frio.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com a assistência social do município",
+        "efeitos": { "aprovacao": -2, "prefeito": -0.05 },
+        "resultado": "Palácio diz que o acolhimento é atribuição municipal. Bispo critica em homilia."
+      }
+    ]
+  },
+  {
+    "id": "granizo",
+    "categoria": "clima",
+    "titulo": "Chuva de granizo destrói telhados",
+    "texto": "Pedras de gelo do tamanho de ovos caíram por vinte minutos em {cidade}. Milhares de telhados e carros danificados; telhas somem das lojas.",
+    "tom": "ruim",
+    "se": ["chuvaHoje >= 35", "regiao in Sul,Sudeste,Centro-Oeste", "estacao in primavera,verão"],
+    "quando": "diario",
+    "chance": 0.05,
+    "cooldown": 12,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Doar telhas e lonas às famílias atingidas",
+        "efeitos": { "caixa": -0.0003, "grupos": { "baixaRenda": 3 } },
+        "resultado": "Defesa Civil distribui lonas e telhas nos bairros atingidos pelo granizo.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Isentar de ICMS a venda de telhas por 60 dias",
+        "efeitos": { "caixa": -0.0001, "grupos": { "classeMedia": 2, "empresariado": 1 } },
+        "resultado": "Lojas de material de construção baixam o preço das telhas com a isenção."
+      }
+    ]
+  },
+  {
+    "id": "ciclone-extratropical",
+    "categoria": "desastre",
+    "titulo": "Ciclone extratropical atinge o estado",
+    "texto": "Rajadas de mais de 100 km/h destelharam escolas, derrubaram torres de energia e isolaram cidades do interior.",
+    "tom": "ruim",
+    "se": ["regiao == Sul", "chuvaHoje >= 40", "mes in 5,6,7,8,9,10"],
+    "quando": "diario",
+    "chance": 0.2,
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "apagao", "dias": 2 }, "aprovacao": -1 },
+    "escolhas": [
+      {
+        "texto": "Decretar calamidade e reconstruir as escolas em 60 dias",
+        "efeitos": { "caixa": -0.0015, "calamidade": 3, "aprovacao": 3, "prefeitos": 0.1 },
+        "resultado": "Governo promete escolas reconstruídas até o fim do bimestre e pede socorro federal.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Reconstruir dentro do orçamento normal",
+        "efeitos": { "caixa": -0.0004, "indicadores": { "evasao": 0.05 } },
+        "resultado": "Aulas seguem em contêineres em várias cidades atingidas pelo ciclone."
+      }
+    ]
+  },
+  {
+    "id": "cheia-rios-norte",
+    "categoria": "desastre",
+    "titulo": "Cheia histórica dos rios",
+    "texto": "O rio subiu além da cota de inundação. Bairros ribeirinhos de {cidade} estão debaixo d'água e famílias se mudam para as marquises das escolas.",
+    "tom": "ruim",
+    "se": ["regiao == Norte", "chuva30d >= 300"],
+    "quando": "diario",
+    "chance": 0.15,
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "alagamento", "dias": 20 } },
+    "escolhas": [
+      {
+        "texto": "Pontes de madeira, abrigos e cesta básica",
+        "efeitos": { "caixa": -0.001, "grupos": { "baixaRenda": 3 }, "calamidade": 3 },
+        "resultado": "Governo monta \"marombas\" (pontes de madeira) e abrigos nas escolas estaduais.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Esperar a água baixar",
+        "efeitos": { "grupos": { "baixaRenda": -4 }, "indicadores": { "mortalidadeInfantil": 0.03 } },
+        "resultado": "Ribeirinhos passam semanas ilhados; casos de leptospirose aumentam.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "vazante-isolamento",
+    "categoria": "desastre",
+    "titulo": "Seca histórica isola comunidades ribeirinhas",
+    "texto": "Os rios baixaram ao menor nível em um século. Barcos encalham, comunidades ficam sem comida e combustível, e peixes morrem na água quente.",
+    "tom": "ruim",
+    "se": ["regiao == Norte", "estiagem >= 0.4"],
+    "quando": "diario",
+    "chance": 0.12,
+    "cooldown": 12,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Ponte aérea com helicópteros e cestas básicas",
+        "efeitos": { "caixa": -0.0012, "grupos": { "baixaRenda": 3 }, "calamidade": 3, "presidente": 0.05 },
+        "resultado": "Helicópteros levam alimentos e água a 140 comunidades isoladas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Deixar com as prefeituras",
+        "efeitos": { "prefeitos": -0.2, "aprovacao": -3 },
+        "resultado": "Prefeitos do interior acusam o governo de abandono.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "barragem-risco",
+    "categoria": "desastre",
+    "titulo": "Barragem de rejeitos em nível de emergência",
+    "texto": "A Agência Nacional de Mineração elevou ao nível 3 o alerta de uma barragem de rejeitos acima de uma cidade do interior. Sirenes foram testadas de madrugada.",
+    "tom": "alerta",
+    "se": ["tracos has riscoBarragem", "chuva7d >= 60"],
+    "quando": "diario",
+    "chance": 0.05,
+    "cooldown": 24,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Evacuar a zona de autossalvamento e interditar a mina",
+        "efeitos": { "pib": -0.003, "aprovacao": 2, "grupos": { "empresariado": -2 } },
+        "resultado": "Três mil pessoas deixam suas casas; a mineradora é obrigada a descomissionar a barragem.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Confiar no laudo da mineradora",
+        "efeitos": { "grupos": { "empresariado": 1 } },
+        "resultado": "Governo aceita o laudo de estabilidade apresentado pela empresa.",
+        "depois": [{ "meses": 2, "chance": 0.15, "texto": "A barragem rompeu. Uma onda de lama atingiu a cidade abaixo. Há mortos e desaparecidos — e o laudo que o governo aceitou vira prova na CPI.", "tom": "ruim", "efeitos": { "aprovacao": -12, "base": -0.15, "calamidade": 6, "imprensa": -0.3 } }]
+      }
+    ]
+  },
+  {
+    "id": "deslizamento-rodovia",
+    "categoria": "desastre",
+    "titulo": "Barreira cai e interdita rodovia da serra",
+    "texto": "Um deslizamento bloqueou a principal rodovia de acesso a {cidade}. Caminhões fazem fila de 20 km e o abastecimento do interior preocupa.",
+    "tom": "ruim",
+    "se": ["chuva3d >= 80", "relevo >= 0.4"],
+    "quando": "diario",
+    "chance": 0.12,
+    "cooldown": 8,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Obra emergencial 24h com o DER",
+        "efeitos": { "caixa": -0.0005, "aprovacao": 1, "pib": 0.001 },
+        "resultado": "Rodovia liberada em meia pista depois de quatro dias de obra ininterrupta.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Desvio pelas estradas vicinais",
+        "efeitos": { "pib": -0.002, "grupos": { "empresariado": -2 } },
+        "resultado": "Desvio de 140 km encarece o frete e o preço da comida sobe no interior."
+      }
+    ]
+  },
+  {
+    "id": "raio-escola",
+    "categoria": "clima",
+    "titulo": "Raio atinge escola estadual",
+    "texto": "Durante o temporal, um raio caiu sobre a Escola Estadual do {bairro}. Ninguém se feriu, mas a rede elétrica e os computadores foram perdidos.",
+    "tom": "info",
+    "se": ["chuvaHoje >= 30", "temEstado"],
+    "quando": "diario",
+    "chance": 0.03,
+    "cooldown": 18,
+    "efeitos": { "caixa": -0.00005 }
+  },
+  {
+    "id": "dengue-epidemia",
+    "categoria": "servicos",
+    "titulo": "Epidemia de dengue",
+    "texto": "Calor e chuva fizeram explodir os casos de dengue: {cidade} já tem a maior incidência do país. UPAs com tendas de hidratação e filas na calçada.",
+    "tom": "ruim",
+    "se": ["chuva30d >= 150", "temp >= 24", "esgoto <= 0.85"],
+    "quando": "diario",
+    "chance": 0.06,
+    "cooldown": 10,
+    "prazoDias": 10,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Mutirão contra o mosquito com agentes e Exército",
+        "efeitos": { "caixa": -0.0005, "aprovacao": 2, "indicadores": { "esperaEmergencia": -0.04 } },
+        "resultado": "Mutirão visita 300 mil imóveis em duas semanas; casos começam a cair.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Campanha publicitária \"10 minutos contra a dengue\"",
+        "efeitos": { "caixa": -0.0001, "indicadores": { "esperaEmergencia": 0.03 } },
+        "resultado": "Campanha na TV pede que cada família elimine os criadouros."
+      },
+      {
+        "texto": "Esperar a epidemia passar",
+        "efeitos": { "aprovacao": -3, "indicadores": { "esperaEmergencia": 0.08, "mortalidadeInfantil": 0.02 } },
+        "resultado": "Mortes por dengue grave dobram; a {tv} mostra pacientes no chão da UPA.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "incendio-florestal-parque",
+    "categoria": "desastre",
+    "titulo": "Incêndio no parque estadual",
+    "texto": "Fogo de origem criminosa consome há três dias a mata do parque estadual próximo de {cidade}. A fumaça é vista de toda a cidade.",
+    "tom": "ruim",
+    "se": ["secura >= 0.7", "tMax >= 28"],
+    "quando": "diario",
+    "chance": 0.03,
+    "cooldown": 12,
+    "prazoDias": 6,
+    "padrao": 1,
+    "efeitos": { "visual": { "tipo": "incendio", "dias": 4 } },
+    "escolhas": [
+      {
+        "texto": "Aviões-tanque, bombeiros de todo o estado e perícia",
+        "efeitos": { "caixa": -0.0004, "aprovacao": 1 },
+        "resultado": "Incêndio controlado em 48 horas; perícia aponta que o fogo começou em três pontos.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Brigada local e esperar a chuva",
+        "efeitos": { "aprovacao": -2, "bancadas": { "ambientalista": -0.2 } },
+        "resultado": "O fogo destrói 30% do parque. Ambientalistas falam em \"crime ambiental por omissão\".",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "alagamento-tunel",
+    "categoria": "desastre",
+    "titulo": "Ônibus fica preso em túnel alagado",
+    "texto": "Um ônibus com 40 passageiros ficou ilhado em uma passagem subterrânea de {cidade}. Bombeiros resgataram todos pela janela.",
+    "tom": "alerta",
+    "se": ["chuvaHoje >= 50", "linhas >= 1"],
+    "quando": "diario",
+    "chance": 0.15,
+    "cooldown": 12,
+    "efeitos": { "aprovacaoCidade": -1, "visual": { "tipo": "alagamento", "dias": 2 } }
+  },
+  {
+    "id": "el-nino-anuncio",
+    "categoria": "clima",
+    "titulo": "Meteorologistas confirmam El Niño",
+    "texto": "O aquecimento do Pacífico está confirmado. Para o estado {deUF}, a previsão é de chuvas fora do padrão nos próximos meses. A Defesa Civil pede plano de contingência.",
+    "tom": "alerta",
+    "se": ["enso == el-nino", "mes in 7,8"],
+    "quando": "diario",
+    "chance": 0.2,
+    "cooldown": 10,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Plano de contingência: estoques, abrigos e drenagem",
+        "efeitos": { "caixa": -0.0005, "flag": "plano-enso", "imprensa": 0.03 },
+        "resultado": "Defesa Civil estadual mapeia áreas de risco e pré-contrata abrigos e carros-pipa.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Acompanhar a previsão",
+        "efeitos": {},
+        "resultado": "Governo diz que \"monitora a situação\"."
+      }
+    ]
+  },
+  {
+    "id": "la-nina-anuncio",
+    "categoria": "clima",
+    "titulo": "La Niña se instala",
+    "texto": "O resfriamento do Pacífico muda o regime de chuvas: o Sul teme estiagem e o Norte e o Nordeste, cheias. Produtores pedem orientação.",
+    "tom": "info",
+    "se": ["enso == la-nina", "mes in 7,8"],
+    "quando": "diario",
+    "chance": 0.2,
+    "cooldown": 10,
+    "efeitos": { "flag": "la-nina-anunciada" }
+  }
+]

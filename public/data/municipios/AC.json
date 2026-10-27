@@ -1,0 +1,200 @@
+{
+ "sigla": "AC",
+ "geradoEm": "2026-10-26T22:43:26.886Z",
+ "municipios": [
+  {
+   "ibge": "1200401",
+   "nome": "Rio Branco",
+   "populacao": 390058,
+   "capital": true,
+   "lat": -9.97499,
+   "lon": -67.8243,
+   "elevacao": 150,
+   "desnivel": 26,
+   "distCostaKm": 1869,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.25
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Várzea de rio · Amazônia · 150 m de altitude · 1869 km do mar"
+  },
+  {
+   "ibge": "1200203",
+   "nome": "Cruzeiro do Sul",
+   "populacao": 99404,
+   "capital": false,
+   "lat": -7.62762,
+   "lon": -72.6756,
+   "elevacao": 181,
+   "desnivel": 37,
+   "distCostaKm": 2459,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.1423076923076923
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 181 m de altitude · 2459 km do mar"
+  },
+  {
+   "ibge": "1200609",
+   "nome": "Tarauacá",
+   "populacao": 47090,
+   "capital": false,
+   "lat": -8.15697,
+   "lon": -70.7722,
+   "elevacao": 171,
+   "desnivel": 22,
+   "distCostaKm": 2243,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 171 m de altitude · 2243 km do mar"
+  },
+  {
+   "ibge": "1200500",
+   "nome": "Sena Madureira",
+   "populacao": 44170,
+   "capital": false,
+   "lat": -9.06596,
+   "lon": -68.6571,
+   "elevacao": 131,
+   "desnivel": 27,
+   "distCostaKm": 1989,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 131 m de altitude · 1989 km do mar"
+  },
+  {
+   "ibge": "1200302",
+   "nome": "Feijó",
+   "populacao": 37874,
+   "capital": false,
+   "lat": -8.17054,
+   "lon": -70.351,
+   "elevacao": 162,
+   "desnivel": 18,
+   "distCostaKm": 2199,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 162 m de altitude · 2199 km do mar"
+  },
+  {
+   "ibge": "1200104",
+   "nome": "Brasiléia",
+   "populacao": 28198,
+   "capital": false,
+   "lat": -10.995,
+   "lon": -68.7497,
+   "elevacao": 207,
+   "desnivel": 49,
+   "distCostaKm": 1932,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.18846153846153846
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.4,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 207 m de altitude · 1932 km do mar"
+  },
+  {
+   "ibge": "1200450",
+   "nome": "Senador Guiomard",
+   "populacao": 22447,
+   "capital": false,
+   "lat": -10.1497,
+   "lon": -67.7362,
+   "elevacao": 204,
+   "desnivel": 38,
+   "distCostaKm": 1853,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.14615384615384616
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 204 m de altitude · 1853 km do mar"
+  },
+  {
+   "ibge": "1200336",
+   "nome": "Mâncio Lima",
+   "populacao": 20616,
+   "capital": false,
+   "lat": -7.61657,
+   "lon": -72.8997,
+   "elevacao": 194,
+   "desnivel": 15,
+   "distCostaKm": 2483,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 194 m de altitude · 2483 km do mar"
+  }
+ ]
+}

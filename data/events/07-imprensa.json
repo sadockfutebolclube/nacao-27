@@ -1,0 +1,263 @@
+[
+  {
+    "id": "tv-denuncia-hospital",
+    "categoria": "imprensa",
+    "titulo": "{tv} exibe série sobre hospitais",
+    "texto": "A série \"SUS na UTI\", do telejornal de {ancora}, mostra corredores lotados e falta de insumos nos hospitais estaduais. Audiência recorde.",
+    "tom": "ruim",
+    "se": ["temEstado", "esperaRel >= 0.98"],
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -2 },
+    "escolhas": [
+      {
+        "texto": "Dar entrevista ao vivo e anunciar medidas",
+        "efeitos": { "caixa": -0.0004, "imprensa": 0.06, "indicadores": { "esperaEmergencia": -0.04 } },
+        "resultado": "Governador vai ao estúdio, reconhece falhas e anuncia 300 leitos.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Mandar nota: \"reportagem sensacionalista\"",
+        "efeitos": { "imprensa": -0.08 },
+        "resultado": "{ancora} lê a nota do governo no ar, com uma pausa dramática no final."
+      }
+    ]
+  },
+  {
+    "id": "jornal-obras-paradas",
+    "categoria": "imprensa",
+    "titulo": "{jornal} publica mapa das obras paradas",
+    "texto": "Reportagem de capa do {jornal} lista as obras estaduais paralisadas, com fotos de canteiros abandonados. A coluna de {colunista} pergunta: \"governo de inaugurar placa?\"",
+    "tom": "ruim",
+    "se": ["temEstado", "anoMandato >= 2"],
+    "cooldown": 18,
+    "efeitos": { "aprovacao": -1, "imprensa": -0.03 }
+  },
+  {
+    "id": "blog-cartao-corporativo",
+    "categoria": "imprensa",
+    "titulo": "{blog}: gastos com cartão corporativo",
+    "texto": "{reporter} obteve via Lei de Acesso as faturas do cartão corporativo do Palácio: R$ 80 mil em restaurantes e um jantar com vinho de R$ 2 mil a garrafa.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Devolver o dinheiro e abrir os gastos na internet",
+        "efeitos": { "imprensa": 0.06, "aprovacao": 1 },
+        "resultado": "Governador devolve os valores e publica todos os gastos do cartão em tempo real.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "\"São despesas de representação\"",
+        "efeitos": { "imprensa": -0.08, "aprovacao": -3 },
+        "resultado": "A garrafa de vinho vira meme por uma semana.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "influencer-video",
+    "categoria": "imprensa",
+    "titulo": "{influencer} viraliza com crítica ao governo",
+    "texto": "Vídeo do influenciador mostrando a fila de madrugada num posto de saúde tem 5 milhões de visualizações. \"Cadê o governador?\"",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 10,
+    "prazoDias": 6,
+    "padrao": 2,
+    "efeitos": { "aprovacao": -1 },
+    "escolhas": [
+      {
+        "texto": "Convidar o influenciador para conhecer o problema de perto",
+        "efeitos": { "imprensa": 0.05, "grupos": { "baixaRenda": 1 } },
+        "resultado": "Influenciador e governador gravam juntos; o vídeo seguinte tem tom bem diferente.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Patrocinar perfis amigos para \"equilibrar\"",
+        "efeitos": { "caixa": -0.0001, "imprensa": -0.05 },
+        "resultado": "Perfis \"espontâneos\" passam a elogiar o governo.",
+        "depois": [{ "meses": 2, "chance": 0.5, "texto": "{blog} revela que perfis que elogiavam o governo foram pagos com verba pública.", "tom": "ruim", "efeitos": { "aprovacao": -3, "imprensa": -0.08 } }]
+      },
+      {
+        "texto": "Ignorar",
+        "efeitos": {},
+        "resultado": "O vídeo segue circulando."
+      }
+    ]
+  },
+  {
+    "id": "zap-boato-vacina",
+    "categoria": "imprensa",
+    "titulo": "Boato no {zap}: \"vacina da escola tem chip\"",
+    "texto": "Um áudio no {zap} diz que a vacina aplicada nas escolas \"tem chip\". Pais proíbem filhos de se vacinar.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 18,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Campanha com médicos, pastores e líderes comunitários",
+        "efeitos": { "caixa": -0.00005, "indicadores": { "mortalidadeInfantil": -0.01 }, "bancadas": { "evangelica": 0.05 } },
+        "resultado": "Pastores e padres pedem vacinação no culto e na missa; adesão volta a subir.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Nota técnica da Secretaria de Saúde",
+        "efeitos": { "indicadores": { "mortalidadeInfantil": 0.02 } },
+        "resultado": "A nota técnica é lida por pouca gente; o boato, por muita."
+      }
+    ]
+  },
+  {
+    "id": "entrevista-armadilha",
+    "categoria": "imprensa",
+    "titulo": "Entrevista ao vivo com {colunista}",
+    "texto": "A colunista do {jornal} convida o governador para uma entrevista ao vivo no podcast mais ouvido do estado. Sem perguntas combinadas.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Aceitar",
+        "efeitos": {},
+        "resultado": "Governador aceita a entrevista.",
+        "depois": [
+          { "meses": 0.2, "chance": 1, "se": ["aprovacao >= 40"], "texto": "Entrevista do governador é elogiada: respostas diretas e dados na ponta da língua.", "tom": "bom", "efeitos": { "imprensa": 0.08, "aprovacao": 1 } },
+          { "meses": 0.2, "chance": 1, "se": ["aprovacao < 40"], "texto": "Governador se irrita com pergunta sobre a saúde e encerra a entrevista. O corte viraliza.", "tom": "ruim", "efeitos": { "imprensa": -0.08, "aprovacao": -2 } }
+        ]
+      },
+      {
+        "texto": "Recusar",
+        "efeitos": { "imprensa": -0.03 },
+        "resultado": "\"O governador foge do debate\", escreve {colunista}."
+      }
+    ]
+  },
+  {
+    "id": "jornalista-ameacado",
+    "categoria": "imprensa",
+    "titulo": "Repórter do {blog} recebe ameaças",
+    "texto": "{reporter}, que investiga a milícia, recebeu ameaças de morte e teve o carro alvejado. Entidades de imprensa cobram proteção.",
+    "tom": "alerta",
+    "se": ["temEstado", "territorio >= 0.03"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Incluir no programa de proteção e priorizar a investigação",
+        "efeitos": { "imprensa": 0.1, "crime": -0.01 },
+        "resultado": "Repórter recebe escolta; três suspeitos são presos em 20 dias.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "\"A polícia vai investigar\"",
+        "efeitos": { "imprensa": -0.06 },
+        "resultado": "Resposta protocolar irrita as entidades de imprensa."
+      }
+    ]
+  },
+  {
+    "id": "debate-tv",
+    "categoria": "imprensa",
+    "titulo": "{tv} faz debate sobre segurança",
+    "texto": "A emissora convida o secretário de Segurança para um debate com {deputado} e uma especialista. A audiência promete.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 18,
+    "efeitos": { "imprensa": 0.02 }
+  },
+  {
+    "id": "documentario-streaming",
+    "categoria": "imprensa",
+    "titulo": "Documentário sobre o estado estreia no streaming",
+    "texto": "Uma série documental sobre a crise da segurança no estado vira a mais vista do país. Entrevistados detonam o Palácio.",
+    "tom": "ruim",
+    "se": ["temEstado", "homicidiosRel >= 1"],
+    "peso": 0.4,
+    "unico": true,
+    "efeitos": { "aprovacao": -2, "imprensa": -0.05 }
+  },
+  {
+    "id": "coluna-elogia",
+    "categoria": "imprensa",
+    "titulo": "{colunista} elogia a gestão fiscal",
+    "texto": "Em coluna, {colunista} diz que o governo \"fez o dever de casa\" e que o estado virou referência em contas públicas.",
+    "tom": "bom",
+    "se": ["temEstado", "caixaRcl >= 0.05"],
+    "cooldown": 18,
+    "efeitos": { "imprensa": 0.05, "grupos": { "empresariado": 2 } }
+  },
+  {
+    "id": "audio-vazado",
+    "categoria": "imprensa",
+    "titulo": "Áudio vazado do Palácio",
+    "texto": "O {portal} divulga áudio de uma reunião no Palácio em que um assessor chama os servidores de \"parasitas\". A frase domina as redes.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "unico": true,
+    "prazoDias": 5,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Exonerar o assessor e pedir desculpas",
+        "efeitos": { "grupos": { "servidores": 1 }, "capital": -1 },
+        "resultado": "Assessor exonerado; governador pede desculpas aos servidores.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Dizer que o áudio foi tirado de contexto",
+        "efeitos": { "grupos": { "servidores": -4 }, "imprensa": -0.05 },
+        "resultado": "Sindicatos convocam ato com faixas \"Somos todos parasitas\".",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "premio-jornalismo",
+    "categoria": "imprensa",
+    "titulo": "Reportagem sobre o estado ganha prêmio nacional",
+    "texto": "A série do {blog} sobre contratos emergenciais ganhou o maior prêmio de jornalismo do país.",
+    "tom": "info",
+    "se": ["temEstado", "escandalos >= 1"],
+    "peso": 0.5,
+    "unico": true,
+    "efeitos": { "imprensa": -0.04, "aprovacao": -1 }
+  },
+  {
+    "id": "publicidade-oficial",
+    "categoria": "imprensa",
+    "titulo": "Agências oferecem campanha \"O estado que faz\"",
+    "texto": "Agências de publicidade apresentam campanha institucional de R$ 40 milhões para divulgar as obras do governo.",
+    "tom": "info",
+    "se": ["temEstado", "anoMandato >= 2"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Aprovar a campanha",
+        "efeitos": { "caixa": -0.0005, "imprensa": 0.06, "aprovacao": 1 },
+        "resultado": "\"O estado que faz\" vai ao ar no horário nobre."
+      },
+      {
+        "texto": "Recusar: dinheiro de propaganda vai para a saúde",
+        "efeitos": { "aprovacao": 1, "imprensa": -0.02 },
+        "resultado": "Decisão rende elogios nas redes e mau humor nas agências."
+      }
+    ]
+  }
+]

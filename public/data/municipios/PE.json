@@ -1,0 +1,202 @@
+{
+ "sigla": "PE",
+ "geradoEm": "2026-10-26T22:43:28.687Z",
+ "municipios": [
+  {
+   "ibge": "2611606",
+   "nome": "Recife",
+   "populacao": 1588983,
+   "capital": true,
+   "lat": -8.04666,
+   "lon": -34.8771,
+   "elevacao": 6,
+   "desnivel": 11,
+   "distCostaKm": 6,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "rio": true,
+    "relevo": 0.35
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 6 m de altitude"
+  },
+  {
+   "ibge": "2607901",
+   "nome": "Jaboatão dos Guararapes",
+   "populacao": 685222,
+   "capital": false,
+   "lat": -8.11298,
+   "lon": -35.015,
+   "elevacao": 46,
+   "desnivel": 52,
+   "distCostaKm": 14,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 46 m de altitude"
+  },
+  {
+   "ibge": "2611101",
+   "nome": "Petrolina",
+   "populacao": 422461,
+   "capital": false,
+   "lat": -9.38866,
+   "lon": -40.5027,
+   "elevacao": 384,
+   "desnivel": 26,
+   "distCostaKm": 414,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -2.3,
+    "fChuva": 0.35,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 384 m de altitude · 414 km do mar"
+  },
+  {
+   "ibge": "2604106",
+   "nome": "Caruaru",
+   "populacao": 408281,
+   "capital": false,
+   "lat": -8.28455,
+   "lon": -35.9699,
+   "elevacao": 546,
+   "desnivel": 55,
+   "distCostaKm": 107,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.21153846153846154
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -3.3,
+    "fChuva": 0.8,
+    "estimado": true
+   },
+   "descricao": "Planalto · Caatinga · 546 m de altitude · 107 km do mar"
+  },
+  {
+   "ibge": "2610707",
+   "nome": "Paulista",
+   "populacao": 367155,
+   "capital": false,
+   "lat": -7.93401,
+   "lon": -34.8684,
+   "elevacao": 8,
+   "desnivel": 47,
+   "distCostaKm": 5,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.18076923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 8 m de altitude"
+  },
+  {
+   "ibge": "2609600",
+   "nome": "Olinda",
+   "populacao": 364087,
+   "capital": false,
+   "lat": -8.01017,
+   "lon": -34.8545,
+   "elevacao": 39,
+   "desnivel": 37,
+   "distCostaKm": 1,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.1423076923076923
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 39 m de altitude"
+  },
+  {
+   "ibge": "2602902",
+   "nome": "Cabo de Santo Agostinho",
+   "populacao": 219044,
+   "capital": false,
+   "lat": -8.28218,
+   "lon": -35.0253,
+   "elevacao": 16,
+   "desnivel": 36,
+   "distCostaKm": 9,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.13846153846153847
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 16 m de altitude"
+  },
+  {
+   "ibge": "2603454",
+   "nome": "Camaragibe",
+   "populacao": 156425,
+   "capital": false,
+   "lat": -8.02351,
+   "lon": -34.9782,
+   "elevacao": 62,
+   "desnivel": 75,
+   "distCostaKm": 13,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.28846153846153844
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 62 m de altitude"
+  }
+ ]
+}

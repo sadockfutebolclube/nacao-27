@@ -1,0 +1,208 @@
+{
+ "id": 51,
+ "sigla": "MT",
+ "nome": "Mato Grosso",
+ "regiao": {
+  "sigla": "CO",
+  "nome": "Centro-Oeste"
+ },
+ "populacao": {
+  "valor": 3950330,
+  "ano": 2026,
+  "censo2022": 3658649
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 273008586000,
+  "perCapita": 69110,
+  "vab": {
+   "agro": 79882433000,
+   "industria": 32177976000,
+   "servicos": 73276754000,
+   "adminPublica": 25007410000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 906632,
+ "numMunicipios": 142,
+ "maioresMunicipios": [
+  {
+   "id": 5103403,
+   "nome": "Cuiabá",
+   "populacao": 698917
+  },
+  {
+   "id": 5108402,
+   "nome": "Várzea Grande",
+   "populacao": 323172
+  },
+  {
+   "id": 5107602,
+   "nome": "Rondonópolis",
+   "populacao": 268202
+  },
+  {
+   "id": 5107909,
+   "nome": "Sinop",
+   "populacao": 231452
+  },
+  {
+   "id": 5107925,
+   "nome": "Sorriso",
+   "populacao": 128727
+  },
+  {
+   "id": 5107958,
+   "nome": "Tangará da Serra",
+   "populacao": 116637
+  },
+  {
+   "id": 5105259,
+   "nome": "Lucas do Rio Verde",
+   "populacao": 99291
+  },
+  {
+   "id": 5107040,
+   "nome": "Primavera do Leste",
+   "populacao": 99053
+  }
+ ],
+ "indicadores": {
+  "idh": 0.736,
+  "homicidios": 28.4,
+  "idebEM": 4,
+  "esgoto": 37,
+  "dividaRCL": -14
+ },
+ "tracos": {
+  "sigla": "MT",
+  "apelido": "Celeiro do Mundo",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Cuiabá",
+   "ibge": 5103403,
+   "lat": -15.601,
+   "lon": -56.0974
+  },
+  "biomas": [
+   "cerrado",
+   "pantanal",
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "planicie",
+   "agua": {
+    "lado": "W",
+    "tipo": "rio"
+   },
+   "relevo": 0.2
+  },
+  "clima": "Tropical continental — calor extremo, seca com fumaça no inverno",
+  "sotaque": "cuiabano",
+  "saudacao": "Ô loco, pai! Bom dia, Governador. Tá um calor de fritar ovo no asfalto.",
+  "trilha": [
+   "rasqueado",
+   "siriri",
+   "cururu"
+  ],
+  "festas": [
+   "Festa de São Benedito",
+   "Siriri e Cururu"
+  ],
+  "arquitetura": "Casas térreas largas, silos e armazéns gigantes, cidades planejadas pelo agro",
+  "tracos": [
+   {
+    "id": "agro-mt",
+    "nome": "Maior produtor de grãos",
+    "tipo": "buff",
+    "descricao": "Soja e algodão sustentam o estado; caminhões lotam as BRs.",
+    "efeitos": {
+     "agro": 0.5
+    }
+   },
+   {
+    "id": "logistica-graos",
+    "nome": "Escoamento caro",
+    "tipo": "nerf",
+    "descricao": "Falta ferrovia; frete corrói a renda do produtor.",
+    "efeitos": {
+     "logistica": -0.25
+    }
+   },
+   {
+    "id": "fogo-pantanal",
+    "nome": "Pantanal em risco",
+    "tipo": "nerf",
+    "descricao": "Incêndios no Pantanal e desmatamento no norte do estado.",
+    "efeitos": {
+     "riscoQueimada": 0.4,
+     "pressaoAmbiental": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Queimadas",
+   "Desmatamento",
+   "Infraestrutura logística"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

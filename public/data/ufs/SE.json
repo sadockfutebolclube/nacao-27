@@ -1,0 +1,207 @@
+{
+ "id": 28,
+ "sigla": "SE",
+ "nome": "Sergipe",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 2307255,
+  "ano": 2026,
+  "censo2022": 2210004
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 60816662000,
+  "perCapita": 26359,
+  "vab": {
+   "agro": 2758534000,
+   "industria": 10223712000,
+   "servicos": 19854437000,
+   "adminPublica": 13058210000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 21933,
+ "numMunicipios": 75,
+ "maioresMunicipios": [
+  {
+   "id": 2800308,
+   "nome": "Aracaju",
+   "populacao": 623328
+  },
+  {
+   "id": 2804805,
+   "nome": "Nossa Senhora do Socorro",
+   "populacao": 205611
+  },
+  {
+   "id": 2806701,
+   "nome": "São Cristóvão",
+   "populacao": 111567
+  },
+  {
+   "id": 2802908,
+   "nome": "Itabaiana",
+   "populacao": 110041
+  },
+  {
+   "id": 2803500,
+   "nome": "Lagarto",
+   "populacao": 106330
+  },
+  {
+   "id": 2802106,
+   "nome": "Estância",
+   "populacao": 67136
+  },
+  {
+   "id": 2807402,
+   "nome": "Tobias Barreto",
+   "populacao": 52943
+  },
+  {
+   "id": 2800605,
+   "nome": "Barra dos Coqueiros",
+   "populacao": 45916
+  }
+ ],
+ "indicadores": {
+  "idh": 0.702,
+  "homicidios": 33.9,
+  "idebEM": 3.8,
+  "esgoto": 31,
+  "dividaRCL": 12
+ },
+ "tracos": {
+  "sigla": "SE",
+  "apelido": "País do Forró",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Aracaju",
+   "ibge": 2800308,
+   "lat": -10.9472,
+   "lon": -37.0731
+  },
+  "biomas": [
+   "mata-atlantica",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "E",
+    "tipo": "mar"
+   },
+   "rio": true,
+   "relevo": 0.25
+  },
+  "clima": "Tropical litorâneo — ventos alísios, chuvas de outono",
+  "sotaque": "sergipano",
+  "saudacao": "Bom dia, Governador! Aracaju é pequena, mas a Orla de Atalaia é gigante.",
+  "trilha": [
+   "forró",
+   "samba de pareia",
+   "xaxado"
+  ],
+  "festas": [
+   "Forró Caju",
+   "São Pedro de Capela"
+  ],
+  "arquitetura": "Orla de Atalaia, casario de São Cristóvão, conjuntos habitacionais",
+  "tracos": [
+   {
+    "id": "gas-se",
+    "nome": "Gás em águas profundas",
+    "tipo": "buff",
+    "descricao": "Novas descobertas de gás na costa sergipana.",
+    "efeitos": {
+     "receitaRoyalties": 0.1
+    }
+   },
+   {
+    "id": "menor-estado",
+    "nome": "Menor estado do país",
+    "tipo": "neutro",
+    "descricao": "Distâncias curtas: obras chegam rápido a todos.",
+    "efeitos": {
+     "logistica": 0.2
+    }
+   },
+   {
+    "id": "violencia-se",
+    "nome": "Violência alta",
+    "tipo": "nerf",
+    "descricao": "Taxa de homicídios acima da média nacional.",
+    "efeitos": {
+     "criminalidade": 0.25
+    }
+   }
+  ],
+  "desafios": [
+   "Violência",
+   "Saneamento",
+   "Economia pouco diversificada"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

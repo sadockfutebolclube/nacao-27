@@ -1,0 +1,441 @@
+[
+  {
+    "id": "guerra-faccoes",
+    "categoria": "seguranca",
+    "titulo": "Guerra entre facção e milícia",
+    "texto": "O Comando da Laje e a Liga do Asfalto disputam a bala o controle do {favela}. Escolas e postos fecham; moradores dormem no chão.",
+    "tom": "ruim",
+    "se": ["guerra"],
+    "quando": "diario",
+    "chance": 0.3,
+    "cooldown": 4,
+    "prazoDias": 8,
+    "padrao": 2,
+    "efeitos": { "crime": 0.08 },
+    "escolhas": [
+      {
+        "texto": "Ocupação permanente com base comunitária",
+        "detalhe": "Mais lenta, sem confronto. Custo de 0,05% da RCL.",
+        "efeitos": { "caixa": -0.0005, "crime": -0.06, "grupos": { "baixaRenda": 2 } },
+        "resultado": "A PM ocupa o alto do {favela} e instala uma base comunitária 24 horas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Operação de confronto",
+        "efeitos": { "crime": -0.04, "indicadores": { "letalidade": 0.15 }, "grupos": { "classeMedia": 2, "baixaRenda": -3 } },
+        "resultado": "Operação com 500 policiais termina com 9 mortos. Moradores denunciam execuções.",
+        "tomResultado": "alerta"
+      },
+      {
+        "texto": "Deixar a polícia agir como sempre",
+        "efeitos": { "aprovacao": -2, "indicadores": { "homicidios": 0.06 } },
+        "resultado": "A guerra segue. A {tv} mostra o terceiro ônibus incendiado da semana."
+      }
+    ]
+  },
+  {
+    "id": "chacina",
+    "categoria": "seguranca",
+    "titulo": "Chacina no {bairro}",
+    "texto": "Sete jovens foram mortos num bar do {bairro} por homens encapuzados. A suspeita recai sobre um grupo de extermínio com ligação com policiais.",
+    "tom": "ruim",
+    "se": ["temEstado", "homicidiosRel >= 0.95"],
+    "peso": 0.8,
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -2 },
+    "escolhas": [
+      {
+        "texto": "Força-tarefa com a Corregedoria e o Ministério Público",
+        "efeitos": { "indicadores": { "letalidade": -0.1 }, "grupos": { "servidores": -1, "baixaRenda": 2 }, "imprensa": 0.05 },
+        "resultado": "Força-tarefa prende quatro PMs e um ex-policial em 30 dias.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Aguardar a investigação da Polícia Civil",
+        "efeitos": { "imprensa": -0.05 },
+        "resultado": "Inquérito segue sem prazo. Mães das vítimas fazem vigília em frente ao Palácio."
+      }
+    ]
+  },
+  {
+    "id": "fuga-presidio",
+    "categoria": "seguranca",
+    "titulo": "Fuga em massa de presídio",
+    "texto": "Quarenta e dois presos fugiram por um túnel de 60 metros. Entre eles, chefes de facção. O túnel levou meses para ser cavado.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -3, "crime": 0.03 },
+    "escolhas": [
+      {
+        "texto": "Demitir a cúpula da administração penitenciária",
+        "efeitos": { "capital": -2, "imprensa": 0.05, "grupos": { "classeMedia": 1 } },
+        "resultado": "Governador demite o diretor do sistema prisional e anuncia scanner corporal em todas as unidades."
+      },
+      {
+        "texto": "Investir em um novo presídio de segurança máxima",
+        "efeitos": { "caixa": -0.0012, "indicadores": { "lotacaoPrisional": -0.08 }, "bancadas": { "bala": 0.15 } },
+        "resultado": "Estado anuncia penitenciária de segurança máxima com 1.200 vagas.",
+        "tomResultado": "bom"
+      }
+    ]
+  },
+  {
+    "id": "rebeliao-presidio",
+    "categoria": "seguranca",
+    "titulo": "Rebelião com reféns",
+    "texto": "Presos tomaram uma ala da penitenciária e mantêm seis agentes reféns. Exigem transferências e o fim da superlotação.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 18,
+    "prazoDias": 3,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Negociar com mediação da Defensoria",
+        "efeitos": { "grupos": { "classeMedia": -1 }, "imprensa": 0.04 },
+        "resultado": "Após 30 horas de negociação, reféns são libertados sem feridos.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Invasão do Batalhão de Choque",
+        "efeitos": { "grupos": { "classeMedia": 2 }, "indicadores": { "letalidade": 0.12 }, "imprensa": -0.06 },
+        "resultado": "Choque invade a ala: reféns libertados, oito presos mortos. Entidades de direitos humanos acionam a OEA.",
+        "tomResultado": "alerta"
+      },
+      {
+        "texto": "Esperar o cansaço dos rebelados",
+        "efeitos": { "aprovacao": -2 },
+        "resultado": "A rebelião dura cinco dias e é transmitida ao vivo pela {tv}."
+      }
+    ]
+  },
+  {
+    "id": "roubo-de-carga",
+    "categoria": "seguranca",
+    "titulo": "Onda de roubo de cargas nas rodovias",
+    "texto": "Transportadoras contabilizam um roubo de carga a cada duas horas nas rodovias estaduais. Seguradoras ameaçam não cobrir mais rotas no estado.",
+    "tom": "alerta",
+    "se": ["temEstado", "homicidiosRel >= 0.9"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Batalhão rodoviário e leitura de placas nas divisas",
+        "efeitos": { "caixa": -0.0005, "pib": 0.001, "grupos": { "empresariado": 3 }, "indicadores": { "roubos": -0.06 } },
+        "resultado": "Cerco eletrônico nas rodovias reduz os roubos de carga pela metade em três meses.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir apoio à Polícia Rodoviária Federal",
+        "efeitos": { "presidente": 0.03, "pib": -0.001 },
+        "resultado": "PRF reforça a fiscalização nas BRs; nas estaduais, o problema continua."
+      }
+    ]
+  },
+  {
+    "id": "bala-perdida",
+    "categoria": "seguranca",
+    "titulo": "Bala perdida mata menina de 9 anos",
+    "texto": "A estudante voltava da escola no {favela} quando foi atingida durante um tiroteio. A foto da mochila no chão está em todas as capas.",
+    "tom": "ruim",
+    "se": ["temEstado", "territorio >= 0.05"],
+    "peso": 1.2,
+    "cooldown": 12,
+    "prazoDias": 6,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -3, "imprensa": -0.05 },
+    "escolhas": [
+      {
+        "texto": "Suspender operações perto de escolas no horário de aula",
+        "efeitos": { "indicadores": { "letalidade": -0.1 }, "grupos": { "baixaRenda": 3 }, "bancadas": { "bala": -0.15 } },
+        "resultado": "Protocolo proíbe operações num raio de 500 m das escolas entre 7h e 17h.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Defender a ação policial",
+        "efeitos": { "bancadas": { "bala": 0.1 }, "grupos": { "baixaRenda": -3 }, "imprensa": -0.05 },
+        "resultado": "\"A polícia reagiu a uma agressão\", diz o secretário. Perícia ainda não sabe de onde veio o tiro.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "onibus-incendiados",
+    "categoria": "seguranca",
+    "titulo": "Ônibus incendiados em retaliação",
+    "texto": "Depois da prisão de um chefe do tráfico, criminosos queimaram nove ônibus em {cidade}. Empresas recolheram a frota e milhares voltaram a pé para casa.",
+    "tom": "ruim",
+    "se": ["linhas >= 1", "territorio >= 0.03"],
+    "quando": "diario",
+    "chance": 0.01,
+    "cooldown": 12,
+    "efeitos": { "aprovacaoCidade": -3, "aprovacao": -1, "crime": 0.03 }
+  },
+  {
+    "id": "milicia-gatonet",
+    "categoria": "seguranca",
+    "titulo": "Milícia cobra \"taxa\" de internet e gás",
+    "texto": "Reportagem do {blog} mostra que a Liga do Asfalto controla a venda de gás, internet clandestina e transporte em bairros da zona norte, faturando milhões por mês.",
+    "tom": "alerta",
+    "se": ["territorio >= 0.04"],
+    "peso": 0.8,
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Força-tarefa contra a milícia com bloqueio de bens",
+        "efeitos": { "crime": -0.04, "capital": -3, "base": -0.03, "imprensa": 0.08 },
+        "resultado": "Operação prende 23 milicianos, entre eles dois vereadores, e bloqueia R$ 40 milhões.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Dizer que \"não há provas de domínio territorial\"",
+        "efeitos": { "imprensa": -0.1, "grupos": { "baixaRenda": -2 } },
+        "resultado": "O Palácio minimiza. O {blog} publica a planilha de cobranças da milícia no dia seguinte.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "operacao-repercussao",
+    "categoria": "seguranca",
+    "titulo": "Operação policial com 20 mortos repercute no mundo",
+    "texto": "A operação mais letal do ano deixou vinte mortos no {favela}. A ONU pede investigação independente; a bancada da bala aplaude.",
+    "tom": "alerta",
+    "se": ["temEstado", "territorio >= 0.05"],
+    "peso": 0.5,
+    "cooldown": 24,
+    "prazoDias": 8,
+    "padrao": 1,
+    "efeitos": { "indicadores": { "letalidade": 0.2 } },
+    "escolhas": [
+      {
+        "texto": "Afastar os comandantes e abrir investigação independente",
+        "efeitos": { "bancadas": { "bala": -0.25 }, "imprensa": 0.08, "grupos": { "servidores": -2, "baixaRenda": 2 } },
+        "resultado": "Comandantes afastados; peritos independentes acompanham as necropsias.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Exaltar a operação: \"bandido que reage, morre\"",
+        "efeitos": { "bancadas": { "bala": 0.2 }, "grupos": { "classeMedia": 2, "baixaRenda": -4 }, "imprensa": -0.12, "presidente": -0.05 },
+        "resultado": "Governador condecora os policiais. Relator da ONU fala em \"massacre\".",
+        "tomResultado": "alerta"
+      }
+    ]
+  },
+  {
+    "id": "aquartelamento-pm",
+    "categoria": "seguranca",
+    "titulo": "Policiais ameaçam aquartelamento",
+    "texto": "Associações de praças anunciam \"operação padrão\" e ameaçam aquartelamento por reajuste. Comerciantes já falam em fechar as portas.",
+    "tom": "alerta",
+    "se": ["temEstado", "aprovacao <= 50"],
+    "peso": 0.5,
+    "cooldown": 24,
+    "prazoDias": 7,
+    "padrao": 2,
+    "escolhas": [
+      {
+        "texto": "Negociar abono e plano de carreira",
+        "efeitos": { "caixa": -0.0015, "grupos": { "servidores": 3 }, "bancadas": { "bala": 0.15 } },
+        "resultado": "Acordo com as associações evita o aquartelamento.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir a Força Nacional preventivamente",
+        "efeitos": { "forcaNacional": 2, "presidente": 0.03, "grupos": { "servidores": -3 }, "bancadas": { "bala": -0.15 } },
+        "resultado": "Força Nacional chega antes do movimento; as associações recuam, mas prometem revanche nas urnas."
+      },
+      {
+        "texto": "Dizer que greve de militar é ilegal e pagar para ver",
+        "efeitos": {},
+        "resultado": "Governo endurece o discurso.",
+        "depois": [{ "meses": 0.5, "chance": 0.5, "texto": "Aquartelamento: 70% dos PMs não saem dos quartéis. Saques e arrastões em {cidade}; o comércio fecha por três dias.", "tom": "ruim", "efeitos": { "aprovacao": -8, "crime": 0.12, "greve": "seguranca", "pib": -0.003 } }]
+      }
+    ]
+  },
+  {
+    "id": "arrastao-praia",
+    "categoria": "seguranca",
+    "titulo": "Arrastão na praia lotada",
+    "texto": "Domingo de sol e um arrastão na orla de {cidade}: banhistas correm, celulares somem e o vídeo viraliza no {influencer}.",
+    "tom": "ruim",
+    "se": ["litoral", "estacao == verão", "temp >= 27"],
+    "quando": "diario",
+    "chance": 0.008,
+    "cooldown": 8,
+    "prazoDias": 6,
+    "padrao": 1,
+    "efeitos": { "aprovacao": -1 },
+    "escolhas": [
+      {
+        "texto": "Operação Verão com PMs e câmeras na orla",
+        "efeitos": { "caixa": -0.0002, "grupos": { "classeMedia": 2 } },
+        "resultado": "Operação Verão põe 600 PMs e torres de observação na orla nos fins de semana.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Revistar ônibus que vêm da periferia",
+        "efeitos": { "grupos": { "classeMedia": 2, "baixaRenda": -4 }, "imprensa": -0.08 },
+        "resultado": "Blitz em ônibus da periferia rende acusação de racismo; Defensoria entra na Justiça.",
+        "tomResultado": "alerta"
+      }
+    ]
+  },
+  {
+    "id": "policial-morto",
+    "categoria": "seguranca",
+    "titulo": "Policial morto em folga",
+    "texto": "Um sargento da PM foi morto ao reagir a um assalto no {bairro}. É o 18º policial morto no ano; a tropa está revoltada.",
+    "tom": "ruim",
+    "se": ["temEstado", "homicidiosRel >= 0.95"],
+    "peso": 0.6,
+    "cooldown": 12,
+    "efeitos": { "grupos": { "servidores": -1 }, "bancadas": { "bala": -0.05 } }
+  },
+  {
+    "id": "golpe-pix",
+    "categoria": "seguranca",
+    "titulo": "Central de golpes do Pix é descoberta",
+    "texto": "Polícia Civil descobre uma central de golpes por telefone que lesou 3 mil aposentados. Delegacias estão abarrotadas de boletins de estelionato digital.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Criar delegacia de crimes cibernéticos",
+        "efeitos": { "caixa": -0.0002, "grupos": { "classeMedia": 2 }, "indicadores": { "roubos": -0.03 } },
+        "resultado": "Nova delegacia especializada recebe registro online e equipe de peritos digitais.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Campanha de alerta para idosos",
+        "efeitos": { "caixa": -0.00005 },
+        "resultado": "Campanha nas rádios ensina idosos a desconfiar de ligações de \"falsos bancos\"."
+      }
+    ]
+  },
+  {
+    "id": "feminicidio",
+    "categoria": "seguranca",
+    "titulo": "Feminicídio com medida protetiva expõe falhas",
+    "texto": "Uma mulher foi morta pelo ex-companheiro dois dias depois de pedir socorro numa delegacia. Ela tinha medida protetiva. Movimentos de mulheres convocam ato.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.8,
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Delegacias da Mulher 24h e botão do pânico",
+        "efeitos": { "caixa": -0.0003, "aprovacao": 2, "imprensa": 0.05 },
+        "resultado": "Todas as Delegacias da Mulher passam a funcionar 24 horas; vítimas com medida protetiva recebem botão do pânico.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Nota de pesar e apuração do atendimento",
+        "efeitos": { "aprovacao": -1 },
+        "resultado": "Corregedoria vai apurar o atendimento na delegacia."
+      }
+    ]
+  },
+  {
+    "id": "trafico-escola",
+    "categoria": "seguranca",
+    "titulo": "Tráfico na porta da escola",
+    "texto": "Diretora de uma escola estadual do {bairro} denuncia que traficantes aliciam alunos no portão. Professores pedem transferência.",
+    "tom": "alerta",
+    "se": ["temEstado", "crime >= 0.25"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Ronda escolar e programa de contraturno",
+        "efeitos": { "caixa": -0.0002, "indicadores": { "evasao": -0.04 }, "grupos": { "classeMedia": 1, "baixaRenda": 1 } },
+        "resultado": "Ronda escolar e oficinas no contraturno chegam a 80 escolas.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Instalar detectores de metal",
+        "efeitos": { "caixa": -0.0001, "imprensa": -0.03 },
+        "resultado": "Escola vira \"presídio\", reclamam os alunos; o problema migra para a esquina."
+      }
+    ]
+  },
+  {
+    "id": "queda-homicidios",
+    "categoria": "positivo",
+    "titulo": "Homicídios no menor nível em 20 anos",
+    "texto": "O Anuário de Segurança Pública coloca o estado entre os que mais reduziram mortes violentas no país.",
+    "tom": "bom",
+    "se": ["temEstado", "homicidiosRel <= 0.82"],
+    "cooldown": 24,
+    "efeitos": { "aprovacao": 4, "grupos": { "classeMedia": 3 }, "imprensa": 0.08 }
+  },
+  {
+    "id": "explosao-caixas",
+    "categoria": "seguranca",
+    "titulo": "\"Novo cangaço\" ataca agências no interior",
+    "texto": "Quadrilha fortemente armada explodiu agências bancárias numa cidade do interior e usou moradores como escudo humano na fuga.",
+    "tom": "ruim",
+    "se": ["temEstado", "regiao in Nordeste,Norte,Centro-Oeste"],
+    "peso": 0.5,
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Criar grupamento tático para o interior",
+        "efeitos": { "caixa": -0.0004, "prefeitos": 0.1, "bancadas": { "bala": 0.1 } },
+        "resultado": "Grupamento tático com helicóptero passa a cobrir o interior.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Reforçar o efetivo das cidades atingidas",
+        "efeitos": { "prefeitos": 0.03 },
+        "resultado": "Batalhões do interior recebem reforço temporário."
+      }
+    ]
+  },
+  {
+    "id": "camera-corporal-video",
+    "categoria": "seguranca",
+    "titulo": "Vídeo de câmera corporal mostra abordagem violenta",
+    "texto": "Imagens da câmera de um PM mostram um entregador sendo espancado durante uma abordagem no {bairro}. O vídeo tem 10 milhões de visualizações.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 18,
+    "prazoDias": 6,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Expulsão sumária e curso de abordagem para a tropa",
+        "efeitos": { "imprensa": 0.06, "grupos": { "baixaRenda": 2, "servidores": -1 } },
+        "resultado": "Os PMs são expulsos e a corporação revisa o protocolo de abordagem.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Aguardar o processo administrativo",
+        "efeitos": { "imprensa": -0.05, "grupos": { "baixaRenda": -2 } },
+        "resultado": "PMs seguem nas ruas enquanto o processo corre. Protesto fecha a avenida principal."
+      }
+    ]
+  }
+]

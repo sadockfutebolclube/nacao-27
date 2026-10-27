@@ -1,0 +1,190 @@
+{
+ "sigla": "GO",
+ "geradoEm": "2026-10-26T22:43:27.729Z",
+ "municipios": [
+  {
+   "ibge": "5208707",
+   "nome": "Goiânia",
+   "populacao": 1511709,
+   "capital": true,
+   "lat": -16.6864,
+   "lon": -49.2643,
+   "elevacao": 779,
+   "desnivel": 90,
+   "distCostaKm": 151,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planalto · Cerrado · 779 m de altitude · 151 km do mar"
+  },
+  {
+   "ibge": "5201405",
+   "nome": "Aparecida de Goiânia",
+   "populacao": 560996,
+   "capital": false,
+   "lat": -16.8198,
+   "lon": -49.2469,
+   "elevacao": 820,
+   "desnivel": 56,
+   "distCostaKm": 157,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.2153846153846154
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 820 m de altitude · 157 km do mar"
+  },
+  {
+   "ibge": "5201108",
+   "nome": "Anápolis",
+   "populacao": 424647,
+   "capital": false,
+   "lat": -16.3281,
+   "lon": -48.953,
+   "elevacao": 1008,
+   "desnivel": 92,
+   "distCostaKm": 105,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.35384615384615387
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -1.4,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 1008 m de altitude · 105 km do mar"
+  },
+  {
+   "ibge": "5200258",
+   "nome": "Águas Lindas de Goiás",
+   "populacao": 249978,
+   "capital": false,
+   "lat": -15.7617,
+   "lon": -48.2816,
+   "elevacao": 1087,
+   "desnivel": 145,
+   "distCostaKm": 43,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.5576923076923077
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -1.9,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 1087 m de altitude · 43 km do mar"
+  },
+  {
+   "ibge": "5218805",
+   "nome": "Rio Verde",
+   "populacao": 244881,
+   "capital": false,
+   "lat": -17.7923,
+   "lon": -50.9192,
+   "elevacao": 740,
+   "desnivel": 78,
+   "distCostaKm": 315,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 740 m de altitude · 315 km do mar"
+  },
+  {
+   "ibge": "5212501",
+   "nome": "Luziânia",
+   "populacao": 223596,
+   "capital": false,
+   "lat": -16.253,
+   "lon": -47.95,
+   "elevacao": 935,
+   "desnivel": 96,
+   "distCostaKm": 24,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.36923076923076925
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 935 m de altitude"
+  },
+  {
+   "ibge": "5221858",
+   "nome": "Valparaíso de Goiás",
+   "populacao": 223210,
+   "capital": false,
+   "lat": -16.0651,
+   "lon": -47.9757,
+   "elevacao": 1073,
+   "desnivel": 167,
+   "distCostaKm": 5,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.6423076923076924
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -1.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Cerrado · 1073 m de altitude"
+  },
+  {
+   "ibge": "5220454",
+   "nome": "Senador Canedo",
+   "populacao": 180111,
+   "capital": false,
+   "lat": -16.7084,
+   "lon": -49.0914,
+   "elevacao": 803,
+   "desnivel": 71,
+   "distCostaKm": 136,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.27307692307692305
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 803 m de altitude · 136 km do mar"
+  }
+ ]
+}

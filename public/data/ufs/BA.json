@@ -1,0 +1,218 @@
+{
+ "id": 29,
+ "sigla": "BA",
+ "nome": "Bahia",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 14889472,
+  "ano": 2026,
+  "censo2022": 14141626
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 430987853000,
+  "perCapita": 28946,
+  "vab": {
+   "agro": 34058223000,
+   "industria": 76494704000,
+   "servicos": 137724666000,
+   "adminPublica": 59046304000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 567079,
+ "numMunicipios": 417,
+ "maioresMunicipios": [
+  {
+   "id": 2927408,
+   "nome": "Salvador",
+   "populacao": 2559945
+  },
+  {
+   "id": 2910800,
+   "nome": "Feira de Santana",
+   "populacao": 663408
+  },
+  {
+   "id": 2933307,
+   "nome": "Vitória da Conquista",
+   "populacao": 398970
+  },
+  {
+   "id": 2905701,
+   "nome": "Camaçari",
+   "populacao": 323676
+  },
+  {
+   "id": 2918407,
+   "nome": "Juazeiro",
+   "populacao": 257616
+  },
+  {
+   "id": 2919207,
+   "nome": "Lauro de Freitas",
+   "populacao": 221023
+  },
+  {
+   "id": 2914802,
+   "nome": "Itabuna",
+   "populacao": 196041
+  },
+  {
+   "id": 2913606,
+   "nome": "Ilhéus",
+   "populacao": 189259
+  }
+ ],
+ "indicadores": {
+  "idh": 0.691,
+  "homicidios": 46.5,
+  "idebEM": 3.6,
+  "esgoto": 46,
+  "dividaRCL": 37
+ },
+ "tracos": {
+  "sigla": "BA",
+  "apelido": "Boa Terra",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Salvador",
+   "ibge": 2927408,
+   "lat": -12.9777,
+   "lon": -38.5016
+  },
+  "biomas": [
+   "mata-atlantica",
+   "caatinga",
+   "cerrado"
+  ],
+  "terreno": {
+   "tipo": "litoral-morros",
+   "agua": {
+    "lado": "W",
+    "tipo": "baia"
+   },
+   "relevo": 0.5
+  },
+  "clima": "Tropical úmido no litoral, semiárido no sertão",
+  "sotaque": "baiano",
+  "saudacao": "Ê, meu rei! Bom dia, Governador. Bora com calma que tudo dá certo.",
+  "trilha": [
+   "axé instrumental",
+   "samba de roda",
+   "ijexá"
+  ],
+  "festas": [
+   "Carnaval de Salvador",
+   "São João no interior",
+   "Lavagem do Bonfim"
+  ],
+  "arquitetura": "Pelourinho colonial, Cidade Alta e Cidade Baixa, Elevador Lacerda, casas de bloco nas encostas",
+  "tracos": [
+   {
+    "id": "carnaval",
+    "nome": "Maior festa de rua do planeta",
+    "tipo": "buff",
+    "descricao": "Carnaval movimenta bilhões — e exige segurança gigantesca.",
+    "efeitos": {
+     "turismo": 0.35,
+     "custoSeguranca": 0.1
+    }
+   },
+   {
+    "id": "petroquimica",
+    "nome": "Polo de Camaçari",
+    "tipo": "buff",
+    "descricao": "Indústria química e automotiva na Região Metropolitana.",
+    "efeitos": {
+     "industria": 0.2
+    }
+   },
+   {
+    "id": "sertao-seco",
+    "nome": "Sertão seco",
+    "tipo": "nerf",
+    "descricao": "Secas prolongadas no semiárido exigem carros-pipa e adutoras.",
+    "efeitos": {
+     "riscoSeca": 0.35
+    }
+   },
+   {
+    "id": "violencia-ba",
+    "nome": "Guerra de facções",
+    "tipo": "nerf",
+    "descricao": "Índices de homicídio entre os mais altos do Brasil.",
+    "efeitos": {
+     "criminalidade": 0.35
+    }
+   }
+  ],
+  "desafios": [
+   "Homicídios elevados",
+   "Desigualdade racial e social",
+   "Seca no sertão"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

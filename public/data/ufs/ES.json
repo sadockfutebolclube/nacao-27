@@ -1,0 +1,208 @@
+{
+ "id": 32,
+ "sigla": "ES",
+ "nome": "Espírito Santo",
+ "regiao": {
+  "sigla": "SE",
+  "nome": "Sudeste"
+ },
+ "populacao": {
+  "valor": 4150692,
+  "ano": 2026,
+  "censo2022": 3833712
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 209829732000,
+  "perCapita": 50553,
+  "vab": {
+   "agro": 7014832000,
+   "industria": 59642700000,
+   "servicos": 68524166000,
+   "adminPublica": 20462460000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 46401,
+ "numMunicipios": 78,
+ "maioresMunicipios": [
+  {
+   "id": 3205002,
+   "nome": "Serra",
+   "populacao": 586901
+  },
+  {
+   "id": 3205200,
+   "nome": "Vila Velha",
+   "populacao": 510512
+  },
+  {
+   "id": 3201308,
+   "nome": "Cariacica",
+   "populacao": 376914
+  },
+  {
+   "id": 3205309,
+   "nome": "Vitória",
+   "populacao": 343935
+  },
+  {
+   "id": 3201209,
+   "nome": "Cachoeiro de Itapemirim",
+   "populacao": 198367
+  },
+  {
+   "id": 3203205,
+   "nome": "Linhares",
+   "populacao": 185621
+  },
+  {
+   "id": 3202405,
+   "nome": "Guarapari",
+   "populacao": 137659
+  },
+  {
+   "id": 3204906,
+   "nome": "São Mateus",
+   "populacao": 135450
+  }
+ ],
+ "indicadores": {
+  "idh": 0.771,
+  "homicidios": 26.3,
+  "idebEM": 4.6,
+  "esgoto": 62,
+  "dividaRCL": -10
+ },
+ "tracos": {
+  "sigla": "ES",
+  "apelido": "Capixaba",
+  "dificuldade": 2,
+  "capital": {
+   "nome": "Vitória",
+   "ibge": 3205309,
+   "lat": -20.3155,
+   "lon": -40.3128
+  },
+  "biomas": [
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "litoral-morros",
+   "agua": {
+    "lado": "E",
+    "tipo": "baia"
+   },
+   "relevo": 0.6
+  },
+  "clima": "Tropical litorâneo, chuvas de verão, frio leve nas montanhas",
+  "sotaque": "capixaba",
+  "saudacao": "Bom dia, Governador! Moqueca é capixaba, o resto é peixada.",
+  "trilha": [
+   "congo capixaba",
+   "MPB",
+   "rock"
+  ],
+  "festas": [
+   "Festa da Penha",
+   "Festival de Inverno de Domingos Martins"
+  ],
+  "arquitetura": "Prédios em ilha, Convento da Penha no morro, casas coloniais alemãs e italianas na serra",
+  "tracos": [
+   {
+    "id": "contas-em-dia",
+    "nome": "Contas em dia",
+    "tipo": "buff",
+    "descricao": "Nota máxima de capacidade de pagamento do Tesouro.",
+    "efeitos": {
+     "credito": 0.3,
+     "dividaInicial": -0.3
+    }
+   },
+   {
+    "id": "portos-es",
+    "nome": "Corredor de exportação",
+    "tipo": "buff",
+    "descricao": "Portos de minério, celulose e café.",
+    "efeitos": {
+     "industria": 0.15,
+     "logistica": 0.2
+    }
+   },
+   {
+    "id": "pos-mariana",
+    "nome": "Lama no Rio Doce",
+    "tipo": "nerf",
+    "descricao": "Passivo ambiental da mineração ainda pesa.",
+    "efeitos": {
+     "pressaoAmbiental": 0.2,
+     "riscoBarragem": 0.15
+    }
+   }
+  ],
+  "desafios": [
+   "Tráfico nos morros da Grande Vitória",
+   "Petróleo em declínio",
+   "Mobilidade na ilha"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

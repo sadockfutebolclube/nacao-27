@@ -1,0 +1,206 @@
+{
+ "id": 42,
+ "sigla": "SC",
+ "nome": "Santa Catarina",
+ "regiao": {
+  "sigla": "S",
+  "nome": "Sul"
+ },
+ "populacao": {
+  "valor": 8312759,
+  "ano": 2026,
+  "censo2022": 7610361
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 513392973000,
+  "perCapita": 61760,
+  "vab": {
+   "agro": 23433292000,
+   "industria": 95420343000,
+   "servicos": 186568805000,
+   "adminPublica": 42112452000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 95962,
+ "numMunicipios": 295,
+ "maioresMunicipios": [
+  {
+   "id": 4209102,
+   "nome": "Joinville",
+   "populacao": 673980
+  },
+  {
+   "id": 4205407,
+   "nome": "Florianópolis",
+   "populacao": 598370
+  },
+  {
+   "id": 4202404,
+   "nome": "Blumenau",
+   "populacao": 390371
+  },
+  {
+   "id": 4208203,
+   "nome": "Itajaí",
+   "populacao": 302247
+  },
+  {
+   "id": 4216602,
+   "nome": "São José",
+   "populacao": 301218
+  },
+  {
+   "id": 4204202,
+   "nome": "Chapecó",
+   "populacao": 289170
+  },
+  {
+   "id": 4211900,
+   "nome": "Palhoça",
+   "populacao": 261287
+  },
+  {
+   "id": 4204608,
+   "nome": "Criciúma",
+   "populacao": 229333
+  }
+ ],
+ "indicadores": {
+  "idh": 0.792,
+  "homicidios": 9.1,
+  "idebEM": 4.2,
+  "esgoto": 31,
+  "dividaRCL": 28
+ },
+ "tracos": {
+  "sigla": "SC",
+  "apelido": "Ilha da Magia",
+  "dificuldade": 1,
+  "capital": {
+   "nome": "Florianópolis",
+   "ibge": 4205407,
+   "lat": -27.5954,
+   "lon": -48.548
+  },
+  "biomas": [
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "litoral-morros",
+   "agua": {
+    "lado": "E",
+    "tipo": "baia"
+   },
+   "relevo": 0.65
+  },
+  "clima": "Subtropical — verão de praia lotada, inverno com vento sul",
+  "sotaque": "manezinho",
+  "saudacao": "Ó-lhó-lhó, Governador! Bom dia, queridão. Tás tolo, já trabalhando a essa hora?",
+  "trilha": [
+   "boi-de-mamão",
+   "rock",
+   "música açoriana"
+  ],
+  "festas": [
+   "Oktoberfest de Blumenau",
+   "Réveillon em Balneário Camboriú"
+  ],
+  "arquitetura": "Casario açoriano, enxaimel alemão, arranha-céus em Balneário Camboriú",
+  "tracos": [
+   {
+    "id": "industria-sc",
+    "nome": "Indústria espalhada",
+    "tipo": "buff",
+    "descricao": "Têxtil, metalmecânica, alimentos e software em várias cidades médias.",
+    "efeitos": {
+     "industria": 0.25,
+     "tecnologia": 0.2
+    }
+   },
+   {
+    "id": "seguranca-sc",
+    "nome": "Menor taxa de homicídios",
+    "tipo": "buff",
+    "descricao": "Um dos estados mais seguros do país.",
+    "efeitos": {
+     "criminalidade": -0.3
+    }
+   },
+   {
+    "id": "ciclones",
+    "nome": "Ciclones e enxurradas",
+    "tipo": "nerf",
+    "descricao": "Vale do Itajaí sofre enchentes; ciclones no litoral.",
+    "efeitos": {
+     "riscoEnchente": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Trânsito na ponte da ilha",
+   "Especulação imobiliária",
+   "Enchentes no Vale"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

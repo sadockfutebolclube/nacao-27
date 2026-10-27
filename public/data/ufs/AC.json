@@ -1,0 +1,217 @@
+{
+ "id": 12,
+ "sigla": "AC",
+ "nome": "Acre",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 887794,
+  "ano": 2026,
+  "censo2022": 830018
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 26291321000,
+  "perCapita": 29614,
+  "vab": {
+   "agro": 3637870000,
+   "industria": 1371814000,
+   "servicos": 7652757000,
+   "adminPublica": 6633281000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 165354,
+ "numMunicipios": 22,
+ "maioresMunicipios": [
+  {
+   "id": 1200401,
+   "nome": "Rio Branco",
+   "populacao": 390058
+  },
+  {
+   "id": 1200203,
+   "nome": "Cruzeiro do Sul",
+   "populacao": 99404
+  },
+  {
+   "id": 1200609,
+   "nome": "Tarauacá",
+   "populacao": 47090
+  },
+  {
+   "id": 1200500,
+   "nome": "Sena Madureira",
+   "populacao": 44170
+  },
+  {
+   "id": 1200302,
+   "nome": "Feijó",
+   "populacao": 37874
+  },
+  {
+   "id": 1200104,
+   "nome": "Brasiléia",
+   "populacao": 28198
+  },
+  {
+   "id": 1200450,
+   "nome": "Senador Guiomard",
+   "populacao": 22447
+  },
+  {
+   "id": 1200336,
+   "nome": "Mâncio Lima",
+   "populacao": 20616
+  }
+ ],
+ "indicadores": {
+  "idh": 0.71,
+  "homicidios": 24.9,
+  "idebEM": 3.9,
+  "esgoto": 11,
+  "dividaRCL": 20
+ },
+ "tracos": {
+  "sigla": "AC",
+  "apelido": "Terra do Chico Mendes",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Rio Branco",
+   "ibge": 1200401,
+   "lat": -9.9747,
+   "lon": -67.8243
+  },
+  "biomas": [
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "varzea",
+   "agua": {
+    "lado": "N",
+    "tipo": "rio"
+   },
+   "relevo": 0.25
+  },
+  "clima": "Equatorial — calor úmido o ano todo, cheias do Rio Acre entre fevereiro e abril",
+  "sotaque": "acreano",
+  "saudacao": "Bom dia, Governador. O Acre existe, e tá contando com o senhor.",
+  "trilha": [
+   "forró amazônico",
+   "carimbó",
+   "violão caboclo"
+  ],
+  "festas": [
+   "Expoacre",
+   "Festival de Praia de Rio Branco"
+  ],
+  "arquitetura": "Casas de madeira sobre pilotis, alvenaria simples, mercado velho às margens do rio",
+  "tracos": [
+   {
+    "id": "isolamento",
+    "nome": "Fim da linha",
+    "tipo": "nerf",
+    "descricao": "Logística cara: tudo chega pela BR-364. Obras custam mais.",
+    "efeitos": {
+     "custoObras": 0.2,
+     "logistica": -0.3
+    }
+   },
+   {
+    "id": "cheia-rio-acre",
+    "nome": "Cheia do Rio Acre",
+    "tipo": "nerf",
+    "descricao": "Enchentes sazonais desalojam milhares de famílias.",
+    "efeitos": {
+     "riscoEnchente": 0.4
+    }
+   },
+   {
+    "id": "floresta-em-pe",
+    "nome": "Floresta em pé",
+    "tipo": "buff",
+    "descricao": "Bioeconomia e créditos de carbono atraem recursos internacionais.",
+    "efeitos": {
+     "receitaVerde": 0.15,
+     "pressaoAmbiental": 0.2
+    }
+   },
+   {
+    "id": "dependencia-fpe",
+    "nome": "Dependência do FPE",
+    "tipo": "nerf",
+    "descricao": "A maior parte da receita vem de transferências federais.",
+    "efeitos": {
+     "transferenciasFederais": 0.35,
+     "receitaICMS": -0.25
+    }
+   }
+  ],
+  "desafios": [
+   "Rota do tráfico na fronteira",
+   "Cheias recorrentes",
+   "Baixa arrecadação própria"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

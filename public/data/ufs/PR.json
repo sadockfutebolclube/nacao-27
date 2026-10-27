@@ -1,0 +1,203 @@
+{
+ "id": 41,
+ "sigla": "PR",
+ "nome": "Paraná",
+ "regiao": {
+  "sigla": "S",
+  "nome": "Sul"
+ },
+ "populacao": {
+  "valor": 11952456,
+  "ano": 2026,
+  "censo2022": 11444380
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 670919162000,
+  "perCapita": 56132,
+  "vab": {
+   "agro": 61711292000,
+   "industria": 130065814000,
+   "servicos": 223838584000,
+   "adminPublica": 58973871000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 199620,
+ "numMunicipios": 399,
+ "maioresMunicipios": [
+  {
+   "id": 4106902,
+   "nome": "Curitiba",
+   "populacao": 1832183
+  },
+  {
+   "id": 4113700,
+   "nome": "Londrina",
+   "populacao": 584465
+  },
+  {
+   "id": 4115200,
+   "nome": "Maringá",
+   "populacao": 432635
+  },
+  {
+   "id": 4119905,
+   "nome": "Ponta Grossa",
+   "populacao": 378527
+  },
+  {
+   "id": 4104808,
+   "nome": "Cascavel",
+   "populacao": 372026
+  },
+  {
+   "id": 4125506,
+   "nome": "São José dos Pinhais",
+   "populacao": 353874
+  },
+  {
+   "id": 4108304,
+   "nome": "Foz do Iguaçu",
+   "populacao": 299112
+  },
+  {
+   "id": 4105805,
+   "nome": "Colombo",
+   "populacao": 242698
+  }
+ ],
+ "indicadores": {
+  "idh": 0.769,
+  "homicidios": 22,
+  "idebEM": 4.8,
+  "esgoto": 76,
+  "dividaRCL": -5
+ },
+ "tracos": {
+  "sigla": "PR",
+  "apelido": "Terra das Araucárias",
+  "dificuldade": 2,
+  "capital": {
+   "nome": "Curitiba",
+   "ibge": 4106902,
+   "lat": -25.4284,
+   "lon": -49.2733
+  },
+  "biomas": [
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "planalto",
+   "agua": null,
+   "relevo": 0.35
+  },
+  "clima": "Subtropical — quatro estações num dia, geada no inverno",
+  "sotaque": "curitibano",
+  "saudacao": "Bom dia, Governador. Leva o guarda-chuva e a blusa, piá.",
+  "trilha": [
+   "rock curitibano",
+   "música polonesa",
+   "fandango caiçara"
+  ],
+  "festas": [
+   "Oktoberfest de Rolândia",
+   "Festival de Teatro de Curitiba"
+  ],
+  "arquitetura": "Prédios de tijolo à vista, casas de madeira polonesa, estações-tubo do BRT",
+  "tracos": [
+   {
+    "id": "brt",
+    "nome": "Berço do BRT",
+    "tipo": "buff",
+    "descricao": "Tradição de planejamento urbano e transporte.",
+    "efeitos": {
+     "transporte": 0.25
+    }
+   },
+   {
+    "id": "cooperativas",
+    "nome": "Cooperativas do agro",
+    "tipo": "buff",
+    "descricao": "Agroindústria forte no oeste.",
+    "efeitos": {
+     "agro": 0.25,
+     "industria": 0.15
+    }
+   },
+   {
+    "id": "paranagua",
+    "nome": "Porto de Paranaguá",
+    "tipo": "buff",
+    "descricao": "Um dos maiores portos de grãos.",
+    "efeitos": {
+     "logistica": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Pedágios caros",
+   "Fronteira em Foz do Iguaçu",
+   "Crescimento metropolitano"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

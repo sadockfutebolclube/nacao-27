@@ -1,0 +1,215 @@
+{
+ "id": 31,
+ "sigla": "MG",
+ "nome": "Minas Gerais",
+ "regiao": {
+  "sigla": "SE",
+  "nome": "Sudeste"
+ },
+ "populacao": {
+  "valor": 21460311,
+  "ano": 2026,
+  "censo2022": 20539989
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 971977551000,
+  "perCapita": 45292,
+  "vab": {
+   "agro": 55849925000,
+   "industria": 258629588000,
+   "servicos": 332409794000,
+   "adminPublica": 107176260000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 588566,
+ "numMunicipios": 853,
+ "maioresMunicipios": [
+  {
+   "id": 3106200,
+   "nome": "Belo Horizonte",
+   "populacao": 2415451
+  },
+  {
+   "id": 3170206,
+   "nome": "Uberlândia",
+   "populacao": 768339
+  },
+  {
+   "id": 3118601,
+   "nome": "Contagem",
+   "populacao": 652973
+  },
+  {
+   "id": 3136702,
+   "nome": "Juiz de Fora",
+   "populacao": 569588
+  },
+  {
+   "id": 3143302,
+   "nome": "Montes Claros",
+   "populacao": 440700
+  },
+  {
+   "id": 3106705,
+   "nome": "Betim",
+   "populacao": 433902
+  },
+  {
+   "id": 3170107,
+   "nome": "Uberaba",
+   "populacao": 359275
+  },
+  {
+   "id": 3154606,
+   "nome": "Ribeirão das Neves",
+   "populacao": 348996
+  }
+ ],
+ "indicadores": {
+  "idh": 0.774,
+  "homicidios": 14.1,
+  "idebEM": 4.1,
+  "esgoto": 76,
+  "dividaRCL": 163
+ },
+ "tracos": {
+  "sigla": "MG",
+  "apelido": "Minas Gerais, uai",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Belo Horizonte",
+   "ibge": 3106200,
+   "lat": -19.9167,
+   "lon": -43.9345
+  },
+  "biomas": [
+   "cerrado",
+   "mata-atlantica",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "serra",
+   "agua": null,
+   "relevo": 0.75
+  },
+  "clima": "Tropical de altitude — verão de temporais, inverno seco e ameno",
+  "sotaque": "mineiro",
+  "saudacao": "Bão, Governador? Senta aí, toma um cafezim com pão de queijo que o trem é sério.",
+  "trilha": [
+   "Clube da Esquina instrumental",
+   "viola caipira",
+   "congado"
+  ],
+  "festas": [
+   "Festival de Inverno de Ouro Preto",
+   "Carnaval de BH",
+   "Folia de Reis"
+  ],
+  "arquitetura": "Barroco colonial, Pampulha modernista, casas de muro chapiscado em ladeiras",
+  "tracos": [
+   {
+    "id": "mineracao",
+    "nome": "Quadrilátero Ferrífero",
+    "tipo": "buff",
+    "descricao": "Mineração gera royalties (CFEM) e empregos...",
+    "efeitos": {
+     "receitaRoyalties": 0.1,
+     "industria": 0.15
+    }
+   },
+   {
+    "id": "barragens",
+    "nome": "...e barragens",
+    "tipo": "nerf",
+    "descricao": "Dezenas de barragens de rejeito em nível de alerta.",
+    "efeitos": {
+     "riscoBarragem": 0.45
+    }
+   },
+   {
+    "id": "853-municipios",
+    "nome": "853 municípios",
+    "tipo": "nerf",
+    "descricao": "O maior número de prefeitos para agradar.",
+    "efeitos": {
+     "complexidadePolitica": 0.3
+    }
+   },
+   {
+    "id": "divida-mg",
+    "nome": "Dívida bilionária",
+    "tipo": "nerf",
+    "descricao": "Dívida com a União entre as maiores do país.",
+    "efeitos": {
+     "dividaInicial": 0.4
+    }
+   }
+  ],
+  "desafios": [
+   "Dívida com a União",
+   "Segurança de barragens",
+   "Estradas estaduais precárias"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

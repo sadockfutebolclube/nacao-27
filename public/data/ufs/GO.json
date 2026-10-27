@@ -1,0 +1,203 @@
+{
+ "id": 52,
+ "sigla": "GO",
+ "nome": "Goiás",
+ "regiao": {
+  "sigla": "CO",
+  "nome": "Centro-Oeste"
+ },
+ "populacao": {
+  "valor": 7495033,
+  "ano": 2026,
+  "censo2022": 7056495
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 336746975000,
+  "perCapita": 44929,
+  "vab": {
+   "agro": 42437481000,
+   "industria": 53006223000,
+   "servicos": 105981331000,
+   "adminPublica": 36728697000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 341187,
+ "numMunicipios": 246,
+ "maioresMunicipios": [
+  {
+   "id": 5208707,
+   "nome": "Goiânia",
+   "populacao": 1511709
+  },
+  {
+   "id": 5201405,
+   "nome": "Aparecida de Goiânia",
+   "populacao": 560996
+  },
+  {
+   "id": 5201108,
+   "nome": "Anápolis",
+   "populacao": 424647
+  },
+  {
+   "id": 5200258,
+   "nome": "Águas Lindas de Goiás",
+   "populacao": 249978
+  },
+  {
+   "id": 5218805,
+   "nome": "Rio Verde",
+   "populacao": 244881
+  },
+  {
+   "id": 5212501,
+   "nome": "Luziânia",
+   "populacao": 223596
+  },
+  {
+   "id": 5221858,
+   "nome": "Valparaíso de Goiás",
+   "populacao": 223210
+  },
+  {
+   "id": 5220454,
+   "nome": "Senador Canedo",
+   "populacao": 180111
+  }
+ ],
+ "indicadores": {
+  "idh": 0.737,
+  "homicidios": 22.4,
+  "idebEM": 4.7,
+  "esgoto": 62,
+  "dividaRCL": 24
+ },
+ "tracos": {
+  "sigla": "GO",
+  "apelido": "Coração do Brasil",
+  "dificuldade": 2,
+  "capital": {
+   "nome": "Goiânia",
+   "ibge": 5208707,
+   "lat": -16.6869,
+   "lon": -49.2648
+  },
+  "biomas": [
+   "cerrado"
+  ],
+  "terreno": {
+   "tipo": "planalto",
+   "agua": null,
+   "relevo": 0.3
+  },
+  "clima": "Tropical de savana — chuva de outubro a abril, seca e queimadas no inverno",
+  "sotaque": "goiano",
+  "saudacao": "Uai sô, bom dia, Governador! Pamonha quentinha na mesa.",
+  "trilha": [
+   "sertanejo instrumental",
+   "moda de viola",
+   "pequi-pop"
+  ],
+  "festas": [
+   "Pecuária de Goiânia",
+   "Cavalhadas de Pirenópolis"
+  ],
+  "arquitetura": "Art déco no centro de Goiânia, condomínios horizontais, galpões do agro",
+  "tracos": [
+   {
+    "id": "agro-go",
+    "nome": "Celeiro do Centro-Oeste",
+    "tipo": "buff",
+    "descricao": "Soja, milho, cana e carne puxam o PIB.",
+    "efeitos": {
+     "agro": 0.35
+    }
+   },
+   {
+    "id": "incentivos-go",
+    "nome": "Guerra fiscal veterana",
+    "tipo": "neutro",
+    "descricao": "Incentivos atraem indústria, mas comem a arrecadação de ICMS.",
+    "efeitos": {
+     "industria": 0.15,
+     "receitaICMS": -0.1
+    }
+   },
+   {
+    "id": "queimadas-go",
+    "nome": "Cerrado em chamas",
+    "tipo": "nerf",
+    "descricao": "Queimadas na seca afetam saúde e imagem.",
+    "efeitos": {
+     "riscoQueimada": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Crescimento desordenado",
+   "Queimadas",
+   "Segurança no Entorno do DF"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

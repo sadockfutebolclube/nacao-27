@@ -1,0 +1,209 @@
+{
+ "id": 26,
+ "sigla": "PE",
+ "nome": "Pernambuco",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 9583176,
+  "ano": 2026,
+  "censo2022": 9058931
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 270474919000,
+  "perCapita": 28224,
+  "vab": {
+   "agro": 9605118000,
+   "industria": 40694067000,
+   "servicos": 90257707000,
+   "adminPublica": 45308275000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 98500,
+ "numMunicipios": 185,
+ "maioresMunicipios": [
+  {
+   "id": 2611606,
+   "nome": "Recife",
+   "populacao": 1588983
+  },
+  {
+   "id": 2607901,
+   "nome": "Jaboatão dos Guararapes",
+   "populacao": 685222
+  },
+  {
+   "id": 2611101,
+   "nome": "Petrolina",
+   "populacao": 422461
+  },
+  {
+   "id": 2604106,
+   "nome": "Caruaru",
+   "populacao": 408281
+  },
+  {
+   "id": 2610707,
+   "nome": "Paulista",
+   "populacao": 367155
+  },
+  {
+   "id": 2609600,
+   "nome": "Olinda",
+   "populacao": 364087
+  },
+  {
+   "id": 2602902,
+   "nome": "Cabo de Santo Agostinho",
+   "populacao": 219044
+  },
+  {
+   "id": 2603454,
+   "nome": "Camaragibe",
+   "populacao": 156425
+  }
+ ],
+ "indicadores": {
+  "idh": 0.719,
+  "homicidios": 40.7,
+  "idebEM": 4.4,
+  "esgoto": 33,
+  "dividaRCL": 30
+ },
+ "tracos": {
+  "sigla": "PE",
+  "apelido": "Leão do Norte",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Recife",
+   "ibge": 2611606,
+   "lat": -8.0476,
+   "lon": -34.877
+  },
+  "biomas": [
+   "mata-atlantica",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "E",
+    "tipo": "mar"
+   },
+   "rio": true,
+   "relevo": 0.35
+  },
+  "clima": "Tropical úmido — chuvas fortes de maio a julho, alagamentos",
+  "sotaque": "pernambucano",
+  "saudacao": "Oxe, Governador, bom dia! Tá arretado hoje, é?",
+  "trilha": [
+   "frevo",
+   "maracatu",
+   "manguebeat instrumental"
+  ],
+  "festas": [
+   "Carnaval de Recife e Olinda",
+   "São João de Caruaru"
+  ],
+  "arquitetura": "Pontes sobre o Capibaribe, casario de Olinda nas ladeiras, torres na orla de Boa Viagem",
+  "tracos": [
+   {
+    "id": "porto-digital",
+    "nome": "Porto Digital",
+    "tipo": "buff",
+    "descricao": "Um dos maiores parques tecnológicos do país.",
+    "efeitos": {
+     "tecnologia": 0.35,
+     "servicos": 0.1
+    }
+   },
+   {
+    "id": "suape",
+    "nome": "Complexo de Suape",
+    "tipo": "buff",
+    "descricao": "Porto, refinaria e estaleiros.",
+    "efeitos": {
+     "industria": 0.2
+    }
+   },
+   {
+    "id": "morros-recife",
+    "nome": "Morros e alagados",
+    "tipo": "nerf",
+    "descricao": "Deslizamentos nos morros e alagamentos na planície.",
+    "efeitos": {
+     "riscoEnchente": 0.3,
+     "riscoDeslizamento": 0.3
+    }
+   }
+  ],
+  "desafios": [
+   "Violência",
+   "Deslizamentos",
+   "Seca no sertão do São Francisco"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

@@ -1,0 +1,214 @@
+{
+ "sigla": "AM",
+ "geradoEm": "2026-10-26T22:43:27.253Z",
+ "municipios": [
+  {
+   "ibge": "1302603",
+   "nome": "Manaus",
+   "populacao": 2327101,
+   "capital": true,
+   "lat": -3.11866,
+   "lon": -60.0212,
+   "elevacao": 45,
+   "desnivel": 41,
+   "distCostaKm": 1162,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.25
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Várzea de rio · Amazônia · 45 m de altitude · 1162 km do mar"
+  },
+  {
+   "ibge": "1301902",
+   "nome": "Itacoatiara",
+   "populacao": 115218,
+   "capital": false,
+   "lat": -3.13861,
+   "lon": -58.4449,
+   "elevacao": 21,
+   "desnivel": 19,
+   "distCostaKm": 999,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 21 m de altitude · 999 km do mar"
+  },
+  {
+   "ibge": "1302504",
+   "nome": "Manacapuru",
+   "populacao": 113042,
+   "capital": false,
+   "lat": -3.29066,
+   "lon": -60.6216,
+   "elevacao": 25,
+   "desnivel": 40,
+   "distCostaKm": 1231,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.15384615384615385
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 25 m de altitude · 1231 km do mar"
+  },
+  {
+   "ibge": "1303403",
+   "nome": "Parintins",
+   "populacao": 101754,
+   "capital": false,
+   "lat": -2.63741,
+   "lon": -56.729,
+   "elevacao": 15,
+   "desnivel": 14,
+   "distCostaKm": 802,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 15 m de altitude · 802 km do mar"
+  },
+  {
+   "ibge": "1304203",
+   "nome": "Tefé",
+   "populacao": 81046,
+   "capital": false,
+   "lat": -3.36822,
+   "lon": -64.7193,
+   "elevacao": 55,
+   "desnivel": 27,
+   "distCostaKm": 1669,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 55 m de altitude · 1669 km do mar"
+  },
+  {
+   "ibge": "1304062",
+   "nome": "Tabatinga",
+   "populacao": 74384,
+   "capital": false,
+   "lat": -4.2416,
+   "lon": -69.9383,
+   "elevacao": 77,
+   "desnivel": 21,
+   "distCostaKm": 2253,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "W",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 77 m de altitude · 2253 km do mar"
+  },
+  {
+   "ibge": "1301209",
+   "nome": "Coari",
+   "populacao": 73403,
+   "capital": false,
+   "lat": -4.09412,
+   "lon": -63.1441,
+   "elevacao": 28,
+   "desnivel": 28,
+   "distCostaKm": 1525,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 28 m de altitude · 1525 km do mar"
+  },
+  {
+   "ibge": "1301852",
+   "nome": "Iranduba",
+   "populacao": 70248,
+   "capital": false,
+   "lat": -3.27479,
+   "lon": -60.19,
+   "elevacao": 48,
+   "desnivel": 47,
+   "distCostaKm": 1185,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.18076923076923077
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 48 m de altitude · 1185 km do mar"
+  }
+ ]
+}

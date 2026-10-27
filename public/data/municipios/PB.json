@@ -1,0 +1,202 @@
+{
+ "sigla": "PB",
+ "geradoEm": "2026-10-26T22:43:28.493Z",
+ "municipios": [
+  {
+   "ibge": "2507507",
+   "nome": "João Pessoa",
+   "populacao": 906093,
+   "capital": true,
+   "lat": -7.11509,
+   "lon": -34.8641,
+   "elevacao": 45,
+   "desnivel": 44,
+   "distCostaKm": 6,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "relevo": 0.3
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 45 m de altitude"
+  },
+  {
+   "ibge": "2504009",
+   "nome": "Campina Grande",
+   "populacao": 446720,
+   "capital": false,
+   "lat": -7.22196,
+   "lon": -35.8731,
+   "elevacao": 522,
+   "desnivel": 119,
+   "distCostaKm": 114,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.4576923076923077
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -3,
+    "fChuva": 0.8,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 522 m de altitude · 114 km do mar"
+  },
+  {
+   "ibge": "2513703",
+   "nome": "Santa Rita",
+   "populacao": 162488,
+   "capital": false,
+   "lat": -7.11724,
+   "lon": -34.9753,
+   "elevacao": 6,
+   "desnivel": 60,
+   "distCostaKm": 16,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.23076923076923078
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 6 m de altitude"
+  },
+  {
+   "ibge": "2510808",
+   "nome": "Patos",
+   "populacao": 108416,
+   "capital": false,
+   "lat": -7.01743,
+   "lon": -37.2747,
+   "elevacao": 248,
+   "desnivel": 22,
+   "distCostaKm": 228,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -1.3,
+    "fChuva": 0.63,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 248 m de altitude · 228 km do mar"
+  },
+  {
+   "ibge": "2501807",
+   "nome": "Bayeux",
+   "populacao": 83351,
+   "capital": false,
+   "lat": -7.1238,
+   "lon": -34.9293,
+   "elevacao": 17,
+   "desnivel": 57,
+   "distCostaKm": 12,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.21923076923076923
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 17 m de altitude"
+  },
+  {
+   "ibge": "2503209",
+   "nome": "Cabedelo",
+   "populacao": 71364,
+   "capital": false,
+   "lat": -6.98731,
+   "lon": -34.8284,
+   "elevacao": 9,
+   "desnivel": 8,
+   "distCostaKm": 4,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 9 m de altitude"
+  },
+  {
+   "ibge": "2516201",
+   "nome": "Sousa",
+   "populacao": 70247,
+   "capital": false,
+   "lat": -6.75148,
+   "lon": -38.2311,
+   "elevacao": 221,
+   "desnivel": 10,
+   "distCostaKm": 235,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -1.1,
+    "fChuva": 0.61,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 221 m de altitude · 235 km do mar"
+  },
+  {
+   "ibge": "2503704",
+   "nome": "Cajazeiras",
+   "populacao": 66976,
+   "capital": false,
+   "lat": -6.88004,
+   "lon": -38.5577,
+   "elevacao": 295,
+   "desnivel": 28,
+   "distCostaKm": 266,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -1.5,
+    "fChuva": 0.54,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 295 m de altitude · 266 km do mar"
+  }
+ ]
+}

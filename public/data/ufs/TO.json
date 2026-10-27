@@ -1,0 +1,207 @@
+{
+ "id": 17,
+ "sigla": "TO",
+ "nome": "Tocantins",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 1595994,
+  "ano": 2026,
+  "censo2022": 1511460
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 64317699000,
+  "perCapita": 40299,
+  "vab": {
+   "agro": 13364370000,
+   "industria": 5000268000,
+   "servicos": 15959035000,
+   "adminPublica": 12371635000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 278464,
+ "numMunicipios": 139,
+ "maioresMunicipios": [
+  {
+   "id": 1721000,
+   "nome": "Palmas",
+   "populacao": 333154
+  },
+  {
+   "id": 1702109,
+   "nome": "Araguaína",
+   "populacao": 184495
+  },
+  {
+   "id": 1709500,
+   "nome": "Gurupi",
+   "populacao": 90818
+  },
+  {
+   "id": 1718204,
+   "nome": "Porto Nacional",
+   "populacao": 70507
+  },
+  {
+   "id": 1716109,
+   "nome": "Paraíso do Tocantins",
+   "populacao": 56223
+  },
+  {
+   "id": 1705508,
+   "nome": "Colinas do Tocantins",
+   "populacao": 36451
+  },
+  {
+   "id": 1702208,
+   "nome": "Araguatins",
+   "populacao": 33364
+  },
+  {
+   "id": 1709302,
+   "nome": "Guaraí",
+   "populacao": 25975
+  }
+ ],
+ "indicadores": {
+  "idh": 0.731,
+  "homicidios": 24.3,
+  "idebEM": 4,
+  "esgoto": 31,
+  "dividaRCL": 11
+ },
+ "tracos": {
+  "sigla": "TO",
+  "apelido": "Caçula do Brasil",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Palmas",
+   "ibge": 1721000,
+   "lat": -10.1844,
+   "lon": -48.3336
+  },
+  "biomas": [
+   "cerrado",
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "planicie",
+   "agua": {
+    "lado": "W",
+    "tipo": "lago"
+   },
+   "relevo": 0.35
+  },
+  "clima": "Tropical de savana — seca rigorosa e calor forte",
+  "sotaque": "tocantinense",
+  "saudacao": "Bom dia, Governador! Palmas é novinha, dá pra planejar tudo direito.",
+  "trilha": [
+   "sertanejo",
+   "catira",
+   "forró"
+  ],
+  "festas": [
+   "Festa do Divino de Natividade",
+   "Temporada de Praia"
+  ],
+  "arquitetura": "Capital planejada de quadras e avenidas largas, praias de lago, casas térreas",
+  "tracos": [
+   {
+    "id": "capital-planejada",
+    "nome": "Capital planejada",
+    "tipo": "buff",
+    "descricao": "Avenidas largas e espaço para crescer com ordem.",
+    "efeitos": {
+     "custoObras": -0.1
+    }
+   },
+   {
+    "id": "jalapao",
+    "nome": "Jalapão",
+    "tipo": "buff",
+    "descricao": "Fervedouros e dunas atraem ecoturismo.",
+    "efeitos": {
+     "turismo": 0.15
+    }
+   },
+   {
+    "id": "matopiba-to",
+    "nome": "MATOPIBA",
+    "tipo": "neutro",
+    "descricao": "Agro crescendo no Cerrado, com desmatamento junto.",
+    "efeitos": {
+     "agro": 0.25,
+     "pressaoAmbiental": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Espraiamento urbano",
+   "Queimadas",
+   "Dependência de transferências"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

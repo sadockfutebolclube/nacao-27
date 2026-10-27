@@ -1,0 +1,32 @@
+{
+ "sigla": "DF",
+ "geradoEm": "2026-10-26T22:43:27.525Z",
+ "municipios": [
+  {
+   "ibge": "5300108",
+   "nome": "Brasília",
+   "populacao": 3009996,
+   "capital": true,
+   "lat": -15.7795,
+   "lon": -47.9297,
+   "elevacao": 1135,
+   "desnivel": 54,
+   "distCostaKm": 31,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": {
+     "lado": "E",
+     "tipo": "lago"
+    },
+    "relevo": 0.3
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planalto · Cerrado · 1135 m de altitude · 31 km do mar"
+  }
+ ]
+}

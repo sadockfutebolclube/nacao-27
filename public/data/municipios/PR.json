@@ -1,0 +1,191 @@
+{
+ "sigla": "PR",
+ "geradoEm": "2026-10-26T22:43:28.626Z",
+ "municipios": [
+  {
+   "ibge": "4106902",
+   "nome": "Curitiba",
+   "populacao": 1832183,
+   "capital": true,
+   "lat": -25.4195,
+   "lon": -49.2646,
+   "elevacao": 920,
+   "desnivel": 50,
+   "distCostaKm": 85,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.35
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planalto · Mata Atlântica · 920 m de altitude · 85 km do mar"
+  },
+  {
+   "ibge": "4113700",
+   "nome": "Londrina",
+   "populacao": 584465,
+   "capital": false,
+   "lat": -23.304,
+   "lon": -51.1691,
+   "elevacao": 605,
+   "desnivel": 72,
+   "distCostaKm": 380,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.27692307692307694
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 605 m de altitude · 380 km do mar"
+  },
+  {
+   "ibge": "4115200",
+   "nome": "Maringá",
+   "populacao": 432635,
+   "capital": false,
+   "lat": -23.4205,
+   "lon": -51.9333,
+   "elevacao": 554,
+   "desnivel": 64,
+   "distCostaKm": 433,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.24615384615384617
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 2.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 554 m de altitude · 433 km do mar"
+  },
+  {
+   "ibge": "4119905",
+   "nome": "Ponta Grossa",
+   "populacao": 378527,
+   "capital": false,
+   "lat": -25.0916,
+   "lon": -50.1668,
+   "elevacao": 965,
+   "desnivel": 117,
+   "distCostaKm": 183,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.45
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 965 m de altitude · 183 km do mar"
+  },
+  {
+   "ibge": "4104808",
+   "nome": "Cascavel",
+   "populacao": 372026,
+   "capital": false,
+   "lat": -24.9573,
+   "lon": -53.459,
+   "elevacao": 786,
+   "desnivel": 69,
+   "distCostaKm": 502,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.2653846153846154
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 786 m de altitude · 502 km do mar"
+  },
+  {
+   "ibge": "4125506",
+   "nome": "São José dos Pinhais",
+   "populacao": 353874,
+   "capital": false,
+   "lat": -25.5313,
+   "lon": -49.2031,
+   "elevacao": 906,
+   "desnivel": 38,
+   "distCostaKm": 75,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.14615384615384616
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 906 m de altitude · 75 km do mar"
+  },
+  {
+   "ibge": "4108304",
+   "nome": "Foz do Iguaçu",
+   "populacao": 299112,
+   "capital": false,
+   "lat": -25.5427,
+   "lon": -54.5827,
+   "elevacao": 181,
+   "desnivel": 84,
+   "distCostaKm": 597,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3230769230769231
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 4.6,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 181 m de altitude · 597 km do mar"
+  },
+  {
+   "ibge": "4105805",
+   "nome": "Colombo",
+   "populacao": 242698,
+   "capital": false,
+   "lat": -25.2925,
+   "lon": -49.2262,
+   "elevacao": 1001,
+   "desnivel": 101,
+   "distCostaKm": 90,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.38846153846153847
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 1001 m de altitude · 90 km do mar"
+  }
+ ]
+}

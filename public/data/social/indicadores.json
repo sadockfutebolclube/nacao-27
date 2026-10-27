@@ -1,0 +1,330 @@
+{
+ "geradoEm": "2026-10-26T14:54:38.415Z",
+ "linhaExtremaPobreza": 218,
+ "fontes": {
+  "mortalidadeInfantil": {
+   "nome": "SIM (óbitos < 1 ano) e SINASC (nascidos vivos), por residência — DATASUS/TabNet",
+   "url": "http://tabnet.datasus.gov.br/",
+   "periodo": "2023"
+  },
+  "leitos": {
+   "nome": "CNES — leitos de internação, quantidade SUS — DATASUS/TabNet",
+   "url": "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/leiintbr.def",
+   "periodo": "12/2024"
+  },
+  "desemprego": {
+   "nome": "PNAD Contínua — taxa de desocupação (SIDRA 4099)",
+   "url": "https://sidra.ibge.gov.br/tabela/4099",
+   "periodo": "2º trimestre 2026"
+  },
+  "extremaPobreza": {
+   "nome": "PNAD Contínua — % abaixo de R$ 218/mês per capita (interpolado nos percentis da SIDRA 7438; linha do Bolsa Família)",
+   "url": "https://sidra.ibge.gov.br/tabela/7438",
+   "periodo": "2025"
+  },
+  "gini": {
+   "nome": "PNAD Contínua — Gini do rendimento domiciliar per capita (SIDRA 7435)",
+   "url": "https://sidra.ibge.gov.br/tabela/7435",
+   "periodo": "2025"
+  }
+ },
+ "valores": {
+  "AC": {
+   "nascidos": 14473,
+   "obitosInfantis": 245,
+   "mortalidadeInfantil": 16.9,
+   "leitosSUS": 1426,
+   "leitosPorMil": 1.61,
+   "desemprego": 0.066,
+   "extremaPobreza": 7.8,
+   "gini": 0.509,
+   "rendaMediana": 842
+  },
+  "AL": {
+   "nascidos": 46543,
+   "obitosInfantis": 631,
+   "mortalidadeInfantil": 13.6,
+   "leitosSUS": 5378,
+   "leitosPorMil": 1.67,
+   "desemprego": 0.079,
+   "extremaPobreza": 6.4,
+   "gini": 0.512,
+   "rendaMediana": 865
+  },
+  "AP": {
+   "nascidos": 12948,
+   "obitosInfantis": 271,
+   "mortalidadeInfantil": 20.9,
+   "leitosSUS": 1485,
+   "leitosPorMil": 1.83,
+   "desemprego": 0.098,
+   "extremaPobreza": 4.9,
+   "gini": 0.496,
+   "rendaMediana": 1033
+  },
+  "AM": {
+   "nascidos": 70453,
+   "obitosInfantis": 1204,
+   "mortalidadeInfantil": 17.1,
+   "leitosSUS": 5509,
+   "leitosPorMil": 1.26,
+   "desemprego": 0.075,
+   "extremaPobreza": 5.1,
+   "gini": 0.488,
+   "rendaMediana": 938
+  },
+  "BA": {
+   "nascidos": 170314,
+   "obitosInfantis": 2523,
+   "mortalidadeInfantil": 14.8,
+   "leitosSUS": 24900,
+   "leitosPorMil": 1.67,
+   "desemprego": 0.091,
+   "extremaPobreza": 4.9,
+   "gini": 0.466,
+   "rendaMediana": 1011
+  },
+  "CE": {
+   "nascidos": 111091,
+   "obitosInfantis": 1302,
+   "mortalidadeInfantil": 11.7,
+   "leitosSUS": 15381,
+   "leitosPorMil": 1.65,
+   "desemprego": 0.066,
+   "extremaPobreza": 5.9,
+   "gini": 0.506,
+   "rendaMediana": 870
+  },
+  "DF": {
+   "nascidos": 35551,
+   "obitosInfantis": 386,
+   "mortalidadeInfantil": 10.9,
+   "leitosSUS": 4933,
+   "leitosPorMil": 1.64,
+   "desemprego": 0.065,
+   "extremaPobreza": 2.4,
+   "gini": 0.57,
+   "rendaMediana": 2162
+  },
+  "ES": {
+   "nascidos": 52187,
+   "obitosInfantis": 605,
+   "mortalidadeInfantil": 11.6,
+   "leitosSUS": 6030,
+   "leitosPorMil": 1.45,
+   "desemprego": 0.023,
+   "extremaPobreza": 3,
+   "gini": 0.48,
+   "rendaMediana": 1515
+  },
+  "GO": {
+   "nascidos": 91822,
+   "obitosInfantis": 1144,
+   "mortalidadeInfantil": 12.5,
+   "leitosSUS": 12089,
+   "leitosPorMil": 1.61,
+   "desemprego": 0.04,
+   "extremaPobreza": 2.7,
+   "gini": 0.479,
+   "rendaMediana": 1537
+  },
+  "MA": {
+   "nascidos": 97205,
+   "obitosInfantis": 1443,
+   "mortalidadeInfantil": 14.8,
+   "leitosSUS": 13023,
+   "leitosPorMil": 1.85,
+   "desemprego": 0.06,
+   "extremaPobreza": 8,
+   "gini": 0.491,
+   "rendaMediana": 793
+  },
+  "MT": {
+   "nascidos": 58553,
+   "obitosInfantis": 822,
+   "mortalidadeInfantil": 14,
+   "leitosSUS": 6073,
+   "leitosPorMil": 1.54,
+   "desemprego": 0.022000000000000002,
+   "extremaPobreza": 2.2,
+   "gini": 0.439,
+   "rendaMediana": 1561
+  },
+  "MS": {
+   "nascidos": 40233,
+   "obitosInfantis": 545,
+   "mortalidadeInfantil": 13.5,
+   "leitosSUS": 3987,
+   "leitosPorMil": 1.35,
+   "desemprego": 0.027000000000000003,
+   "extremaPobreza": 2.3,
+   "gini": 0.457,
+   "rendaMediana": 1590
+  },
+  "MG": {
+   "nascidos": 233918,
+   "obitosInfantis": 2638,
+   "mortalidadeInfantil": 11.3,
+   "leitosSUS": 29092,
+   "leitosPorMil": 1.36,
+   "desemprego": 0.038,
+   "extremaPobreza": 2.7,
+   "gini": 0.473,
+   "rendaMediana": 1523
+  },
+  "PA": {
+   "nascidos": 126152,
+   "obitosInfantis": 1897,
+   "mortalidadeInfantil": 15,
+   "leitosSUS": 11235,
+   "leitosPorMil": 1.28,
+   "desemprego": 0.062,
+   "extremaPobreza": 4.5,
+   "gini": 0.492,
+   "rendaMediana": 929
+  },
+  "PB": {
+   "nascidos": 51531,
+   "obitosInfantis": 668,
+   "mortalidadeInfantil": 13,
+   "leitosSUS": 7492,
+   "leitosPorMil": 1.79,
+   "desemprego": 0.054000000000000006,
+   "extremaPobreza": 4.9,
+   "gini": 0.507,
+   "rendaMediana": 986
+  },
+  "PR": {
+   "nascidos": 139836,
+   "obitosInfantis": 1511,
+   "mortalidadeInfantil": 10.8,
+   "leitosSUS": 19204,
+   "leitosPorMil": 1.61,
+   "desemprego": 0.031,
+   "extremaPobreza": 2.4,
+   "gini": 0.47,
+   "rendaMediana": 1788
+  },
+  "PE": {
+   "nascidos": 116175,
+   "obitosInfantis": 1535,
+   "mortalidadeInfantil": 13.2,
+   "leitosSUS": 16566,
+   "leitosPorMil": 1.73,
+   "desemprego": 0.083,
+   "extremaPobreza": 5.9,
+   "gini": 0.52,
+   "rendaMediana": 956
+  },
+  "PI": {
+   "nascidos": 42144,
+   "obitosInfantis": 630,
+   "mortalidadeInfantil": 14.9,
+   "leitosSUS": 6127,
+   "leitosPorMil": 1.81,
+   "desemprego": 0.083,
+   "extremaPobreza": 4.5,
+   "gini": 0.508,
+   "rendaMediana": 987
+  },
+  "RJ": {
+   "nascidos": 176145,
+   "obitosInfantis": 2370,
+   "mortalidadeInfantil": 13.5,
+   "leitosSUS": 20909,
+   "leitosPorMil": 1.21,
+   "desemprego": 0.071,
+   "extremaPobreza": 3.1,
+   "gini": 0.543,
+   "rendaMediana": 1520
+  },
+  "RN": {
+   "nascidos": 39440,
+   "obitosInfantis": 440,
+   "mortalidadeInfantil": 11.2,
+   "leitosSUS": 6229,
+   "leitosPorMil": 1.8,
+   "desemprego": 0.055999999999999994,
+   "extremaPobreza": 5,
+   "gini": 0.54,
+   "rendaMediana": 1020
+  },
+  "RS": {
+   "nascidos": 120974,
+   "obitosInfantis": 1171,
+   "mortalidadeInfantil": 9.7,
+   "leitosSUS": 20147,
+   "leitosPorMil": 1.79,
+   "desemprego": 0.042,
+   "extremaPobreza": 2.2,
+   "gini": 0.468,
+   "rendaMediana": 1833
+  },
+  "RO": {
+   "nascidos": 23921,
+   "obitosInfantis": 293,
+   "mortalidadeInfantil": 12.2,
+   "leitosSUS": 3795,
+   "leitosPorMil": 2.16,
+   "desemprego": 0.026000000000000002,
+   "extremaPobreza": 3.1,
+   "gini": 0.458,
+   "rendaMediana": 1430
+  },
+  "RR": {
+   "nascidos": 13105,
+   "obitosInfantis": 313,
+   "mortalidadeInfantil": 23.9,
+   "leitosSUS": 1298,
+   "leitosPorMil": 1.71,
+   "desemprego": 0.05,
+   "extremaPobreza": 3.7,
+   "gini": 0.506,
+   "rendaMediana": 1127
+  },
+  "SC": {
+   "nascidos": 96802,
+   "obitosInfantis": 878,
+   "mortalidadeInfantil": 9.1,
+   "leitosSUS": 11614,
+   "leitosPorMil": 1.4,
+   "desemprego": 0.021,
+   "extremaPobreza": 2,
+   "gini": 0.425,
+   "rendaMediana": 1989
+  },
+  "SP": {
+   "nascidos": 503910,
+   "obitosInfantis": 5722,
+   "mortalidadeInfantil": 11.4,
+   "leitosSUS": 54923,
+   "leitosPorMil": 1.19,
+   "desemprego": 0.054000000000000006,
+   "extremaPobreza": 2.4,
+   "gini": 0.491,
+   "rendaMediana": 1797
+  },
+  "SE": {
+   "nascidos": 29005,
+   "obitosInfantis": 536,
+   "mortalidadeInfantil": 18.5,
+   "leitosSUS": 2432,
+   "leitosPorMil": 1.05,
+   "desemprego": 0.079,
+   "extremaPobreza": 4.8,
+   "gini": 0.532,
+   "rendaMediana": 996
+  },
+  "TO": {
+   "nascidos": 23145,
+   "obitosInfantis": 294,
+   "mortalidadeInfantil": 12.7,
+   "leitosSUS": 2619,
+   "leitosPorMil": 1.64,
+   "desemprego": 0.040999999999999995,
+   "extremaPobreza": 3.6,
+   "gini": 0.472,
+   "rendaMediana": 1360
+  }
+ }
+}

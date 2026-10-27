@@ -1,0 +1,171 @@
+{
+ "id": 53,
+ "sigla": "DF",
+ "nome": "Distrito Federal",
+ "regiao": {
+  "sigla": "CO",
+  "nome": "Centro-Oeste"
+ },
+ "populacao": {
+  "valor": 3009996,
+  "ano": 2026,
+  "censo2022": 2817381
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 365669108000,
+  "perCapita": 121485,
+  "vab": {
+   "agro": 2286948000,
+   "industria": 10235490000,
+   "servicos": 127696742000,
+   "adminPublica": 116809198000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 5842,
+ "numMunicipios": 1,
+ "maioresMunicipios": [
+  {
+   "id": 5300108,
+   "nome": "Brasília",
+   "populacao": 3009996
+  }
+ ],
+ "indicadores": {
+  "idh": 0.814,
+  "homicidios": 11.3,
+  "idebEM": 4.3,
+  "esgoto": 90,
+  "dividaRCL": 13
+ },
+ "tracos": {
+  "sigla": "DF",
+  "apelido": "Quadradinho",
+  "dificuldade": 2,
+  "capital": {
+   "nome": "Brasília",
+   "ibge": 5300108,
+   "lat": -15.7939,
+   "lon": -47.8828
+  },
+  "biomas": [
+   "cerrado"
+  ],
+  "terreno": {
+   "tipo": "planalto",
+   "agua": {
+    "lado": "E",
+    "tipo": "lago"
+   },
+   "relevo": 0.3
+  },
+  "clima": "Tropical de altitude — seca severa de maio a setembro, umidade de deserto",
+  "sotaque": "candango",
+  "saudacao": "Bom dia, Governador. O Planalto ligou duas vezes antes das oito.",
+  "trilha": [
+   "rock de Brasília",
+   "MPB",
+   "choro"
+  ],
+  "festas": [
+   "Aniversário de Brasília",
+   "Festival de Cinema"
+  ],
+  "arquitetura": "Modernismo de concreto, superquadras sobre pilotis, eixos monumentais, cidades-satélite autoconstruídas",
+  "tracos": [
+   {
+    "id": "fundo-constitucional",
+    "nome": "Fundo Constitucional",
+    "tipo": "buff",
+    "descricao": "A União paga boa parte da segurança, saúde e educação.",
+    "efeitos": {
+     "transferenciasFederais": 0.5
+    }
+   },
+   {
+    "id": "servidores",
+    "nome": "Capital dos servidores",
+    "tipo": "neutro",
+    "descricao": "Renda alta, folha pesada e sindicatos fortes.",
+    "efeitos": {
+     "custoPessoal": 0.2,
+     "renda": 0.3
+    }
+   },
+   {
+    "id": "vizinho-planalto",
+    "nome": "Vizinho do Planalto",
+    "tipo": "neutro",
+    "descricao": "Toda crise nacional bate na sua porta primeiro.",
+    "efeitos": {
+     "volatilidadePolitica": 0.4
+    }
+   }
+  ],
+  "desafios": [
+   "Desigualdade entre Plano Piloto e periferias",
+   "Mobilidade espraiada",
+   "Crise hídrica na seca"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

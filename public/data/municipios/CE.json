@@ -1,0 +1,198 @@
+{
+ "sigla": "CE",
+ "geradoEm": "2026-10-26T22:43:27.503Z",
+ "municipios": [
+  {
+   "ibge": "2304400",
+   "nome": "Fortaleza",
+   "populacao": 2582360,
+   "capital": true,
+   "lat": -3.71664,
+   "lon": -38.5423,
+   "elevacao": 21,
+   "desnivel": 24,
+   "distCostaKm": 2,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "N",
+     "tipo": "mar"
+    },
+    "relevo": 0.3
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Caatinga · 21 m de altitude"
+  },
+  {
+   "ibge": "2303709",
+   "nome": "Caucaia",
+   "populacao": 380944,
+   "capital": false,
+   "lat": -3.72797,
+   "lon": -38.6619,
+   "elevacao": 24,
+   "desnivel": 25,
+   "distCostaKm": 6,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 24 m de altitude"
+  },
+  {
+   "ibge": "2307304",
+   "nome": "Juazeiro do Norte",
+   "populacao": 307928,
+   "capital": false,
+   "lat": -7.19621,
+   "lon": -39.3076,
+   "elevacao": 370,
+   "desnivel": 109,
+   "distCostaKm": 344,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.41923076923076924
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -2.2,
+    "fChuva": 0.59,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 370 m de altitude · 344 km do mar"
+  },
+  {
+   "ibge": "2307650",
+   "nome": "Maracanaú",
+   "populacao": 253442,
+   "capital": false,
+   "lat": -3.86699,
+   "lon": -38.6259,
+   "elevacao": 43,
+   "desnivel": 19,
+   "distCostaKm": 20,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 43 m de altitude"
+  },
+  {
+   "ibge": "2312908",
+   "nome": "Sobral",
+   "populacao": 217690,
+   "capital": false,
+   "lat": -3.68913,
+   "lon": -40.3482,
+   "elevacao": 73,
+   "desnivel": 23,
+   "distCostaKm": 98,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 0.95,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 73 m de altitude · 98 km do mar"
+  },
+  {
+   "ibge": "2304202",
+   "nome": "Crato",
+   "populacao": 139781,
+   "capital": false,
+   "lat": -7.2153,
+   "lon": -39.4103,
+   "elevacao": 411,
+   "desnivel": 134,
+   "distCostaKm": 352,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.5153846153846153
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -2.4,
+    "fChuva": 0.58,
+    "estimado": true
+   },
+   "descricao": "Planície · Caatinga · 411 m de altitude · 352 km do mar"
+  },
+  {
+   "ibge": "2306405",
+   "nome": "Itapipoca",
+   "populacao": 137795,
+   "capital": false,
+   "lat": -3.49933,
+   "lon": -39.5836,
+   "elevacao": 106,
+   "desnivel": 318,
+   "distCostaKm": 43,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.95
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Caatinga · 106 m de altitude · 43 km do mar"
+  },
+  {
+   "ibge": "2307700",
+   "nome": "Maranguape",
+   "populacao": 108323,
+   "capital": false,
+   "lat": -3.89143,
+   "lon": -38.6829,
+   "elevacao": 72,
+   "desnivel": 349,
+   "distCostaKm": 24,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.95
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Caatinga · 72 m de altitude"
+  }
+ ]
+}

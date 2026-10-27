@@ -1,0 +1,207 @@
+{
+ "id": 43,
+ "sigla": "RS",
+ "nome": "Rio Grande do Sul",
+ "regiao": {
+  "sigla": "S",
+  "nome": "Sul"
+ },
+ "populacao": {
+  "valor": 11233317,
+  "ano": 2026,
+  "censo2022": 10882965
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 650107022000,
+  "perCapita": 57873,
+  "vab": {
+   "agro": 74967472000,
+   "industria": 121123403000,
+   "servicos": 238271768000,
+   "adminPublica": 67741823000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 269485,
+ "numMunicipios": 497,
+ "maioresMunicipios": [
+  {
+   "id": 4314902,
+   "nome": "Porto Alegre",
+   "populacao": 1388791
+  },
+  {
+   "id": 4305108,
+   "nome": "Caxias do Sul",
+   "populacao": 479604
+  },
+  {
+   "id": 4304606,
+   "nome": "Canoas",
+   "populacao": 359845
+  },
+  {
+   "id": 4314407,
+   "nome": "Pelotas",
+   "populacao": 336150
+  },
+  {
+   "id": 4316907,
+   "nome": "Santa Maria",
+   "populacao": 282397
+  },
+  {
+   "id": 4309209,
+   "nome": "Gravataí",
+   "populacao": 275432
+  },
+  {
+   "id": 4313409,
+   "nome": "Novo Hamburgo",
+   "populacao": 235801
+  },
+  {
+   "id": 4323002,
+   "nome": "Viamão",
+   "populacao": 231994
+  }
+ ],
+ "indicadores": {
+  "idh": 0.771,
+  "homicidios": 20.1,
+  "idebEM": 4.1,
+  "esgoto": 37,
+  "dividaRCL": 184
+ },
+ "tracos": {
+  "sigla": "RS",
+  "apelido": "Querência Amada",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Porto Alegre",
+   "ibge": 4314902,
+   "lat": -30.0346,
+   "lon": -51.2177
+  },
+  "biomas": [
+   "pampa",
+   "mata-atlantica"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "W",
+    "tipo": "lago"
+   },
+   "relevo": 0.4
+  },
+  "clima": "Subtropical — inverno com geada e minuano, chuvas extremas cada vez mais frequentes",
+  "sotaque": "gaúcho",
+  "saudacao": "Bah, bom dia, Governador! Chimarrão tá pronto, tchê.",
+  "trilha": [
+   "milonga",
+   "chamamé",
+   "rock gaúcho"
+  ],
+  "festas": [
+   "Semana Farroupilha",
+   "Festa da Uva"
+  ],
+  "arquitetura": "Casarões europeus, colônias alemãs e italianas, galpões crioulos, diques e comportas",
+  "tracos": [
+   {
+    "id": "enchentes-rs",
+    "nome": "Enchentes extremas",
+    "tipo": "nerf",
+    "descricao": "A memória de 2024: sistema de diques e comportas precisa funcionar.",
+    "efeitos": {
+     "riscoEnchente": 0.6
+    }
+   },
+   {
+    "id": "agro-rs",
+    "nome": "Agro e vinho",
+    "tipo": "buff",
+    "descricao": "Soja, arroz, carne e vinícolas da Serra.",
+    "efeitos": {
+     "agro": 0.3
+    }
+   },
+   {
+    "id": "previdencia-rs",
+    "nome": "Previdência pesada",
+    "tipo": "nerf",
+    "descricao": "Mais inativos que ativos na folha.",
+    "efeitos": {
+     "custoPessoal": 0.35,
+     "dividaInicial": 0.5
+    }
+   }
+  ],
+  "desafios": [
+   "Reconstrução pós-enchente",
+   "Dívida com a União",
+   "Estiagem alternada com cheias"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

@@ -1,0 +1,226 @@
+{
+  "$comment": "Indicadores que NÃO vêm da API do IBGE. Valores arredondados, compilados manualmente das fontes abaixo; marcados como 'aproximado' quando compilados à mão. A dívida/RCL já vem do SICONFI (Fase 3); SNIS, INEP e FBSP ganham coletores nas próximas fases. Ver RESEARCH.md.",
+  "fontes": {
+    "idh": {
+      "nome": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+      "url": "http://www.atlasbrasil.org.br/",
+      "ano": 2021,
+      "aproximado": true
+    },
+    "homicidios": {
+      "nome": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+      "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+      "ano": 2023,
+      "aproximado": true
+    },
+    "idebEM": {
+      "nome": "IDEB Ensino Médio (total) — INEP",
+      "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+      "ano": 2023,
+      "aproximado": true
+    },
+    "esgoto": {
+      "nome": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+      "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+      "ano": 2022,
+      "aproximado": true
+    },
+    "dividaRCL": {
+      "nome": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+      "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+      "ano": 2024,
+      "aproximado": false
+    }
+  },
+  "valores": {
+    "AC": {
+      "idh": 0.71,
+      "homicidios": 24.9,
+      "idebEM": 3.9,
+      "esgoto": 11,
+      "dividaRCL": 20
+    },
+    "AL": {
+      "idh": 0.684,
+      "homicidios": 37.4,
+      "idebEM": 4,
+      "esgoto": 22,
+      "dividaRCL": 76
+    },
+    "AP": {
+      "idh": 0.688,
+      "homicidios": 69.9,
+      "idebEM": 3.5,
+      "esgoto": 7,
+      "dividaRCL": -7
+    },
+    "AM": {
+      "idh": 0.7,
+      "homicidios": 36.6,
+      "idebEM": 3.9,
+      "esgoto": 13,
+      "dividaRCL": 30
+    },
+    "BA": {
+      "idh": 0.691,
+      "homicidios": 46.5,
+      "idebEM": 3.6,
+      "esgoto": 46,
+      "dividaRCL": 37
+    },
+    "CE": {
+      "idh": 0.734,
+      "homicidios": 36.6,
+      "idebEM": 4.2,
+      "esgoto": 30,
+      "dividaRCL": 33
+    },
+    "DF": {
+      "idh": 0.814,
+      "homicidios": 11.3,
+      "idebEM": 4.3,
+      "esgoto": 90,
+      "dividaRCL": 13
+    },
+    "ES": {
+      "idh": 0.771,
+      "homicidios": 26.3,
+      "idebEM": 4.6,
+      "esgoto": 62,
+      "dividaRCL": -10
+    },
+    "GO": {
+      "idh": 0.737,
+      "homicidios": 22.4,
+      "idebEM": 4.7,
+      "esgoto": 62,
+      "dividaRCL": 24
+    },
+    "MA": {
+      "idh": 0.676,
+      "homicidios": 27.8,
+      "idebEM": 3.8,
+      "esgoto": 12,
+      "dividaRCL": 3
+    },
+    "MT": {
+      "idh": 0.736,
+      "homicidios": 28.4,
+      "idebEM": 4,
+      "esgoto": 37,
+      "dividaRCL": -14
+    },
+    "MS": {
+      "idh": 0.742,
+      "homicidios": 21.2,
+      "idebEM": 4.1,
+      "esgoto": 57,
+      "dividaRCL": 25
+    },
+    "MG": {
+      "idh": 0.774,
+      "homicidios": 14.1,
+      "idebEM": 4.1,
+      "esgoto": 76,
+      "dividaRCL": 163
+    },
+    "PA": {
+      "idh": 0.69,
+      "homicidios": 31.9,
+      "idebEM": 3.6,
+      "esgoto": 8,
+      "dividaRCL": 7
+    },
+    "PB": {
+      "idh": 0.698,
+      "homicidios": 27.6,
+      "idebEM": 4,
+      "esgoto": 41,
+      "dividaRCL": -2
+    },
+    "PR": {
+      "idh": 0.769,
+      "homicidios": 22,
+      "idebEM": 4.8,
+      "esgoto": 76,
+      "dividaRCL": -5
+    },
+    "PE": {
+      "idh": 0.719,
+      "homicidios": 40.7,
+      "idebEM": 4.4,
+      "esgoto": 33,
+      "dividaRCL": 30
+    },
+    "PI": {
+      "idh": 0.69,
+      "homicidios": 27,
+      "idebEM": 4.2,
+      "esgoto": 13,
+      "dividaRCL": 63
+    },
+    "RJ": {
+      "idh": 0.762,
+      "homicidios": 26.8,
+      "idebEM": 3.9,
+      "esgoto": 66,
+      "dividaRCL": 211
+    },
+    "RN": {
+      "idh": 0.728,
+      "homicidios": 33.6,
+      "idebEM": 3.6,
+      "esgoto": 27,
+      "dividaRCL": 40
+    },
+    "RS": {
+      "idh": 0.771,
+      "homicidios": 20.1,
+      "idebEM": 4.1,
+      "esgoto": 37,
+      "dividaRCL": 184
+    },
+    "RO": {
+      "idh": 0.7,
+      "homicidios": 27.4,
+      "idebEM": 4,
+      "esgoto": 6,
+      "dividaRCL": -1
+    },
+    "RR": {
+      "idh": 0.699,
+      "homicidios": 33,
+      "idebEM": 3.8,
+      "esgoto": 63,
+      "dividaRCL": 10
+    },
+    "SC": {
+      "idh": 0.792,
+      "homicidios": 9.1,
+      "idebEM": 4.2,
+      "esgoto": 31,
+      "dividaRCL": 28
+    },
+    "SP": {
+      "idh": 0.806,
+      "homicidios": 7.8,
+      "idebEM": 4.3,
+      "esgoto": 91,
+      "dividaRCL": 126
+    },
+    "SE": {
+      "idh": 0.702,
+      "homicidios": 33.9,
+      "idebEM": 3.8,
+      "esgoto": 31,
+      "dividaRCL": 12
+    },
+    "TO": {
+      "idh": 0.731,
+      "homicidios": 24.3,
+      "idebEM": 4,
+      "esgoto": 31,
+      "dividaRCL": 11
+    }
+  }
+}

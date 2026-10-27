@@ -1,0 +1,190 @@
+{
+ "sigla": "MG",
+ "geradoEm": "2026-10-26T22:43:28.262Z",
+ "municipios": [
+  {
+   "ibge": "3106200",
+   "nome": "Belo Horizonte",
+   "populacao": 2415451,
+   "capital": true,
+   "lat": -19.9102,
+   "lon": -43.9266,
+   "elevacao": 834,
+   "desnivel": 95,
+   "distCostaKm": 322,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.75
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Serra · Cerrado · 834 m de altitude · 322 km do mar"
+  },
+  {
+   "ibge": "3170206",
+   "nome": "Uberlândia",
+   "populacao": 768339,
+   "capital": false,
+   "lat": -18.9141,
+   "lon": -48.2749,
+   "elevacao": 872,
+   "desnivel": 97,
+   "distCostaKm": 320,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3730769230769231
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 872 m de altitude · 320 km do mar"
+  },
+  {
+   "ibge": "3118601",
+   "nome": "Contagem",
+   "populacao": 652973,
+   "capital": false,
+   "lat": -19.9321,
+   "lon": -44.0539,
+   "elevacao": 944,
+   "desnivel": 71,
+   "distCostaKm": 323,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.27307692307692305
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.7,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 944 m de altitude · 323 km do mar"
+  },
+  {
+   "ibge": "3136702",
+   "nome": "Juiz de Fora",
+   "populacao": 569588,
+   "capital": false,
+   "lat": -21.7595,
+   "lon": -43.3398,
+   "elevacao": 701,
+   "desnivel": 189,
+   "distCostaKm": 108,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.7269230769230769
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Mata Atlântica · 701 m de altitude · 108 km do mar"
+  },
+  {
+   "ibge": "3143302",
+   "nome": "Montes Claros",
+   "populacao": 440700,
+   "capital": false,
+   "lat": -16.7282,
+   "lon": -43.8578,
+   "elevacao": 657,
+   "desnivel": 48,
+   "distCostaKm": 450,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.18461538461538463
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 1.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 657 m de altitude · 450 km do mar"
+  },
+  {
+   "ibge": "3106705",
+   "nome": "Betim",
+   "populacao": 433902,
+   "capital": false,
+   "lat": -19.9668,
+   "lon": -44.2008,
+   "elevacao": 818,
+   "desnivel": 88,
+   "distCostaKm": 325,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3384615384615385
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 818 m de altitude · 325 km do mar"
+  },
+  {
+   "ibge": "3170107",
+   "nome": "Uberaba",
+   "populacao": 359275,
+   "capital": false,
+   "lat": -19.7472,
+   "lon": -47.9381,
+   "elevacao": 748,
+   "desnivel": 64,
+   "distCostaKm": 411,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.24615384615384617
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0.5,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Cerrado · 748 m de altitude · 411 km do mar"
+  },
+  {
+   "ibge": "3154606",
+   "nome": "Ribeirão das Neves",
+   "populacao": 348996,
+   "capital": false,
+   "lat": -19.7621,
+   "lon": -44.0844,
+   "elevacao": 797,
+   "desnivel": 103,
+   "distCostaKm": 343,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.39615384615384613
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 797 m de altitude · 343 km do mar"
+  }
+ ]
+}

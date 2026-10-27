@@ -1,0 +1,204 @@
+{
+ "sigla": "ES",
+ "geradoEm": "2026-10-26T22:43:27.627Z",
+ "municipios": [
+  {
+   "ibge": "3205002",
+   "nome": "Serra",
+   "populacao": 586901,
+   "capital": false,
+   "lat": -20.121,
+   "lon": -40.3074,
+   "elevacao": 35,
+   "desnivel": 127,
+   "distCostaKm": 11,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.48846153846153845
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 35 m de altitude"
+  },
+  {
+   "ibge": "3205200",
+   "nome": "Vila Velha",
+   "populacao": 510512,
+   "capital": false,
+   "lat": -20.3417,
+   "lon": -40.2875,
+   "elevacao": 11,
+   "desnivel": 37,
+   "distCostaKm": 8,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "relevo": 0.1423076923076923
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 11 m de altitude"
+  },
+  {
+   "ibge": "3201308",
+   "nome": "Cariacica",
+   "populacao": 376914,
+   "capital": false,
+   "lat": -20.2632,
+   "lon": -40.4165,
+   "elevacao": 41,
+   "desnivel": 67,
+   "distCostaKm": 18,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.25769230769230766
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 41 m de altitude"
+  },
+  {
+   "ibge": "3205309",
+   "nome": "Vitória",
+   "populacao": 343935,
+   "capital": true,
+   "lat": -20.3155,
+   "lon": -40.3128,
+   "elevacao": 1,
+   "desnivel": 115,
+   "distCostaKm": 8,
+   "terreno": {
+    "tipo": "litoral-morros",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.6
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral com morros · Mata Atlântica · 1 m de altitude"
+  },
+  {
+   "ibge": "3201209",
+   "nome": "Cachoeiro de Itapemirim",
+   "populacao": 198367,
+   "capital": false,
+   "lat": -20.8462,
+   "lon": -41.1198,
+   "elevacao": 27,
+   "desnivel": 151,
+   "distCostaKm": 36,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.5807692307692308
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 27 m de altitude · 36 km do mar"
+  },
+  {
+   "ibge": "3203205",
+   "nome": "Linhares",
+   "populacao": 185621,
+   "capital": false,
+   "lat": -19.3946,
+   "lon": -40.0643,
+   "elevacao": 30,
+   "desnivel": 18,
+   "distCostaKm": 34,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 30 m de altitude · 34 km do mar"
+  },
+  {
+   "ibge": "3202405",
+   "nome": "Guarapari",
+   "populacao": 137659,
+   "capital": false,
+   "lat": -20.6772,
+   "lon": -40.5093,
+   "elevacao": 18,
+   "desnivel": 28,
+   "distCostaKm": 5,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 18 m de altitude"
+  },
+  {
+   "ibge": "3204906",
+   "nome": "São Mateus",
+   "populacao": 135450,
+   "capital": false,
+   "lat": -18.7214,
+   "lon": -39.8579,
+   "elevacao": 37,
+   "desnivel": 38,
+   "distCostaKm": 18,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.14615384615384616
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 37 m de altitude"
+  }
+ ]
+}

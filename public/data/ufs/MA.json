@@ -1,0 +1,208 @@
+{
+ "id": 21,
+ "sigla": "MA",
+ "nome": "Maranhão",
+ "regiao": {
+  "sigla": "NE",
+  "nome": "Nordeste"
+ },
+ "populacao": {
+  "valor": 7024557,
+  "ano": 2026,
+  "censo2022": 6776699
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 149227195000,
+  "perCapita": 21244,
+  "vab": {
+   "agro": 13885868000,
+   "industria": 21733194000,
+   "servicos": 46190740000,
+   "adminPublica": 28420122000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 330264,
+ "numMunicipios": 217,
+ "maioresMunicipios": [
+  {
+   "id": 2111300,
+   "nome": "São Luís",
+   "populacao": 1090229
+  },
+  {
+   "id": 2105302,
+   "nome": "Imperatriz",
+   "populacao": 286383
+  },
+  {
+   "id": 2111201,
+   "nome": "São José de Ribamar",
+   "populacao": 260695
+  },
+  {
+   "id": 2112209,
+   "nome": "Timon",
+   "populacao": 183123
+  },
+  {
+   "id": 2103000,
+   "nome": "Caxias",
+   "populacao": 163650
+  },
+  {
+   "id": 2107506,
+   "nome": "Paço do Lumiar",
+   "populacao": 153903
+  },
+  {
+   "id": 2103307,
+   "nome": "Codó",
+   "populacao": 118272
+  },
+  {
+   "id": 2100055,
+   "nome": "Açailândia",
+   "populacao": 110703
+  }
+ ],
+ "indicadores": {
+  "idh": 0.676,
+  "homicidios": 27.8,
+  "idebEM": 3.8,
+  "esgoto": 12,
+  "dividaRCL": 3
+ },
+ "tracos": {
+  "sigla": "MA",
+  "apelido": "Atenas Brasileira",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "São Luís",
+   "ibge": 2111300,
+   "lat": -2.5307,
+   "lon": -44.3068
+  },
+  "biomas": [
+   "amazonia",
+   "cerrado",
+   "caatinga"
+  ],
+  "terreno": {
+   "tipo": "litoral-plano",
+   "agua": {
+    "lado": "N",
+    "tipo": "baia"
+   },
+   "relevo": 0.2
+  },
+  "clima": "Equatorial no litoral, marés de até 7 metros",
+  "sotaque": "maranhense",
+  "saudacao": "Bom dia, Governador! Tem bumba-meu-boi ensaiando lá fora.",
+  "trilha": [
+   "bumba-meu-boi",
+   "reggae maranhense",
+   "tambor de crioula"
+  ],
+  "festas": [
+   "São João do Bumba-meu-boi",
+   "Festa do Divino"
+  ],
+  "arquitetura": "Casarões de azulejo português no Centro Histórico, palafitas, casas de taipa",
+  "tracos": [
+   {
+    "id": "porto-itaqui",
+    "nome": "Porto do Itaqui e Alcântara",
+    "tipo": "buff",
+    "descricao": "Logística de grãos e minério; base espacial no litoral.",
+    "efeitos": {
+     "logistica": 0.25,
+     "industria": 0.1
+    }
+   },
+   {
+    "id": "pobreza-ma",
+    "nome": "Menor IDH do país",
+    "tipo": "nerf",
+    "descricao": "Pobreza extrema no interior exige políticas sociais massivas.",
+    "efeitos": {
+     "demandaSocial": 0.45
+    }
+   },
+   {
+    "id": "lencois",
+    "nome": "Lençóis Maranhenses",
+    "tipo": "buff",
+    "descricao": "Paisagem única, turismo em alta.",
+    "efeitos": {
+     "turismo": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Pobreza extrema",
+   "Saneamento muito baixo",
+   "Conflitos agrários"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

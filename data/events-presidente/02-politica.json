@@ -1,0 +1,85 @@
+[
+  {
+    "id": "pres-centrao-ministerio", "categoria": "congresso", "titulo": "O centrão quer mais", "tom": "alerta",
+    "texto": "{presidenteCamara} avisa que a base está 'insatisfeita com o espaço no governo' e sugere um ministério para o bloco. Sem isso, 'a pauta pode emperrar'.",
+    "se": ["base <= 0.6"], "cooldown": 10,
+    "escolhas": [
+      { "texto": "Prometer espaço na próxima reforma ministerial", "efeitos": { "camara": 0.06, "capital": -4 }, "resultado": "O recado foi entendido — por enquanto." },
+      { "texto": "Recusar: 'Não haverá balcão'", "efeitos": { "camara": -0.08, "aprovacao": 1 }, "resultado": "A frase rende manchete e um Congresso mais hostil." }
+    ]
+  },
+  {
+    "id": "pres-cpi", "categoria": "congresso", "titulo": "CPI no Senado", "tom": "ruim",
+    "texto": "A oposição ({oposicao}) reúne 27 assinaturas e instala uma CPI para investigar contratos de um ministério. Depoimentos vão ao vivo na {tv}.",
+    "se": ["escandalos >= 0.8"], "cooldown": 18,
+    "escolhas": [
+      { "texto": "Indicar aliados para a CPI", "efeitos": { "capital": -6, "senado": 0.02 }, "resultado": "A tropa de choque do governo controla a relatoria." },
+      { "texto": "Demitir o ministro investigado", "efeitos": { "escandalo": -0.6, "aprovacao": 1, "camara": -0.03 }, "resultado": "A CPI perde o foco; o partido do ministro fica magoado.", "tomResultado": "bom" },
+      { "texto": "Deixar a CPI correr", "efeitos": { "aprovacao": -2, "escandalo": 0.3 }, "resultado": "Três meses de depoimentos ruins para o governo.", "tomResultado": "ruim" }
+    ]
+  },
+  {
+    "id": "pres-escandalo-ministerio", "categoria": "politica", "titulo": "Escândalo num ministério", "tom": "ruim",
+    "texto": "Reportagem do {jornal} mostra superfaturamento em contratos de um ministério loteado. A oposição pede a cabeça do ministro.",
+    "se": ["capital <= 80"], "peso": 0.8, "cooldown": 14,
+    "escolhas": [
+      { "texto": "Afastar e mandar investigar", "efeitos": { "escandalo": 0.3, "aprovacao": -1, "camara": -0.02 }, "resultado": "Ministro afastado; a PF abre inquérito." },
+      { "texto": "Defender o ministro", "efeitos": { "escandalo": 1, "aprovacao": -3, "camara": 0.03 }, "resultado": "O caso cresce e chega à CPI.", "tomResultado": "ruim" }
+    ]
+  },
+  {
+    "id": "pres-fake-news", "categoria": "politica", "titulo": "Vídeo falso viraliza", "tom": "alerta",
+    "texto": "Um vídeo manipulado com inteligência artificial mostra {presidente} anunciando o fim do 13º salário. Já são 40 milhões de visualizações.",
+    "cooldown": 14, "peso": 0.7,
+    "escolhas": [
+      { "texto": "Pedir ao TSE e às plataformas a remoção", "efeitos": { "aprovacao": -0.5 }, "resultado": "O vídeo cai em dois dias, mas o estrago já foi feito." },
+      { "texto": "Responder com bom humor nas redes", "efeitos": { "aprovacao": 1 }, "resultado": "A resposta viraliza mais que o vídeo falso.", "tomResultado": "bom" }
+    ]
+  },
+  {
+    "id": "pres-manifestacao", "categoria": "politica", "titulo": "Domingo de protestos", "tom": "alerta",
+    "texto": "Centenas de milhares vão às ruas em São Paulo, Rio e Brasília contra o governo. A {tv} transmite ao vivo.",
+    "se": ["aprovacao <= 33"], "cooldown": 8,
+    "escolhas": [
+      { "texto": "Pronunciamento em cadeia nacional", "efeitos": { "aprovacao": 1, "capital": -3 }, "resultado": "Panelaço durante o pronunciamento, mas o tom conciliador ajuda." },
+      { "texto": "Silêncio estratégico", "efeitos": { "aprovacao": -1 }, "resultado": "A oposição ocupa o vácuo." }
+    ]
+  },
+  {
+    "id": "pres-apoio-popular", "categoria": "politica", "titulo": "Pesquisa: governo em alta", "tom": "bom",
+    "texto": "O {instituto} mostra a melhor avaliação do governo desde a posse. Partidos independentes procuram o Planalto.",
+    "se": ["aprovacao >= 55"], "cooldown": 8, "efeitos": { "camara": 0.05, "senado": 0.04, "capital": 5 }
+  },
+  {
+    "id": "pres-reforma-ministerial", "categoria": "politica", "titulo": "Hora da reforma ministerial?", "tom": "info",
+    "texto": "Com a eleição se aproximando, ministros que serão candidatos precisam deixar os cargos até abril. A Casa Civil propõe uma reforma ampla.",
+    "se": ["anoEleitoral", "mes <= 4"], "unico": false, "cooldown": 30,
+    "escolhas": [
+      { "texto": "Reforma ampla, com nomes técnicos", "efeitos": { "credibilidade": 0.02, "camara": -0.03 }, "resultado": "Equipe mais técnica para o último ano." },
+      { "texto": "Reforma para a eleição: cargos aos aliados", "efeitos": { "camara": 0.06, "escandalo": 0.2 }, "resultado": "A coalizão eleitoral ganha forma." }
+    ]
+  },
+  {
+    "id": "pres-presidente-camara-rompe", "categoria": "congresso", "titulo": "{presidenteCamara} rompe com o governo", "tom": "ruim",
+    "texto": "O presidente da Câmara anuncia 'independência' e engaveta projetos do Executivo. 'O Planalto não cumpre acordos.'",
+    "se": ["base <= 0.4"], "cooldown": 24, "efeitos": { "camara": -0.1, "capital": -5 }
+  },
+  {
+    "id": "pres-ministro-fazenda-cansa", "categoria": "politica", "titulo": "Fritura na Fazenda", "tom": "alerta",
+    "texto": "Ministros da ala política reclamam publicamente do 'excesso de austeridade' de {ministroFazenda}. O mercado teme uma troca.",
+    "se": ["primario >= -0.5", "aprovacao <= 45"], "cooldown": 18,
+    "escolhas": [
+      { "texto": "Reafirmar apoio ao ministro", "efeitos": { "credibilidade": 0.03, "camara": -0.02 }, "resultado": "O mercado respira; a ala política se cala — por ora.", "tomResultado": "bom" },
+      { "texto": "Sinalizar uma 'flexibilização'", "efeitos": { "credibilidade": -0.05, "cambio": 0.03, "camara": 0.04 }, "resultado": "Bolsa cai, dólar sobe e o Congresso comemora.", "tomResultado": "ruim" }
+    ]
+  },
+  {
+    "id": "pres-oposicao-impeachment", "categoria": "politica", "titulo": "Pedido de impeachment protocolado", "tom": "alerta",
+    "texto": "Deputados do {oposicao} protocolam pedido de impeachment citando 'pedaladas' e o descumprimento da meta fiscal. Cabe a {presidenteCamara} aceitar ou engavetar.",
+    "se": ["aprovacao <= 30"], "cooldown": 12,
+    "escolhas": [
+      { "texto": "Negociar com o presidente da Câmara", "efeitos": { "capital": -10, "camara": 0.06 }, "resultado": "O pedido vai para a gaveta. Por enquanto." },
+      { "texto": "Enfrentar: 'Golpe não passará'", "efeitos": { "aprovacao": 1, "camara": -0.05 }, "resultado": "A base se mobiliza; o centrão observa." }
+    ]
+  }
+]

@@ -1,0 +1,219 @@
+{
+ "id": 35,
+ "sigla": "SP",
+ "nome": "São Paulo",
+ "regiao": {
+  "sigla": "SE",
+  "nome": "Sudeste"
+ },
+ "populacao": {
+  "valor": 46179008,
+  "ano": 2026,
+  "censo2022": 44411238
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 3444814033000,
+  "perCapita": 74597,
+  "vab": {
+   "agro": 46193516000,
+   "industria": 518292544000,
+   "servicos": 1474964188000,
+   "adminPublica": 206915182000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 248884,
+ "numMunicipios": 645,
+ "maioresMunicipios": [
+  {
+   "id": 3550308,
+   "nome": "São Paulo",
+   "populacao": 11911337
+  },
+  {
+   "id": 3518800,
+   "nome": "Guarulhos",
+   "populacao": 1351284
+  },
+  {
+   "id": 3509502,
+   "nome": "Campinas",
+   "populacao": 1189761
+  },
+  {
+   "id": 3548708,
+   "nome": "São Bernardo do Campo",
+   "populacao": 842558
+  },
+  {
+   "id": 3547809,
+   "nome": "Santo André",
+   "populacao": 784290
+  },
+  {
+   "id": 3552205,
+   "nome": "Sorocaba",
+   "populacao": 766390
+  },
+  {
+   "id": 3534401,
+   "nome": "Osasco",
+   "populacao": 761441
+  },
+  {
+   "id": 3543402,
+   "nome": "Ribeirão Preto",
+   "populacao": 734538
+  }
+ ],
+ "indicadores": {
+  "idh": 0.806,
+  "homicidios": 7.8,
+  "idebEM": 4.3,
+  "esgoto": 91,
+  "dividaRCL": 126
+ },
+ "tracos": {
+  "sigla": "SP",
+  "apelido": "Locomotiva",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "São Paulo",
+   "ibge": 3550308,
+   "lat": -23.5505,
+   "lon": -46.6333
+  },
+  "biomas": [
+   "mata-atlantica",
+   "cerrado"
+  ],
+  "terreno": {
+   "tipo": "planalto",
+   "agua": {
+    "lado": "N",
+    "tipo": "rio"
+   },
+   "rio": true,
+   "relevo": 0.4
+  },
+  "clima": "Subtropical de altitude — garoa, ilhas de calor e temporais de verão",
+  "sotaque": "paulistano",
+  "saudacao": "Bom dia, Governador, meu! Tem reunião com a Fiesp às nove e trânsito na Marginal.",
+  "trilha": [
+   "samba paulista",
+   "rap instrumental",
+   "rock"
+  ],
+  "festas": [
+   "Virada Cultural",
+   "Parada LGBT+",
+   "Carnaval do Anhembi"
+  ],
+  "arquitetura": "Selva de concreto, edifícios modernistas, pichação, sobrados geminados na periferia",
+  "tracos": [
+   {
+    "id": "maior-pib",
+    "nome": "Maior PIB do país",
+    "tipo": "buff",
+    "descricao": "Arrecadação gigante de ICMS e mercado exigente.",
+    "efeitos": {
+     "receitaICMS": 0.35,
+     "servicos": 0.3
+    }
+   },
+   {
+    "id": "transito-sp",
+    "nome": "Trânsito caótico",
+    "tipo": "nerf",
+    "descricao": "Congestionamentos de centenas de quilômetros.",
+    "efeitos": {
+     "transito": 0.4
+    }
+   },
+   {
+    "id": "crise-hidrica-sp",
+    "nome": "Cantareira seca?",
+    "tipo": "nerf",
+    "descricao": "Crise hídrica volta se chover pouco.",
+    "efeitos": {
+     "riscoSeca": 0.25
+    }
+   },
+   {
+    "id": "mercado-sp",
+    "nome": "Faria Lima de olho",
+    "tipo": "neutro",
+    "descricao": "Investidores reagem rápido às suas decisões.",
+    "efeitos": {
+     "volatilidadePolitica": 0.25,
+     "credito": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Mobilidade",
+   "Cracolândia e população de rua",
+   "Desigualdade metropolitana"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

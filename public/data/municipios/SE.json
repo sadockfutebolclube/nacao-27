@@ -1,0 +1,203 @@
+{
+ "sigla": "SE",
+ "geradoEm": "2026-10-26T22:43:29.700Z",
+ "municipios": [
+  {
+   "ibge": "2800308",
+   "nome": "Aracaju",
+   "populacao": 623328,
+   "capital": true,
+   "lat": -10.9091,
+   "lon": -37.0677,
+   "elevacao": 11,
+   "desnivel": 20,
+   "distCostaKm": 15,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "rio": true,
+    "relevo": 0.25
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 11 m de altitude"
+  },
+  {
+   "ibge": "2804805",
+   "nome": "Nossa Senhora do Socorro",
+   "populacao": 205611,
+   "capital": false,
+   "lat": -10.8468,
+   "lon": -37.1231,
+   "elevacao": 29,
+   "desnivel": 26,
+   "distCostaKm": 20,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 29 m de altitude"
+  },
+  {
+   "ibge": "2806701",
+   "nome": "São Cristóvão",
+   "populacao": 111567,
+   "capital": false,
+   "lat": -11.0084,
+   "lon": -37.2044,
+   "elevacao": 16,
+   "desnivel": 56,
+   "distCostaKm": 13,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2153846153846154
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 16 m de altitude"
+  },
+  {
+   "ibge": "2802908",
+   "nome": "Itabaiana",
+   "populacao": 110041,
+   "capital": false,
+   "lat": -10.6826,
+   "lon": -37.4273,
+   "elevacao": 182,
+   "desnivel": 38,
+   "distCostaKm": 55,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.14615384615384616
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -1.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 182 m de altitude · 55 km do mar"
+  },
+  {
+   "ibge": "2803500",
+   "nome": "Lagarto",
+   "populacao": 106330,
+   "capital": false,
+   "lat": -10.9136,
+   "lon": -37.6689,
+   "elevacao": 185,
+   "desnivel": 45,
+   "distCostaKm": 61,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.17307692307692307
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -1.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 185 m de altitude · 61 km do mar"
+  },
+  {
+   "ibge": "2802106",
+   "nome": "Estância",
+   "populacao": 67136,
+   "capital": false,
+   "lat": -11.2659,
+   "lon": -37.4484,
+   "elevacao": 46,
+   "desnivel": 36,
+   "distCostaKm": 20,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.13846153846153847
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 46 m de altitude"
+  },
+  {
+   "ibge": "2807402",
+   "nome": "Tobias Barreto",
+   "populacao": 52943,
+   "capital": false,
+   "lat": -11.1798,
+   "lon": -37.9995,
+   "elevacao": 162,
+   "desnivel": 17,
+   "distCostaKm": 77,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.9,
+    "fChuva": 0.98,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 162 m de altitude · 77 km do mar"
+  },
+  {
+   "ibge": "2800605",
+   "nome": "Barra dos Coqueiros",
+   "populacao": 45916,
+   "capital": false,
+   "lat": -10.8996,
+   "lon": -37.0323,
+   "elevacao": 4,
+   "desnivel": 10,
+   "distCostaKm": 11,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 4 m de altitude"
+  }
+ ]
+}

@@ -1,0 +1,208 @@
+{
+ "id": 13,
+ "sigla": "AM",
+ "nome": "Amazonas",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 4360926,
+  "ano": 2026,
+  "censo2022": 3941613
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 161794976000,
+  "perCapita": 37101,
+  "vab": {
+   "agro": 5631735000,
+   "industria": 41858994000,
+   "servicos": 39019252000,
+   "adminPublica": 22727268000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 1566346,
+ "numMunicipios": 62,
+ "maioresMunicipios": [
+  {
+   "id": 1302603,
+   "nome": "Manaus",
+   "populacao": 2327101
+  },
+  {
+   "id": 1301902,
+   "nome": "Itacoatiara",
+   "populacao": 115218
+  },
+  {
+   "id": 1302504,
+   "nome": "Manacapuru",
+   "populacao": 113042
+  },
+  {
+   "id": 1303403,
+   "nome": "Parintins",
+   "populacao": 101754
+  },
+  {
+   "id": 1304203,
+   "nome": "Tefé",
+   "populacao": 81046
+  },
+  {
+   "id": 1304062,
+   "nome": "Tabatinga",
+   "populacao": 74384
+  },
+  {
+   "id": 1301209,
+   "nome": "Coari",
+   "populacao": 73403
+  },
+  {
+   "id": 1301852,
+   "nome": "Iranduba",
+   "populacao": 70248
+  }
+ ],
+ "indicadores": {
+  "idh": 0.7,
+  "homicidios": 36.6,
+  "idebEM": 3.9,
+  "esgoto": 13,
+  "dividaRCL": 30
+ },
+ "tracos": {
+  "sigla": "AM",
+  "apelido": "Coração da Floresta",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Manaus",
+   "ibge": 1302603,
+   "lat": -3.119,
+   "lon": -60.0217
+  },
+  "biomas": [
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "varzea",
+   "agua": {
+    "lado": "S",
+    "tipo": "rio"
+   },
+   "relevo": 0.25
+  },
+  "clima": "Equatorial — calor de 40°C, cheias e secas extremas dos rios",
+  "sotaque": "manauara",
+  "saudacao": "Bom dia, Governador. Tá um calor de rachar, mas o Teatro Amazonas tá lindo.",
+  "trilha": [
+   "toada de boi-bumbá",
+   "beiradão",
+   "guitarrada"
+  ],
+  "festas": [
+   "Festival de Parintins",
+   "Festa do Guaraná"
+  ],
+  "arquitetura": "Belle époque da borracha, flutuantes no Rio Negro, palafitas nos igarapés",
+  "tracos": [
+   {
+    "id": "zona-franca",
+    "nome": "Zona Franca de Manaus",
+    "tipo": "buff",
+    "descricao": "Polo industrial incentivado: motos, eletrônicos, empregos.",
+    "efeitos": {
+     "industria": 0.35,
+     "receitaICMS": 0.1
+    }
+   },
+   {
+    "id": "logistica-fluvial",
+    "nome": "Estrada é o rio",
+    "tipo": "nerf",
+    "descricao": "Interior só se alcança de barco; seca extrema isola municípios.",
+    "efeitos": {
+     "logistica": -0.35,
+     "riscoSeca": 0.3
+    }
+   },
+   {
+    "id": "olhos-do-mundo",
+    "nome": "Os olhos do mundo",
+    "tipo": "neutro",
+    "descricao": "Desmatamento vira manchete internacional; preservação atrai fundos.",
+    "efeitos": {
+     "pressaoAmbiental": 0.5,
+     "receitaVerde": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Facções nas rotas fluviais",
+   "Saneamento quase inexistente",
+   "Secas históricas do Rio Negro"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

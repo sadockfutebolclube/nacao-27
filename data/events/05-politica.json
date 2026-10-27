@@ -1,0 +1,317 @@
+[
+  {
+    "id": "delacao-governo-anterior",
+    "categoria": "politica",
+    "titulo": "Delação atinge o governo anterior",
+    "texto": "Um ex-diretor de obras fechou delação premiada: diz que o governo passado cobrava 5% de propina em contratos. Dois deputados da sua base são citados.",
+    "tom": "alerta",
+    "se": ["temEstado", "anoMandato >= 1"],
+    "peso": 0.6,
+    "unico": true,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Apoiar as investigações, doa a quem doer",
+        "efeitos": { "imprensa": 0.1, "aprovacao": 3, "base": -0.05, "grupos": { "classeMedia": 3 } },
+        "resultado": "Governador entrega documentos ao MP e afasta servidores citados.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir \"cautela\" e presunção de inocência",
+        "efeitos": { "base": 0.04, "imprensa": -0.06 },
+        "resultado": "Aliados agradecem a cautela; o {blog} pergunta o que o Palácio tem a esconder."
+      }
+    ]
+  },
+  {
+    "id": "fake-news-viral",
+    "categoria": "imprensa",
+    "titulo": "Fake news viraliza: \"governo vai fechar escolas\"",
+    "texto": "Um áudio falso no {zap} diz que o governo vai fechar 300 escolas e demitir professores. Pais e alunos fazem protesto na frente das escolas.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 5,
+    "padrao": 2,
+    "efeitos": { "aprovacao": -1 },
+    "escolhas": [
+      {
+        "texto": "Desmentir com vídeo do governador e checagem",
+        "efeitos": { "aprovacao": 1, "imprensa": 0.03 },
+        "resultado": "Vídeo do governador desmentindo o boato tem mais visualizações que o áudio falso.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir à polícia que identifique o autor",
+        "efeitos": { "imprensa": -0.02, "grupos": { "classeMedia": -1 } },
+        "resultado": "Polícia identifica o autor: assessor de um deputado da oposição. A história vira uma briga política."
+      },
+      {
+        "texto": "Ignorar",
+        "efeitos": { "aprovacao": -2 },
+        "resultado": "O boato se espalha por uma semana antes de morrer."
+      }
+    ]
+  },
+  {
+    "id": "pesquisa-ruim",
+    "categoria": "politica",
+    "titulo": "Pesquisa: governo pior avaliado do país",
+    "texto": "Ranking nacional de governadores coloca você entre os três piores. A base aliada começa a se mexer.",
+    "tom": "ruim",
+    "se": ["temEstado", "aprovacao <= 30"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 1,
+    "efeitos": { "base": -0.05, "capital": -3 },
+    "escolhas": [
+      {
+        "texto": "Reforma do secretariado e pacote de bondades",
+        "efeitos": { "caixa": -0.0015, "aprovacao": 3, "base": 0.04 },
+        "resultado": "Governador anuncia \"nova fase\" com obras e programas sociais.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "\"Pesquisa boa é a das urnas\"",
+        "efeitos": { "imprensa": -0.03 },
+        "resultado": "Governador desdenha da pesquisa. Os aliados não riram."
+      }
+    ]
+  },
+  {
+    "id": "vice-rompe",
+    "categoria": "politica",
+    "titulo": "Vice-governador rompe com o governo",
+    "texto": "Em entrevista ao {jornal}, o vice-governador diz que \"não reconhece este governo\" e se lança como alternativa para 2030.",
+    "tom": "ruim",
+    "se": ["temEstado", "aprovacao <= 40", "anoMandato >= 2"],
+    "peso": 0.6,
+    "unico": true,
+    "efeitos": { "base": -0.05, "capital": -5, "imprensa": -0.03 }
+  },
+  {
+    "id": "deputado-troca-partido",
+    "categoria": "politica",
+    "titulo": "Janela partidária: deputados trocam de lado",
+    "texto": "Na janela partidária, quatro deputados deixam a base e migram para a oposição de olho na eleição.",
+    "tom": "alerta",
+    "se": ["temEstado", "ano == 2030", "mes in 3,4", "aprovacao <= 45"],
+    "unico": true,
+    "efeitos": { "base": -0.06 }
+  },
+  {
+    "id": "base-pede-cargos",
+    "categoria": "politica",
+    "titulo": "Base cobra cargos no segundo escalão",
+    "texto": "{deputadoBase}, líder do Centrão, leva ao Palácio uma lista de 40 indicações para diretorias de estatais e regionais de saúde.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Atender parte das indicações",
+        "efeitos": { "bancadas": { "centrao": 0.2 }, "capital": 3 },
+        "resultado": "Vinte indicados assumem cargos. Base aliada se acalma.",
+        "depois": [{ "meses": 6, "chance": 0.3, "texto": "Indicado do Centrão em regional de saúde é preso por fraude em licitação de ambulâncias.", "tom": "ruim", "efeitos": { "aprovacao": -3, "imprensa": -0.08 } }]
+      },
+      {
+        "texto": "Recusar: \"cargo técnico não se negocia\"",
+        "efeitos": { "bancadas": { "centrao": -0.2 }, "imprensa": 0.05 },
+        "resultado": "Centrão reclama em público; a próxima votação vai sair mais cara."
+      }
+    ]
+  },
+  {
+    "id": "tce-irregularidade",
+    "categoria": "politica",
+    "titulo": "TCE aponta sobrepreço em contrato",
+    "texto": "O Tribunal de Contas do Estado encontrou sobrepreço de R$ 30 milhões no contrato de manutenção de rodovias e manda suspender os pagamentos.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Suspender o contrato e refazer a licitação",
+        "efeitos": { "imprensa": 0.04, "pib": -0.001 },
+        "resultado": "Contrato suspenso; rodovias ficam sem manutenção por três meses.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recorrer e manter os pagamentos",
+        "efeitos": { "imprensa": -0.06 },
+        "resultado": "Governo recorre da decisão do TCE.",
+        "depois": [{ "meses": 5, "chance": 0.4, "texto": "MP denuncia diretores do DER por superfaturamento no contrato que o TCE havia apontado.", "tom": "ruim", "efeitos": { "aprovacao": -3 } }]
+      }
+    ]
+  },
+  {
+    "id": "stf-icms",
+    "categoria": "federal",
+    "titulo": "STF decide disputa de ICMS a favor do estado",
+    "texto": "O Supremo deu ganho de causa ao estado numa disputa de ICMS de mais de uma década. A União terá de compensar parte das perdas.",
+    "tom": "bom",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "unico": true,
+    "efeitos": { "caixa": 0.002 }
+  },
+  {
+    "id": "protesto-servidores",
+    "categoria": "politica",
+    "titulo": "Servidores ocupam a Assembleia",
+    "texto": "Milhares de servidores ocupam as galerias e o pátio da ALE contra o congelamento salarial. A sessão é suspensa.",
+    "tom": "ruim",
+    "se": ["temEstado", "rrf"],
+    "cooldown": 18,
+    "efeitos": { "grupos": { "servidores": -3 }, "base": -0.03 }
+  },
+  {
+    "id": "ato-fora-governador",
+    "categoria": "politica",
+    "titulo": "Ato \"Fora, governador\" reúne milhares",
+    "texto": "Movimentos de oposição levam milhares às ruas de {cidade} pedindo a saída do governador. Panelaço nos bairros à noite.",
+    "tom": "ruim",
+    "se": ["temEstado", "aprovacao <= 25"],
+    "cooldown": 8,
+    "efeitos": { "base": -0.04, "capital": -3, "imprensa": -0.04 }
+  },
+  {
+    "id": "aliado-preso",
+    "categoria": "politica",
+    "titulo": "Aliado do governador é preso",
+    "texto": "A Polícia Federal prendeu um ex-assessor de campanha do governador por lavagem de dinheiro. A defesa diz que é perseguição.",
+    "tom": "ruim",
+    "se": ["temEstado", "escandalos >= 1"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Romper publicamente com o ex-assessor",
+        "efeitos": { "imprensa": 0.03, "capital": -2 },
+        "resultado": "\"Quem errou, que pague\", diz o governador."
+      },
+      {
+        "texto": "Defender o aliado",
+        "efeitos": { "imprensa": -0.08, "aprovacao": -3, "base": 0.02 },
+        "resultado": "Governador visita o aliado na carceragem. A foto estampa todas as capas.",
+        "tomResultado": "ruim"
+      }
+    ]
+  },
+  {
+    "id": "nepotismo-ale",
+    "categoria": "politica",
+    "titulo": "ALE aprova aumento para deputados",
+    "texto": "Na calada da noite, a Assembleia aprovou reajuste de 30% nos próprios salários e na verba de gabinete. Cabe ao governador sancionar ou vetar.",
+    "tom": "alerta",
+    "se": ["temEstado"],
+    "peso": 0.5,
+    "unico": true,
+    "prazoDias": 15,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Sancionar",
+        "efeitos": { "base": 0.08, "aprovacao": -3, "imprensa": -0.05 },
+        "resultado": "Governador sanciona o reajuste; a {tv} faz contagem regressiva para \"o salário de R$ 40 mil\"."
+      },
+      {
+        "texto": "Vetar",
+        "efeitos": { "base": -0.1, "aprovacao": 4, "imprensa": 0.06, "capital": -4 },
+        "resultado": "Veto vira manchete; deputados prometem derrubá-lo e votar contra tudo do governo.",
+        "tomResultado": "bom"
+      }
+    ]
+  },
+  {
+    "id": "lei-popular",
+    "categoria": "politica",
+    "titulo": "ALE aprova lei popular, mas inconstitucional",
+    "texto": "Deputados aprovaram meia-entrada para idosos em todos os ônibus intermunicipais sem fonte de custeio. As empresas avisam que vão aumentar a tarifa.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Sancionar mesmo assim",
+        "efeitos": { "aprovacao": 2, "base": 0.03, "caixa": -0.0004 },
+        "resultado": "Lei sancionada; o Estado vai cobrir o desconto com subsídio."
+      },
+      {
+        "texto": "Vetar por falta de fonte de custeio",
+        "efeitos": { "aprovacao": -1, "base": -0.03, "imprensa": 0.02 },
+        "resultado": "Veto técnico: \"lei sem orçamento é promessa vazia\"."
+      }
+    ]
+  },
+  {
+    "id": "cpi-transporte",
+    "categoria": "politica",
+    "titulo": "Oposição quer CPI dos ônibus",
+    "texto": "{deputado} coleta assinaturas para uma CPI sobre as planilhas de custo das empresas de ônibus metropolitanos.",
+    "tom": "alerta",
+    "se": ["temEstado", "linhas >= 1"],
+    "peso": 0.5,
+    "cooldown": 30,
+    "efeitos": { "grupos": { "empresariado": -1 }, "imprensa": -0.02 }
+  },
+  {
+    "id": "eleicoes-municipais",
+    "categoria": "prefeitos",
+    "titulo": "Eleições municipais: o Palácio entra na campanha?",
+    "texto": "Faltam semanas para as eleições municipais. Candidatos aliados querem o governador nos palanques — inclusive contra o atual prefeito de {cidade}.",
+    "tom": "info",
+    "se": ["temEstado", "ano == 2028", "mes in 8,9"],
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Fazer campanha para os aliados em todo o estado",
+        "efeitos": { "prefeitos": 0.1, "prefeito": -0.3, "capital": -4 },
+        "resultado": "Governador sobe em 40 palanques.",
+        "depois": [{ "meses": 2, "chance": 1, "se": ["aprovacao >= 45"], "texto": "Urnas confirmam a força do Palácio: aliados vencem em 60% das grandes cidades.", "tom": "bom", "efeitos": { "prefeitos": 0.2, "base": 0.05, "capital": 8 } }]
+      },
+      {
+        "texto": "Ficar neutro e governar para todos",
+        "efeitos": { "imprensa": 0.04 },
+        "resultado": "\"Governador não é cabo eleitoral\", diz o Palácio."
+      }
+    ]
+  },
+  {
+    "id": "presidente-ale-chantagem",
+    "categoria": "politica",
+    "titulo": "Presidente da ALE segura projetos do governo",
+    "texto": "{presidenteALE} engaveta os projetos do Executivo e manda recado: quer a diretoria-geral do DER para um aliado.",
+    "tom": "alerta",
+    "se": ["temEstado", "base <= 0.5"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 12,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Entregar a diretoria do DER",
+        "efeitos": { "base": 0.08, "capital": 5, "imprensa": -0.04 },
+        "resultado": "Indicado do presidente da ALE assume o DER. Projetos voltam à pauta."
+      },
+      {
+        "texto": "Denunciar a chantagem em rede estadual",
+        "efeitos": { "base": -0.05, "aprovacao": 3, "imprensa": 0.05 },
+        "resultado": "Pronunciamento do governador expõe a chantagem. A guerra com a Assembleia está aberta.",
+        "tomResultado": "alerta"
+      }
+    ]
+  }
+]

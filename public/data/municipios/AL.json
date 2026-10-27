@@ -1,0 +1,201 @@
+{
+ "sigla": "AL",
+ "geradoEm": "2026-10-26T22:43:27.006Z",
+ "municipios": [
+  {
+   "ibge": "2704302",
+   "nome": "Maceió",
+   "populacao": 995134,
+   "capital": true,
+   "lat": -9.66599,
+   "lon": -35.735,
+   "elevacao": 13,
+   "desnivel": 48,
+   "distCostaKm": 4,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "mar"
+    },
+    "relevo": 0.35
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 13 m de altitude"
+  },
+  {
+   "ibge": "2700300",
+   "nome": "Arapiraca",
+   "populacao": 243998,
+   "capital": false,
+   "lat": -9.75487,
+   "lon": -36.6615,
+   "elevacao": 273,
+   "desnivel": 65,
+   "distCostaKm": 72,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.25
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -1.6,
+    "fChuva": 0.98,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 273 m de altitude · 72 km do mar"
+  },
+  {
+   "ibge": "2707701",
+   "nome": "Rio Largo",
+   "populacao": 97742,
+   "capital": false,
+   "lat": -9.47783,
+   "lon": -35.8394,
+   "elevacao": 136,
+   "desnivel": 93,
+   "distCostaKm": 25,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3576923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 136 m de altitude"
+  },
+  {
+   "ibge": "2706307",
+   "nome": "Palmeira dos Índios",
+   "populacao": 73631,
+   "capital": false,
+   "lat": -9.40568,
+   "lon": -36.6328,
+   "elevacao": 321,
+   "desnivel": 288,
+   "distCostaKm": 94,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.95
+   },
+   "bioma": "caatinga",
+   "clima": {
+    "dTemp": -1.9,
+    "fChuva": 0.8,
+    "estimado": true
+   },
+   "descricao": "Serra · Caatinga · 321 m de altitude · 94 km do mar"
+  },
+  {
+   "ibge": "2704708",
+   "nome": "Marechal Deodoro",
+   "populacao": 62528,
+   "capital": false,
+   "lat": -9.70971,
+   "lon": -35.8967,
+   "elevacao": 18,
+   "desnivel": 69,
+   "distCostaKm": 9,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2653846153846154
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 18 m de altitude"
+  },
+  {
+   "ibge": "2709301",
+   "nome": "União dos Palmares",
+   "populacao": 60855,
+   "capital": false,
+   "lat": -9.15921,
+   "lon": -36.0223,
+   "elevacao": 138,
+   "desnivel": 93,
+   "distCostaKm": 63,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3576923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 138 m de altitude · 63 km do mar"
+  },
+  {
+   "ibge": "2706703",
+   "nome": "Penedo",
+   "populacao": 60183,
+   "capital": false,
+   "lat": -10.2874,
+   "lon": -36.5819,
+   "elevacao": 32,
+   "desnivel": 72,
+   "distCostaKm": 30,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "W",
+     "tipo": "baia"
+    },
+    "relevo": 0.27692307692307694
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 32 m de altitude"
+  },
+  {
+   "ibge": "2708600",
+   "nome": "São Miguel dos Campos",
+   "populacao": 53376,
+   "capital": false,
+   "lat": -9.78301,
+   "lon": -36.0971,
+   "elevacao": 18,
+   "desnivel": 114,
+   "distCostaKm": 22,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.43846153846153846
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 18 m de altitude"
+  }
+ ]
+}

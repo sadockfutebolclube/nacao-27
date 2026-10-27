@@ -1,0 +1,90 @@
+{
+ "sigla": "MA",
+ "ano": 2024,
+ "receitas": {
+  "correntes": 39340700484.99,
+  "icms": 13870071546.37,
+  "ipva": 996817272.71,
+  "itcd": 64249243.42,
+  "irrf": 1449452575.66,
+  "outrasTributarias": 744015275.97,
+  "contribuicoes": 958398637.79,
+  "patrimonial": 473337644.07,
+  "servicos": 14671788.51,
+  "fpe": 13194962645.88,
+  "lc61": 94115457.4,
+  "fundebRecebido": 2479324231.64,
+  "outrasTransferencias": 4564450612.34,
+  "outrasCorrentes": 436833553.23
+ },
+ "deducoes": {
+  "total": 9753948779.26,
+  "transferenciasMunicipios": 4022874349.8,
+  "contribuicaoServidor": 805518642.65,
+  "compensacaoPrevidencia": 18798062.26,
+  "rendimentosPrevidencia": 29566480.19,
+  "formacaoFundeb": 4877191244.36
+ },
+ "rcl": 29586751705.73,
+ "despesas": {
+  "pessoal": 13169173926.66,
+  "juros": 261749649.97,
+  "outrasCorrentes": 10524124467.11,
+  "investimentos": 2883155270.97,
+  "inversoes": 221330173.98,
+  "amortizacao": 563815920.44
+ },
+ "funcoes": {
+  "legislativa": 913207501.11,
+  "judiciaria": 1615179727.59,
+  "essencialJustica": 1049224221.61,
+  "administracao": 1485064589.58,
+  "seguranca": 2207088688.29,
+  "assistencia": 711501548.19,
+  "previdencia": 3708206147.16,
+  "saude": 4729757905.62,
+  "trabalho": 32306203.33,
+  "educacao": 5223899681.21,
+  "cultura": 363424108.48,
+  "direitosCidadania": 674570204.11,
+  "urbanismo": 1340419305.37,
+  "habitacao": 7674058.85,
+  "saneamento": 5149097.22,
+  "gestaoAmbiental": 39576453.32,
+  "cienciaTecnologia": 77248178.52,
+  "agricultura": 193620049.24,
+  "industria": 56096497.93,
+  "comercioServicos": 29620055.98,
+  "energia": 0,
+  "transporte": 1271298785.67,
+  "desporto": 40722119.11,
+  "encargosEspeciais": 1823213211.16
+ },
+ "pessoal": {
+  "ativo": 7979551099.57,
+  "inativo": 3325810827.93,
+  "dtp": 9163249776.52,
+  "rcl": 29521762934.73,
+  "pctRcl": 31.038965378792362
+ },
+ "previdencia": {
+  "receitas": 1940016029.87,
+  "despesas": 3657107537.07
+ },
+ "minimos": {
+  "saudePct": 12.5,
+  "saudeValor": 3273728624.76,
+  "educacaoPct": 25.71,
+  "educacaoValor": 6734242861.38
+ },
+ "divida": {
+  "consolidada": 5893676264.29,
+  "liquida": 893355845.36,
+  "uniao": 1017517599.49,
+  "emprestimos": 2784519403.73,
+  "caixa": 4999491190.33,
+  "rcl": 29586751705.73
+ },
+ "fonte": "SICONFI/Tesouro Nacional — RREO 6º bimestre e RGF 3º quadrimestre de 2024",
+ "coletadoEm": "2026-10-25T21:34:37.711Z"
+}

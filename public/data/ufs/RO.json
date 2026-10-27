@@ -1,0 +1,198 @@
+{
+ "id": 11,
+ "sigla": "RO",
+ "nome": "Rondônia",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 1757338,
+  "ano": 2026,
+  "censo2022": 1581196
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 76456179000,
+  "perCapita": 43507,
+  "vab": {
+   "agro": 10581030000,
+   "industria": 7708393000,
+   "servicos": 19662494000,
+   "adminPublica": 13103176000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 238598,
+ "numMunicipios": 52,
+ "maioresMunicipios": [
+  {
+   "id": 1100205,
+   "nome": "Porto Velho",
+   "populacao": 520379
+  },
+  {
+   "id": 1100122,
+   "nome": "Ji-Paraná",
+   "populacao": 140800
+  },
+  {
+   "id": 1100304,
+   "nome": "Vilhena",
+   "populacao": 110708
+  },
+  {
+   "id": 1100023,
+   "nome": "Ariquemes",
+   "populacao": 109731
+  },
+  {
+   "id": 1100049,
+   "nome": "Cacoal",
+   "populacao": 98884
+  },
+  {
+   "id": 1100288,
+   "nome": "Rolim de Moura",
+   "populacao": 63336
+  },
+  {
+   "id": 1100114,
+   "nome": "Jaru",
+   "populacao": 55774
+  },
+  {
+   "id": 1100106,
+   "nome": "Guajará-Mirim",
+   "populacao": 43633
+  }
+ ],
+ "indicadores": {
+  "idh": 0.7,
+  "homicidios": 27.4,
+  "idebEM": 4,
+  "esgoto": 6,
+  "dividaRCL": -1
+ },
+ "tracos": {
+  "sigla": "RO",
+  "apelido": "Portal da Amazônia",
+  "dificuldade": 3,
+  "capital": {
+   "nome": "Porto Velho",
+   "ibge": 1100205,
+   "lat": -8.7612,
+   "lon": -63.9004
+  },
+  "biomas": [
+   "amazonia",
+   "cerrado"
+  ],
+  "terreno": {
+   "tipo": "varzea",
+   "agua": {
+    "lado": "W",
+    "tipo": "rio"
+   },
+   "relevo": 0.2
+  },
+  "clima": "Equatorial — fumaça das queimadas no 'verão' seco",
+  "sotaque": "rondoniense",
+  "saudacao": "Bom dia, Governador! O Madeira tá cheio e o povo tá ligado.",
+  "trilha": [
+   "sertanejo",
+   "forró",
+   "carimbó"
+  ],
+  "festas": [
+   "Arraial Flor do Maracujá",
+   "Expovel"
+  ],
+  "arquitetura": "Estação da Madeira-Mamoré, casas de colonos, cidades ao longo da BR-364",
+  "tracos": [
+   {
+    "id": "hidreletricas",
+    "nome": "Usinas do Madeira",
+    "tipo": "buff",
+    "descricao": "Jirau e Santo Antônio exportam energia para o país.",
+    "efeitos": {
+     "energiaLimpa": 0.3
+    }
+   },
+   {
+    "id": "fronteira-agricola",
+    "nome": "Fronteira agrícola",
+    "tipo": "neutro",
+    "descricao": "Pecuária cresce, desmatamento também.",
+    "efeitos": {
+     "agro": 0.25,
+     "pressaoAmbiental": 0.35
+    }
+   }
+  ],
+  "desafios": [
+   "Queimadas",
+   "Grilagem de terras",
+   "Saneamento"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

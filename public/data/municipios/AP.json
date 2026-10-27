@@ -1,0 +1,212 @@
+{
+ "sigla": "AP",
+ "geradoEm": "2026-10-26T22:43:27.122Z",
+ "municipios": [
+  {
+   "ibge": "1600303",
+   "nome": "Macapá",
+   "populacao": 491987,
+   "capital": true,
+   "lat": 0.034934,
+   "lon": -51.0694,
+   "elevacao": 15,
+   "desnivel": 13,
+   "distCostaKm": 107,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "E",
+     "tipo": "rio"
+    },
+    "relevo": 0.15
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Várzea de rio · Amazônia · 15 m de altitude · 107 km do mar"
+  },
+  {
+   "ibge": "1600600",
+   "nome": "Santana",
+   "populacao": 119224,
+   "capital": false,
+   "lat": -0.045434,
+   "lon": -51.1729,
+   "elevacao": 13,
+   "desnivel": 19,
+   "distCostaKm": 121,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 13 m de altitude · 121 km do mar"
+  },
+  {
+   "ibge": "1600279",
+   "nome": "Laranjal do Jari",
+   "populacao": 37781,
+   "capital": false,
+   "lat": -0.804911,
+   "lon": -52.453,
+   "elevacao": 19,
+   "desnivel": 93,
+   "distCostaKm": 285,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "S",
+     "tipo": "rio"
+    },
+    "relevo": 0.3576923076923077
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 19 m de altitude · 285 km do mar"
+  },
+  {
+   "ibge": "1600501",
+   "nome": "Oiapoque",
+   "populacao": 31071,
+   "capital": false,
+   "lat": 3.84074,
+   "lon": -51.8331,
+   "elevacao": 14,
+   "desnivel": 51,
+   "distCostaKm": 75,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "W",
+     "tipo": "rio"
+    },
+    "relevo": 0.19615384615384615
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 14 m de altitude · 75 km do mar"
+  },
+  {
+   "ibge": "1600402",
+   "nome": "Mazagão",
+   "populacao": 23958,
+   "capital": false,
+   "lat": -0.11336,
+   "lon": -51.2891,
+   "elevacao": 16,
+   "desnivel": 19,
+   "distCostaKm": 135,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "W",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 16 m de altitude · 135 km do mar"
+  },
+  {
+   "ibge": "1600535",
+   "nome": "Porto Grande",
+   "populacao": 19103,
+   "capital": false,
+   "lat": 0.71243,
+   "lon": -51.4155,
+   "elevacao": 68,
+   "desnivel": 26,
+   "distCostaKm": 141,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "N",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 68 m de altitude · 141 km do mar"
+  },
+  {
+   "ibge": "1600154",
+   "nome": "Pedra Branca do Amapari",
+   "populacao": 13971,
+   "capital": false,
+   "lat": 0.777424,
+   "lon": -51.9503,
+   "elevacao": 79,
+   "desnivel": 58,
+   "distCostaKm": 201,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2230769230769231
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.4,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 79 m de altitude · 201 km do mar"
+  },
+  {
+   "ibge": "1600709",
+   "nome": "Tartarugalzinho",
+   "populacao": 13846,
+   "capital": false,
+   "lat": 1.50652,
+   "lon": -50.9087,
+   "elevacao": 14,
+   "desnivel": 17,
+   "distCostaKm": 65,
+   "terreno": {
+    "tipo": "varzea",
+    "agua": {
+     "lado": "E",
+     "tipo": "rio"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Várzea de rio · Amazônia · 14 m de altitude · 65 km do mar"
+  }
+ ]
+}

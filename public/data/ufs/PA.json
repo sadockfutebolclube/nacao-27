@@ -1,0 +1,208 @@
+{
+ "id": 15,
+ "sigla": "PA",
+ "nome": "Pará",
+ "regiao": {
+  "sigla": "N",
+  "nome": "Norte"
+ },
+ "populacao": {
+  "valor": 8756324,
+  "ano": 2026,
+  "censo2022": 8120131
+ },
+ "pib": {
+  "ano": 2023,
+  "total": 254546511000,
+  "perCapita": 29070,
+  "vab": {
+   "agro": 24296592000,
+   "industria": 111321137000,
+   "servicos": 64743383000,
+   "adminPublica": 39736145000,
+   "ano": 2021
+  }
+ },
+ "areaKm2": 1250530,
+ "numMunicipios": 144,
+ "maioresMunicipios": [
+  {
+   "id": 1501402,
+   "nome": "Belém",
+   "populacao": 1396157
+  },
+  {
+   "id": 1500800,
+   "nome": "Ananindeua",
+   "populacao": 510563
+  },
+  {
+   "id": 1506807,
+   "nome": "Santarém",
+   "populacao": 364298
+  },
+  {
+   "id": 1505536,
+   "nome": "Parauapebas",
+   "populacao": 312427
+  },
+  {
+   "id": 1504208,
+   "nome": "Marabá",
+   "populacao": 293344
+  },
+  {
+   "id": 1502400,
+   "nome": "Castanhal",
+   "populacao": 210592
+  },
+  {
+   "id": 1500107,
+   "nome": "Abaetetuba",
+   "populacao": 173638
+  },
+  {
+   "id": 1502103,
+   "nome": "Cametá",
+   "populacao": 145843
+  }
+ ],
+ "indicadores": {
+  "idh": 0.69,
+  "homicidios": 31.9,
+  "idebEM": 3.6,
+  "esgoto": 8,
+  "dividaRCL": 7
+ },
+ "tracos": {
+  "sigla": "PA",
+  "apelido": "Terra do Açaí",
+  "dificuldade": 4,
+  "capital": {
+   "nome": "Belém",
+   "ibge": 1501402,
+   "lat": -1.4558,
+   "lon": -48.4902
+  },
+  "biomas": [
+   "amazonia"
+  ],
+  "terreno": {
+   "tipo": "varzea",
+   "agua": {
+    "lado": "W",
+    "tipo": "baia"
+   },
+   "relevo": 0.15
+  },
+  "clima": "Equatorial — chuva das duas da tarde, calor úmido",
+  "sotaque": "paraense",
+  "saudacao": "Égua, mano! Bom dia, Governador. Chove às duas, marca a reunião pras três.",
+  "trilha": [
+   "guitarrada",
+   "carimbó",
+   "tecnobrega"
+  ],
+  "festas": [
+   "Círio de Nazaré",
+   "Arraial do Pavulagem"
+  ],
+  "arquitetura": "Casarões de azulejo, Ver-o-Peso, palafitas nas baixadas, mangueiras centenárias nas avenidas",
+  "tracos": [
+   {
+    "id": "carajas",
+    "nome": "Carajás",
+    "tipo": "buff",
+    "descricao": "A maior província mineral do planeta.",
+    "efeitos": {
+     "receitaRoyalties": 0.15,
+     "industria": 0.15
+    }
+   },
+   {
+    "id": "desmatamento-pa",
+    "nome": "Arco do desmatamento",
+    "tipo": "nerf",
+    "descricao": "Garimpo ilegal, grilagem e pressão internacional.",
+    "efeitos": {
+     "pressaoAmbiental": 0.5,
+     "criminalidade": 0.15
+    }
+   },
+   {
+    "id": "cop",
+    "nome": "Vitrine do clima",
+    "tipo": "buff",
+    "descricao": "Legado de eventos internacionais do clima em Belém.",
+    "efeitos": {
+     "turismo": 0.15,
+     "receitaVerde": 0.2
+    }
+   }
+  ],
+  "desafios": [
+   "Saneamento entre os piores do país",
+   "Conflitos agrários",
+   "Garimpo ilegal"
+  ]
+ },
+ "fontes": [
+  {
+   "campo": "populacao",
+   "fonte": "IBGE — Estimativas de População (SIDRA 6579)",
+   "url": "https://sidra.ibge.gov.br/tabela/6579",
+   "ano": 2026,
+   "aproximado": false
+  },
+  {
+   "campo": "pib",
+   "fonte": "IBGE — PIB dos Municípios/Contas Regionais (SIDRA 5938)",
+   "url": "https://sidra.ibge.gov.br/tabela/5938",
+   "ano": 2023,
+   "aproximado": false
+  },
+  {
+   "campo": "areaKm2",
+   "fonte": "Calculada da malha IBGE (qualidade mínima)",
+   "url": "https://servicodados.ibge.gov.br/api/docs/malhas?versao=3",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "idh",
+   "fonte": "IDHM 2021 — Atlas do Desenvolvimento Humano (PNUD/IPEA/FJP), base PNAD Contínua",
+   "url": "http://www.atlasbrasil.org.br/",
+   "ano": 2021,
+   "aproximado": true
+  },
+  {
+   "campo": "homicidios",
+   "fonte": "Mortes Violentas Intencionais por 100 mil hab. — Anuário Brasileiro de Segurança Pública (FBSP)",
+   "url": "https://forumseguranca.org.br/anuario-brasileiro-seguranca-publica/",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "idebEM",
+   "fonte": "IDEB Ensino Médio (total) — INEP",
+   "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb",
+   "ano": 2023,
+   "aproximado": true
+  },
+  {
+   "campo": "esgoto",
+   "fonte": "Índice de atendimento total de esgoto (%) — SNIS/SINISA, Ministério das Cidades",
+   "url": "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis",
+   "ano": 2022,
+   "aproximado": true
+  },
+  {
+   "campo": "dividaRCL",
+   "fonte": "Dívida Consolidada Líquida / RCL (%) — RGF Anexo 2, 3º quadrimestre, via API SICONFI (npm run fetch-fiscal)",
+   "url": "https://apidatalake.tesouro.gov.br/docs/siconfi/",
+   "ano": 2024,
+   "aproximado": false
+  }
+ ],
+ "geradoEm": "2026-10-25T21:54:54.069Z"
+}

@@ -1,0 +1,202 @@
+{
+ "sigla": "MA",
+ "geradoEm": "2026-10-26T22:43:27.831Z",
+ "municipios": [
+  {
+   "ibge": "2111300",
+   "nome": "São Luís",
+   "populacao": 1090229,
+   "capital": true,
+   "lat": -2.53874,
+   "lon": -44.2825,
+   "elevacao": 7,
+   "desnivel": 22,
+   "distCostaKm": 7,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "N",
+     "tipo": "baia"
+    },
+    "relevo": 0.2
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral plano · Amazônia · 7 m de altitude"
+  },
+  {
+   "ibge": "2105302",
+   "nome": "Imperatriz",
+   "populacao": 286383,
+   "capital": false,
+   "lat": -5.51847,
+   "lon": -47.4777,
+   "elevacao": 133,
+   "desnivel": 27,
+   "distCostaKm": 420,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.8,
+    "fChuva": 0.5,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 133 m de altitude · 420 km do mar"
+  },
+  {
+   "ibge": "2111201",
+   "nome": "São José de Ribamar",
+   "populacao": 260695,
+   "capital": false,
+   "lat": -2.54704,
+   "lon": -44.0597,
+   "elevacao": 26,
+   "desnivel": 28,
+   "distCostaKm": 2,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "S",
+     "tipo": "baia"
+    },
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Amazônia · 26 m de altitude"
+  },
+  {
+   "ibge": "2112209",
+   "nome": "Timon",
+   "populacao": 183123,
+   "capital": false,
+   "lat": -5.09769,
+   "lon": -42.8329,
+   "elevacao": 77,
+   "desnivel": 53,
+   "distCostaKm": 268,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.20384615384615384
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.4,
+    "fChuva": 0.7,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 77 m de altitude · 268 km do mar"
+  },
+  {
+   "ibge": "2103000",
+   "nome": "Caxias",
+   "populacao": 163650,
+   "capital": false,
+   "lat": -4.86505,
+   "lon": -43.3617,
+   "elevacao": 73,
+   "desnivel": 41,
+   "distCostaKm": 241,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.1576923076923077
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.4,
+    "fChuva": 0.74,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 73 m de altitude · 241 km do mar"
+  },
+  {
+   "ibge": "2107506",
+   "nome": "Paço do Lumiar",
+   "populacao": 153903,
+   "capital": false,
+   "lat": -2.51657,
+   "lon": -44.1019,
+   "elevacao": 37,
+   "desnivel": 30,
+   "distCostaKm": 6,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.12
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 37 m de altitude"
+  },
+  {
+   "ibge": "2103307",
+   "nome": "Codó",
+   "populacao": 118272,
+   "capital": false,
+   "lat": -4.45562,
+   "lon": -43.8924,
+   "elevacao": 53,
+   "desnivel": 46,
+   "distCostaKm": 173,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.17692307692307693
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.3,
+    "fChuva": 0.84,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 53 m de altitude · 173 km do mar"
+  },
+  {
+   "ibge": "2100055",
+   "nome": "Açailândia",
+   "populacao": 110703,
+   "capital": false,
+   "lat": -4.94714,
+   "lon": -47.5004,
+   "elevacao": 234,
+   "desnivel": 59,
+   "distCostaKm": 384,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.22692307692307692
+   },
+   "bioma": "amazonia",
+   "clima": {
+    "dTemp": -1.4,
+    "fChuva": 0.54,
+    "estimado": true
+   },
+   "descricao": "Planície · Amazônia · 234 m de altitude · 384 km do mar"
+  }
+ ]
+}

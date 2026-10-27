@@ -1,0 +1,405 @@
+[
+  {
+    "id": "final-estadual",
+    "categoria": "esporte",
+    "titulo": "Final do estadual: {time} x {rival}",
+    "texto": "O clássico decide o campeonato estadual no estádio do Estado. Ingressos esgotados e as duas torcidas organizadas prometem festa — e preocupam a PM.",
+    "tom": "info",
+    "se": ["mes == 4"],
+    "quando": "diario",
+    "chance": 0.08,
+    "cooldown": 10,
+    "prazoDias": 3,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Torcida única e escolta das organizadas",
+        "efeitos": { "crime": -0.01, "grupos": { "classeMedia": -1 } },
+        "resultado": "Final com torcida única passa sem incidentes. Torcedores reclamam do \"futebol sem graça\"."
+      },
+      {
+        "texto": "Clássico com as duas torcidas e 3 mil PMs",
+        "efeitos": { "caixa": -0.00005, "aprovacaoCidade": 1 },
+        "resultado": "Festa bonita nas arquibancadas.",
+        "depois": [{ "meses": 0.1, "chance": 0.3, "texto": "Briga entre organizadas depois do clássico deixa um morto e dezenas de feridos na saída do estádio.", "tom": "ruim", "efeitos": { "aprovacao": -2, "crime": 0.02 } }]
+      }
+    ]
+  },
+  {
+    "id": "titulo-time",
+    "categoria": "esporte",
+    "titulo": "{time} é campeão brasileiro!",
+    "texto": "Depois de 20 anos de jejum, o {time} conquista o Brasileirão. {cidade} não dorme: carreata, buzinaço e fogos até o sol nascer.",
+    "tom": "bom",
+    "se": ["mes == 12"],
+    "quando": "diario",
+    "chance": 0.02,
+    "cooldown": 24,
+    "efeitos": { "aprovacao": 2, "aprovacaoCidade": 3, "visual": { "tipo": "fogos", "dias": 1 } }
+  },
+  {
+    "id": "rebaixamento",
+    "categoria": "esporte",
+    "titulo": "{rival} é rebaixado",
+    "texto": "O {rival} cai para a segunda divisão. Torcedores choram na arquibancada e o humor da cidade azeda.",
+    "tom": "ruim",
+    "se": ["mes == 12"],
+    "quando": "diario",
+    "chance": 0.015,
+    "cooldown": 24,
+    "efeitos": { "aprovacaoCidade": -2 }
+  },
+  {
+    "id": "copa-do-mundo",
+    "categoria": "esporte",
+    "titulo": "Copa do Mundo: o país para",
+    "texto": "Dia de jogo da Seleção na Copa do Mundo de 2030. Repartições fecham mais cedo, telões nas praças e trânsito zerado no horário do jogo.",
+    "tom": "info",
+    "se": ["ano == 2030", "mes in 6,7"],
+    "quando": "diario",
+    "chance": 0.15,
+    "cooldown": 2,
+    "prazoDias": 2,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Ponto facultativo nos dias de jogo",
+        "efeitos": { "aprovacao": 1, "grupos": { "servidores": 2, "empresariado": -1 } },
+        "resultado": "Servidores dispensados nos jogos do Brasil.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Expediente normal",
+        "efeitos": { "grupos": { "empresariado": 1, "servidores": -1 } },
+        "resultado": "Repartições abertas — e vazias durante o jogo."
+      }
+    ]
+  },
+  {
+    "id": "olimpiada-medalha",
+    "categoria": "esporte",
+    "titulo": "Atleta do estado ganha ouro olímpico",
+    "texto": "Formada em projeto social de uma escola estadual, a atleta conquistou a medalha de ouro nos Jogos de Los Angeles. A volta para casa vai ter carro de bombeiros.",
+    "tom": "bom",
+    "se": ["ano == 2028", "mes in 7,8"],
+    "quando": "diario",
+    "chance": 0.03,
+    "unico": true,
+    "efeitos": { "aprovacao": 2, "imprensa": 0.03, "visual": { "tipo": "fogos", "dias": 1 } }
+  },
+  {
+    "id": "estadio-interditado",
+    "categoria": "esporte",
+    "titulo": "Estádio estadual interditado",
+    "texto": "Laudo dos bombeiros aponta rachaduras nas arquibancadas do estádio do Estado. Jogos terão de ser transferidos.",
+    "tom": "ruim",
+    "se": ["temEstado"],
+    "peso": 0.4,
+    "unico": true,
+    "prazoDias": 15,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Reformar com recursos do Estado",
+        "efeitos": { "caixa": -0.0008, "aprovacaoCidade": 2 },
+        "resultado": "Reforma de um ano devolve o estádio aos torcedores.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Conceder o estádio à iniciativa privada",
+        "efeitos": { "caixa": 0.0002, "grupos": { "empresariado": 2, "baixaRenda": -1 } },
+        "resultado": "Concessão por 30 anos: arena moderna, ingresso mais caro."
+      }
+    ]
+  },
+  {
+    "id": "jogos-escolares",
+    "categoria": "esporte",
+    "titulo": "Jogos Escolares revelam talentos",
+    "texto": "Os Jogos Escolares estaduais reuniram 40 mil alunos. Uma delegação do interior foi a sensação no atletismo.",
+    "tom": "bom",
+    "se": ["temEstado", "mes in 9,10"],
+    "peso": 0.5,
+    "cooldown": 12,
+    "efeitos": { "indicadores": { "evasao": -0.01 }, "aprovacao": 1 }
+  },
+  {
+    "id": "maratona",
+    "categoria": "esporte",
+    "titulo": "Maratona internacional fecha a orla",
+    "texto": "Quinze mil corredores de 40 países participam da maratona de {cidade}. Comerciantes da orla comemoram.",
+    "tom": "bom",
+    "se": ["litoral", "mes in 6,7,8"],
+    "quando": "diario",
+    "chance": 0.02,
+    "cooldown": 10,
+    "efeitos": { "pib": 0.0003, "aprovacaoCidade": 1 }
+  },
+  {
+    "id": "ocupacao-sem-teto",
+    "categoria": "sociedade",
+    "titulo": "Movimento sem-teto ocupa prédio público",
+    "texto": "Trezentas famílias ocupam um prédio estadual abandonado no centro de {cidade}. O movimento quer transformá-lo em moradia popular.",
+    "tom": "alerta",
+    "se": ["popInformal >= 100"],
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Negociar e transformar o prédio em habitação social",
+        "efeitos": { "caixaCidade": -3000000, "grupos": { "baixaRenda": 3, "classeMedia": -1 } },
+        "resultado": "Prédio vai virar moradia popular com retrofit em parceria com o movimento.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir reintegração de posse",
+        "efeitos": { "grupos": { "baixaRenda": -3, "classeMedia": 1 }, "imprensa": -0.03 },
+        "resultado": "Reintegração com bombas de gás. Famílias vão para a calçada.",
+        "tomResultado": "alerta"
+      }
+    ]
+  },
+  {
+    "id": "greve-geral",
+    "categoria": "sociedade",
+    "titulo": "Greve geral convocada pelas centrais",
+    "texto": "Centrais sindicais convocam greve geral contra a reforma da Previdência estadual. Metrô, bancos e escolas devem parar.",
+    "tom": "alerta",
+    "se": ["temEstado", "reformada"],
+    "unico": true,
+    "efeitos": { "grupos": { "servidores": -3 }, "pib": -0.001 }
+  },
+  {
+    "id": "marcha-para-jesus",
+    "categoria": "sociedade",
+    "titulo": "Marcha evangélica convida o governador",
+    "texto": "A maior marcha evangélica do estado espera um milhão de pessoas e convida o governador para discursar no trio principal.",
+    "tom": "info",
+    "se": ["temEstado"],
+    "peso": 0.6,
+    "cooldown": 12,
+    "prazoDias": 8,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Ir e discursar",
+        "efeitos": { "bancadas": { "evangelica": 0.15 }, "grupos": { "baixaRenda": 1, "classeMedia": -1 } },
+        "resultado": "Governador sobe no trio e é ovacionado."
+      },
+      {
+        "texto": "Mandar uma mensagem em vídeo",
+        "efeitos": { "bancadas": { "evangelica": -0.03 } },
+        "resultado": "A organização exibe o vídeo nos telões, sem muito entusiasmo."
+      }
+    ]
+  },
+  {
+    "id": "demarcacao-indigena",
+    "categoria": "sociedade",
+    "titulo": "Indígenas bloqueiam rodovia",
+    "texto": "Povos indígenas bloqueiam uma rodovia estadual contra a invasão de garimpeiros em seu território e a falta de atendimento de saúde.",
+    "tom": "alerta",
+    "se": ["temEstado", "regiao in Norte,Centro-Oeste"],
+    "peso": 0.7,
+    "cooldown": 18,
+    "prazoDias": 10,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Operação contra o garimpo com a PF e polos de saúde",
+        "efeitos": { "caixa": -0.0003, "presidente": 0.05, "bancadas": { "ruralista": -0.1, "ambientalista": 0.15 }, "imprensa": 0.05 },
+        "resultado": "Operação destrói balsas de garimpo; lideranças liberam a estrada.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir à PM que libere a rodovia",
+        "efeitos": { "bancadas": { "ruralista": 0.05 }, "imprensa": -0.06 },
+        "resultado": "Desocupação da rodovia gera confronto e repercussão internacional.",
+        "tomResultado": "alerta"
+      }
+    ]
+  },
+  {
+    "id": "quilombo-titulacao",
+    "categoria": "sociedade",
+    "titulo": "Quilombolas pedem titulação",
+    "texto": "Comunidade quilombola centenária no interior pede a titulação das terras ao instituto estadual de terras.",
+    "tom": "info",
+    "se": ["temEstado", "regiao in Nordeste,Sudeste,Norte"],
+    "peso": 0.4,
+    "unico": true,
+    "prazoDias": 20,
+    "padrao": 1,
+    "escolhas": [
+      {
+        "texto": "Titular as terras",
+        "efeitos": { "grupos": { "baixaRenda": 1 }, "imprensa": 0.03, "bancadas": { "ruralista": -0.05 } },
+        "resultado": "Comunidade recebe o título coletivo das terras.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Pedir novos estudos",
+        "efeitos": {},
+        "resultado": "Processo volta para a fila de estudos antropológicos."
+      }
+    ]
+  },
+  {
+    "id": "moradores-de-rua",
+    "categoria": "sociedade",
+    "titulo": "População de rua dobra no centro",
+    "texto": "Censo mostra que a população em situação de rua de {cidade} dobrou em quatro anos. Comerciantes pressionam por \"limpeza\".",
+    "tom": "alerta",
+    "se": ["pop >= 1000"],
+    "peso": 0.6,
+    "cooldown": 24,
+    "prazoDias": 12,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Moradia primeiro e centros de acolhida",
+        "efeitos": { "caixaCidade": -4000000, "grupos": { "baixaRenda": 2 }, "imprensa": 0.03 },
+        "resultado": "Programa \"moradia primeiro\" coloca 500 pessoas em apartamentos com acompanhamento social.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Recolhimento compulsório",
+        "efeitos": { "grupos": { "classeMedia": 1, "baixaRenda": -2 }, "imprensa": -0.08 },
+        "resultado": "Guardas recolhem pertences de moradores de rua; Defensoria aciona a Justiça.",
+        "tomResultado": "alerta"
+      }
+    ]
+  },
+  {
+    "id": "motoboys-protesto",
+    "categoria": "sociedade",
+    "titulo": "Entregadores fazem buzinaço",
+    "texto": "Milhares de entregadores de aplicativo fecham avenidas de {cidade} pedindo pontos de apoio, segurança e menos multas.",
+    "tom": "info",
+    "se": ["pop >= 2000"],
+    "peso": 0.5,
+    "cooldown": 18,
+    "prazoDias": 8,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Pontos de apoio com banheiro e água",
+        "efeitos": { "caixaCidade": -1000000, "aprovacaoCidade": 1, "grupos": { "baixaRenda": 1 } },
+        "resultado": "Primeiros pontos de apoio para entregadores abrem em postos de combustível.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Endurecer a fiscalização de trânsito",
+        "efeitos": { "grupos": { "baixaRenda": -2, "classeMedia": 1 } },
+        "resultado": "Blitz contra motos em calçadas e corredores."
+      }
+    ]
+  },
+  {
+    "id": "premio-onu",
+    "categoria": "positivo",
+    "titulo": "ONU premia programa estadual",
+    "texto": "O programa de primeira infância do estado ganhou um prêmio das Nações Unidas como política pública inovadora.",
+    "tom": "bom",
+    "se": ["temEstado", "pobreza <= 6", "aprovacao >= 40"],
+    "peso": 0.4,
+    "unico": true,
+    "efeitos": { "imprensa": 0.06, "aprovacao": 2 }
+  },
+  {
+    "id": "descoberta-petroleo",
+    "categoria": "positivo",
+    "titulo": "Nova descoberta de petróleo no litoral",
+    "texto": "A ANP confirmou uma grande descoberta de petróleo e gás na bacia em frente ao estado. A arrecadação de royalties deve dobrar em cinco anos.",
+    "tom": "bom",
+    "se": ["temEstado", "litoral", "regiao in Sudeste,Nordeste,Sul"],
+    "peso": 0.2,
+    "unico": true,
+    "efeitos": { "pib": 0.004, "grupos": { "empresariado": 3 }, "caixa": 0.001 }
+  },
+  {
+    "id": "destino-turistico",
+    "categoria": "positivo",
+    "titulo": "{cidade} eleita destino do ano",
+    "texto": "Uma revista internacional de viagens elegeu {cidade} o destino do ano na América Latina.",
+    "tom": "bom",
+    "se": ["tracos has turismo", "crime <= 0.35"],
+    "peso": 0.5,
+    "cooldown": 30,
+    "efeitos": { "pib": 0.002, "aprovacaoCidade": 2, "imprensa": 0.03 }
+  },
+  {
+    "id": "vacina-universidade",
+    "categoria": "positivo",
+    "titulo": "Universidade estadual desenvolve vacina",
+    "texto": "Pesquisadores da universidade estadual anunciam resultados promissores de uma vacina contra a dengue de dose única.",
+    "tom": "bom",
+    "se": ["temEstado"],
+    "peso": 0.3,
+    "unico": true,
+    "prazoDias": 15,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Financiar os testes clínicos",
+        "efeitos": { "caixa": -0.0002, "imprensa": 0.06, "grupos": { "classeMedia": 2 } },
+        "resultado": "Estado financia a fase 3 dos testes com 20 mil voluntários.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Parabenizar e seguir",
+        "efeitos": {},
+        "resultado": "Pesquisadores buscam financiamento internacional."
+      }
+    ]
+  },
+  {
+    "id": "medicos-interior",
+    "categoria": "positivo",
+    "titulo": "Médicos formados no estado escolhem o interior",
+    "texto": "A primeira turma de residência médica com bolsa estadual se forma: 70% vai trabalhar em cidades do interior.",
+    "tom": "bom",
+    "se": ["temEstado", "anoMandato >= 3"],
+    "peso": 0.4,
+    "unico": true,
+    "efeitos": { "prefeitos": 0.08, "indicadores": { "esperaEmergencia": -0.03 } }
+  },
+  {
+    "id": "voluntarios-enchente",
+    "categoria": "sociedade",
+    "titulo": "Corrente de solidariedade",
+    "texto": "Depois da enchente, voluntários de todo o país enviam doações para {cidade}. Galpões ficam lotados de roupas, água e colchões.",
+    "tom": "bom",
+    "se": ["enchente >= 0.3"],
+    "quando": "diario",
+    "chance": 0.15,
+    "cooldown": 6,
+    "efeitos": { "aprovacaoCidade": 1 }
+  },
+  {
+    "id": "mutirao-bairro",
+    "categoria": "sociedade",
+    "titulo": "Associação de moradores faz mutirão",
+    "texto": "Moradores do {bairro} se juntam para limpar o córrego e pintar a escola. Pedem ao governo material e caçambas.",
+    "tom": "bom",
+    "se": ["pop >= 500"],
+    "peso": 0.5,
+    "cooldown": 12,
+    "prazoDias": 10,
+    "padrao": 0,
+    "escolhas": [
+      {
+        "texto": "Mandar caçambas, tinta e uma equipe",
+        "efeitos": { "caixaCidade": -200000, "aprovacaoCidade": 2 },
+        "resultado": "O mutirão vira festa no bairro, com churrasco e pagode.",
+        "tomResultado": "bom"
+      },
+      {
+        "texto": "Agradecer nas redes",
+        "efeitos": {},
+        "resultado": "Moradores fazem sozinhos."
+      }
+    ]
+  }
+]

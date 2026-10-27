@@ -1,0 +1,8 @@
+RJ RCL 132.4bi caixa -2.1bi pessoal 44.9% DCL 207% saúde 15.3% educ 26.4% CAPAG D RRF aprov 47 hom 26.2 ideb 3.95 notícias 45
+SP RCL 375.8bi caixa 99.7bi pessoal 38.8% DCL 73% saúde 14.0% educ 26.6% CAPAG A normal aprov 51 hom 7.5 ideb 4.37 notícias 38
+MG RCL 152.9bi caixa 15.2bi pessoal 45.3% DCL 147% saúde 12.4% educ 25.2% CAPAG C RRF aprov 51 hom 13.8 ideb 4.17 notícias 36
+RS RCL 88.0bi caixa 18.4bi pessoal 40.5% DCL 144% saúde 12.7% educ 27.7% CAPAG C normal aprov 52 hom 19.6 ideb 4.17 notícias 30
+BA RCL 96.7bi caixa 17.8bi pessoal 38.7% DCL 17% saúde 15.9% educ 25.8% CAPAG A normal aprov 53 hom 44.5 ideb 3.67 notícias 32
+AC RCL 15.1bi caixa 3.2bi pessoal 43.0% DCL -1% saúde 15.8% educ 25.1% CAPAG A normal aprov 52 hom 23.8 ideb 3.97 notícias 36
+RN RCL 25.6bi caixa 2.4bi pessoal 53.9% DCL 20% saúde 12.6% educ 26.7% CAPAG A normal aprov 51 hom 32.9 ideb 3.66 notícias 49
+DF RCL 50.9bi caixa 8.9bi pessoal 38.6% DCL 0% saúde 14.4% educ 27.3% CAPAG B normal aprov 48 hom 11.0 ideb 4.36 notícias 49

@@ -1,0 +1,199 @@
+{
+ "sigla": "TO",
+ "geradoEm": "2026-10-26T22:43:29.830Z",
+ "municipios": [
+  {
+   "ibge": "1721000",
+   "nome": "Palmas",
+   "populacao": 333154,
+   "capital": true,
+   "lat": -10.24,
+   "lon": -48.3558,
+   "elevacao": 236,
+   "desnivel": 50,
+   "distCostaKm": 617,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": {
+     "lado": "W",
+     "tipo": "lago"
+    },
+    "relevo": 0.35
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Planície · Cerrado · 236 m de altitude · 617 km do mar"
+  },
+  {
+   "ibge": "1702109",
+   "nome": "Araguaína",
+   "populacao": 184495,
+   "capital": false,
+   "lat": -7.19238,
+   "lon": -48.2044,
+   "elevacao": 242,
+   "desnivel": 58,
+   "distCostaKm": 609,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.2230769230769231
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 242 m de altitude · 609 km do mar"
+  },
+  {
+   "ibge": "1709500",
+   "nome": "Gurupi",
+   "populacao": 90818,
+   "capital": false,
+   "lat": -11.7279,
+   "lon": -49.068,
+   "elevacao": 297,
+   "desnivel": 38,
+   "distCostaKm": 436,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.14615384615384616
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.4,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 297 m de altitude · 436 km do mar"
+  },
+  {
+   "ibge": "1718204",
+   "nome": "Porto Nacional",
+   "populacao": 70507,
+   "capital": false,
+   "lat": -10.7027,
+   "lon": -48.408,
+   "elevacao": 231,
+   "desnivel": 59,
+   "distCostaKm": 570,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.22692307692307692
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 231 m de altitude · 570 km do mar"
+  },
+  {
+   "ibge": "1716109",
+   "nome": "Paraíso do Tocantins",
+   "populacao": 56223,
+   "capital": false,
+   "lat": -10.175,
+   "lon": -48.8823,
+   "elevacao": 404,
+   "desnivel": 215,
+   "distCostaKm": 596,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.8269230769230769
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Cerrado · 404 m de altitude · 596 km do mar"
+  },
+  {
+   "ibge": "1705508",
+   "nome": "Colinas do Tocantins",
+   "populacao": 36451,
+   "capital": false,
+   "lat": -8.05764,
+   "lon": -48.4757,
+   "elevacao": 233,
+   "desnivel": 40,
+   "distCostaKm": 703,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.15384615384615385
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 233 m de altitude · 703 km do mar"
+  },
+  {
+   "ibge": "1702208",
+   "nome": "Araguatins",
+   "populacao": 33364,
+   "capital": false,
+   "lat": -5.64659,
+   "lon": -48.1232,
+   "elevacao": 112,
+   "desnivel": 50,
+   "distCostaKm": 485,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.19230769230769232
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": 0.8,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 112 m de altitude · 485 km do mar"
+  },
+  {
+   "ibge": "1709302",
+   "nome": "Guaraí",
+   "populacao": 25975,
+   "capital": false,
+   "lat": -8.83543,
+   "lon": -48.5114,
+   "elevacao": 262,
+   "desnivel": 83,
+   "distCostaKm": 748,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3192307692307692
+   },
+   "bioma": "cerrado",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Cerrado · 262 m de altitude · 748 km do mar"
+  }
+ ]
+}

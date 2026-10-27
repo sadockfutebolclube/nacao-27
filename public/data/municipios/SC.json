@@ -1,0 +1,204 @@
+{
+ "sigla": "SC",
+ "geradoEm": "2026-10-26T22:43:29.476Z",
+ "municipios": [
+  {
+   "ibge": "4209102",
+   "nome": "Joinville",
+   "populacao": 673980,
+   "capital": false,
+   "lat": -26.3045,
+   "lon": -48.8487,
+   "elevacao": 9,
+   "desnivel": 47,
+   "distCostaKm": 31,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.18076923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 9 m de altitude · 31 km do mar"
+  },
+  {
+   "ibge": "4205407",
+   "nome": "Florianópolis",
+   "populacao": 598370,
+   "capital": true,
+   "lat": -27.5945,
+   "lon": -48.5477,
+   "elevacao": 31,
+   "desnivel": 102,
+   "distCostaKm": 10,
+   "terreno": {
+    "tipo": "litoral-morros",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.65
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0,
+    "fChuva": 1,
+    "estimado": false
+   },
+   "descricao": "Litoral com morros · Mata Atlântica · 31 m de altitude"
+  },
+  {
+   "ibge": "4202404",
+   "nome": "Blumenau",
+   "populacao": 390371,
+   "capital": false,
+   "lat": -26.9155,
+   "lon": -49.0709,
+   "elevacao": 17,
+   "desnivel": 165,
+   "distCostaKm": 43,
+   "terreno": {
+    "tipo": "serra",
+    "agua": null,
+    "relevo": 0.6346153846153846
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.1,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Serra · Mata Atlântica · 17 m de altitude · 43 km do mar"
+  },
+  {
+   "ibge": "4208203",
+   "nome": "Itajaí",
+   "populacao": 302247,
+   "capital": false,
+   "lat": -26.9101,
+   "lon": -48.6705,
+   "elevacao": 4,
+   "desnivel": 95,
+   "distCostaKm": 5,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.36538461538461536
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 4 m de altitude"
+  },
+  {
+   "ibge": "4216602",
+   "nome": "São José",
+   "populacao": 301218,
+   "capital": false,
+   "lat": -27.6136,
+   "lon": -48.6366,
+   "elevacao": 68,
+   "desnivel": 54,
+   "distCostaKm": 19,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.2076923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 68 m de altitude"
+  },
+  {
+   "ibge": "4204202",
+   "nome": "Chapecó",
+   "populacao": 289170,
+   "capital": false,
+   "lat": -27.1004,
+   "lon": -52.6152,
+   "elevacao": 657,
+   "desnivel": 93,
+   "distCostaKm": 352,
+   "terreno": {
+    "tipo": "planalto",
+    "agua": null,
+    "relevo": 0.3576923076923077
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -3.9,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planalto · Mata Atlântica · 657 m de altitude · 352 km do mar"
+  },
+  {
+   "ibge": "4211900",
+   "nome": "Palhoça",
+   "populacao": 261287,
+   "capital": false,
+   "lat": -27.6455,
+   "lon": -48.6697,
+   "elevacao": 6,
+   "desnivel": 33,
+   "distCostaKm": 22,
+   "terreno": {
+    "tipo": "litoral-plano",
+    "agua": {
+     "lado": "E",
+     "tipo": "baia"
+    },
+    "relevo": 0.12692307692307692
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": 0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Litoral plano · Mata Atlântica · 6 m de altitude"
+  },
+  {
+   "ibge": "4204608",
+   "nome": "Criciúma",
+   "populacao": 229333,
+   "capital": false,
+   "lat": -28.6723,
+   "lon": -49.3729,
+   "elevacao": 56,
+   "desnivel": 88,
+   "distCostaKm": 23,
+   "terreno": {
+    "tipo": "planicie",
+    "agua": null,
+    "rio": true,
+    "relevo": 0.3384615384615385
+   },
+   "bioma": "mata-atlantica",
+   "clima": {
+    "dTemp": -0.2,
+    "fChuva": 1,
+    "estimado": true
+   },
+   "descricao": "Planície · Mata Atlântica · 56 m de altitude"
+  }
+ ]
+}

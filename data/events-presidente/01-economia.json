@@ -1,0 +1,89 @@
+[
+  {
+    "id": "pres-dolar-dispara", "categoria": "economia", "titulo": "Dólar dispara", "tom": "alerta",
+    "texto": "O dólar sobe 4% em dois dias depois de rumores sobre a meta fiscal. Colunistas falam em 'crise de confiança'. {ministroFazenda} pede uma resposta do Planalto.",
+    "se": ["risco >= 0.55"], "peso": 2, "cooldown": 10,
+    "escolhas": [
+      { "texto": "Anunciar corte de gastos imediato", "detalhe": "Contingenciamento extra; acalma o mercado, irrita o Congresso", "efeitos": { "cambio": -0.04, "credibilidade": 0.03, "camara": -0.04, "aprovacao": -1 }, "resultado": "O mercado devolve a alta. Deputados reclamam do corte nas emendas.", "tomResultado": "bom" },
+      { "texto": "Culpar a especulação", "detalhe": "Discurso para a base; o dólar segue alto", "efeitos": { "cambio": 0.02, "credibilidade": -0.03, "aprovacao": 1 }, "resultado": "A base aplaude. O dólar fecha em nova máxima.", "tomResultado": "ruim" },
+      { "texto": "Deixar o ministro falar", "detalhe": "Entrevista técnica da Fazenda", "efeitos": { "cambio": -0.015 }, "resultado": "{ministroFazenda} acalma parte do mercado com números." }
+    ]
+  },
+  {
+    "id": "pres-inflacao-alimentos", "categoria": "economia", "titulo": "Comida mais cara", "tom": "ruim",
+    "texto": "Arroz, feijão e café sobem forte com a quebra de safra. O {jornal} estampa a cesta básica na capa: 'A inflação chegou ao prato'.",
+    "se": ["inflacao >= 4.5"], "cooldown": 14,
+    "escolhas": [
+      { "texto": "Zerar imposto de importação de alimentos", "efeitos": { "inflacao": -0.2, "receita": -0.03, "bancadas": { "ruralista": -0.08 } }, "resultado": "Preços aliviam um pouco; ruralistas protestam contra a concorrência importada.", "tomResultado": "bom" },
+      { "texto": "Liberar estoques públicos", "efeitos": { "inflacao": -0.1, "despesaExtra": 0.01 }, "resultado": "A Conab leiloa estoques; efeito modesto." },
+      { "texto": "Não intervir no mercado", "efeitos": { "aprovacao": -2, "credibilidade": 0.01 }, "resultado": "O governo é acusado de insensibilidade." }
+    ]
+  },
+  {
+    "id": "pres-pib-surpresa", "categoria": "economia", "titulo": "PIB surpreende", "tom": "bom",
+    "texto": "O IBGE divulga crescimento acima do esperado no trimestre, puxado pelo agro e pelos serviços.",
+    "se": ["crescimento >= 2.5"], "cooldown": 12, "efeitos": { "aprovacao": 2 }
+  },
+  {
+    "id": "pres-recessao-tecnica", "categoria": "economia", "titulo": "Recessão técnica", "tom": "ruim",
+    "texto": "Dois trimestres seguidos de queda do PIB. A oposição ({oposicao}) fala em 'década perdida'.",
+    "se": ["crescimento <= 0"], "cooldown": 18, "efeitos": { "aprovacao": -3, "credibilidade": -0.01 }
+  },
+  {
+    "id": "pres-agencia-rating", "categoria": "economia", "titulo": "Agência rebaixa a nota do Brasil", "tom": "ruim",
+    "texto": "Uma agência de classificação de risco rebaixa a nota soberana do Brasil, citando a trajetória da dívida.",
+    "se": ["divida >= 92"], "unico": true, "efeitos": { "cambio": 0.05, "credibilidade": -0.03, "aprovacao": -1 }
+  },
+  {
+    "id": "pres-agencia-eleva", "categoria": "economia", "titulo": "Grau de investimento à vista", "tom": "bom",
+    "texto": "Uma agência eleva a perspectiva da nota brasileira para positiva, citando o compromisso fiscal.",
+    "se": ["primario >= 0.3", "risco <= 0.45"], "unico": true, "efeitos": { "cambio": -0.04, "credibilidade": 0.03, "hiato": 0.2 }
+  },
+  {
+    "id": "pres-greve-caminhoneiros", "categoria": "economia", "titulo": "Caminhoneiros param o país", "tom": "alerta",
+    "texto": "Caminhoneiros bloqueiam rodovias em 18 estados contra o preço do diesel. Postos ficam sem combustível e supermercados, sem verduras.",
+    "se": ["cambio >= 5.6"], "cooldown": 30, "prazoDias": 10,
+    "escolhas": [
+      { "texto": "Subsidiar o diesel por 60 dias", "efeitos": { "despesaExtra": 0.04, "aprovacao": 1, "credibilidade": -0.02 }, "resultado": "As estradas são liberadas em três dias. O Tesouro paga a conta.", "tomResultado": "bom" },
+      { "texto": "Chamar a PRF e a Força Nacional", "efeitos": { "aprovacao": -2, "hiato": -0.3, "inflacao": 0.15 }, "resultado": "Os bloqueios duram uma semana. Desabastecimento e prejuízo.", "tomResultado": "ruim" },
+      { "texto": "Mesa de negociação com frete mínimo", "efeitos": { "inflacao": 0.05, "bancadas": { "ruralista": -0.05 } }, "resultado": "Acordo com a categoria; o agro reclama do frete tabelado." }
+    ]
+  },
+  {
+    "id": "pres-petroleo-sobe", "categoria": "internacional", "titulo": "Petróleo a US$ 110", "tom": "alerta",
+    "texto": "Conflito no Golfo Pérsico leva o barril a US$ 110. A estatal de petróleo avisa que precisa reajustar a gasolina.",
+    "cooldown": 30, "peso": 0.6,
+    "escolhas": [
+      { "texto": "Autorizar o reajuste", "efeitos": { "inflacao": 0.4, "aprovacao": -2, "credibilidade": 0.02 }, "resultado": "Gasolina sobe 9% nas bombas.", "tomResultado": "ruim" },
+      { "texto": "Segurar o preço na estatal", "efeitos": { "inflacao": 0.05, "credibilidade": -0.04, "divida": 0.2 }, "resultado": "Ações da estatal derretem; acionistas minoritários vão à CVM." }
+    ]
+  },
+  {
+    "id": "pres-commodities-boom", "categoria": "internacional", "titulo": "Boom das commodities", "tom": "bom",
+    "texto": "Minério, soja e petróleo em alta: a balança comercial bate recorde e o real se valoriza.",
+    "peso": 0.5, "cooldown": 30, "efeitos": { "cambio": -0.04, "receita": 0.15, "hiato": 0.2 }
+  },
+  {
+    "id": "pres-fed-sobe", "categoria": "internacional", "titulo": "Fed sobe os juros", "tom": "alerta",
+    "texto": "O banco central americano surpreende e sobe os juros. Capital foge dos emergentes.",
+    "peso": 0.5, "cooldown": 24, "efeitos": { "cambio": 0.035 }
+  },
+  {
+    "id": "pres-pautabomba-reajuste", "categoria": "congresso", "titulo": "Pauta-bomba: reajuste dos servidores", "tom": "alerta",
+    "texto": "Contra a vontade do Planalto, o Congresso aprova reajuste de 9% para servidores federais. Custo de 0,15% do PIB por ano. {presidenteCamara} diz que 'o Parlamento é soberano'.",
+    "se": ["base <= 0.55"], "cooldown": 18, "prazoDias": 15,
+    "escolhas": [
+      { "texto": "Vetar o reajuste", "efeitos": { "camara": -0.08, "bancadas": { "sindical": -0.25 }, "credibilidade": 0.02 }, "resultado": "Veto publicado. Servidores anunciam greve; o Congresso ameaça derrubar o veto.", "depois": [{ "meses": 2, "chance": 0.4, "texto": "Congresso derruba o veto ao reajuste dos servidores em sessão conjunta.", "tom": "ruim", "efeitos": { "despesaExtra": 0.1, "credibilidade": -0.02 } }] },
+      { "texto": "Sancionar", "efeitos": { "despesaExtra": 0.12, "bancadas": { "sindical": 0.2 }, "credibilidade": -0.03, "aprovacao": 1 }, "resultado": "Servidores comemoram; o mercado não." }
+    ]
+  },
+  {
+    "id": "pres-fome-volta", "categoria": "economia", "titulo": "Insegurança alimentar cresce", "tom": "ruim",
+    "texto": "Pesquisa mostra aumento da fome nas periferias e no Nordeste. Movimentos sociais acampam na Esplanada.",
+    "se": ["desemprego >= 7.5"], "cooldown": 18,
+    "escolhas": [
+      { "texto": "Reforço emergencial na transferência de renda", "efeitos": { "despesaExtra": 0.05, "aprovacao": 2 }, "resultado": "Benefício extra por três meses." },
+      { "texto": "Priorizar o ajuste fiscal", "efeitos": { "aprovacao": -2, "credibilidade": 0.01 }, "resultado": "A imagem do governo sofre nas periferias." }
+    ]
+  }
+]

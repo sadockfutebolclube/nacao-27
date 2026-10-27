@@ -75,23 +75,36 @@ const caixa = (w: number, h: number, d: number, x: number, y: number, z: number)
 /** Silhueta lateral (x = comprimento, y = altura) extrudada na largura, centrada em x=0. */
 function perfil(pts: [number, number][], largura: number): THREE.BufferGeometry {
   const forma = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
-  const g = new THREE.ExtrudeGeometry(forma, { depth: largura, bevelEnabled: false, steps: 1 });
+  // Fase 12: quina arredondada (chanfro de 6 cm) para o reflexo correr pela lataria
+  const ch = Math.min(0.06, largura * 0.05);
+  const g = new THREE.ExtrudeGeometry(forma, { depth: largura - 2 * ch, bevelEnabled: true, bevelThickness: ch, bevelSize: ch * 0.6, bevelOffset: -ch * 0.6, bevelSegments: 2, steps: 1 });
   g.rotateY(-Math.PI / 2); // x da forma → z do mundo (frente = +z), extrusão → −x
-  g.translate(largura / 2, 0, 0);
+  g.translate(largura / 2 - ch, 0, 0);
+  g.computeVertexNormals();
   return g;
 }
 
-/** Roda com eixo em X: pneu escuro e calota clara no centro das tampas (8 lados, 32 triângulos). */
+/** Roda com eixo em X: pneu escuro e calota clara no centro das tampas (14 lados). */
 function roda(r: number, w: number, x: number, y: number, z: number): Parte {
-  const g = new THREE.CylinderGeometry(r, r, w, 8).rotateZ(Math.PI / 2).translate(x, y, z);
+  const g = new THREE.CylinderGeometry(r, r, w, 14).rotateZ(Math.PI / 2).translate(x, y, z);
   return { g, cor: PNEU, corV: (_x, vy, vz) => (Math.hypot(vy - y, vz - z) < r * 0.3 ? CALOTA : PNEU) };
 }
 
-/** Mescla as partes e grava `color` (cor fixa), `aPinta` (cor da instância) e `aBrilho`. */
+/** Acabamento PBR por vértice: 0 pintura com verniz · 1 vidro · 2 borracha/plástico · 3 cromado · 4 lente de farol · 5 fosco. */
+function acabamento(p: Parte, c: RGB): number {
+  if (p.pinta) return 0;
+  if (c === VIDRO) return 1;
+  if (c === PNEU || c === PLASTICO || c === JEANS || c === JAQUETA) return 2;
+  if (c === CALOTA) return 3;
+  if (c === FAROL || c === LANTERNA) return 4;
+  return 5;
+}
+
+/** Mescla as partes e grava `color` (cor fixa), `aPinta` (cor da instância), `aBrilho` e `aAcab`. */
 function montar(partes: Parte[]): THREE.BufferGeometry {
   const geo = mergeGeos(partes.map((p) => p.g));
   const n = geo.getAttribute('position').count;
-  const cor = new Float32Array(n * 3), pinta = new Float32Array(n), brilho = new Float32Array(n);
+  const cor = new Float32Array(n * 3), pinta = new Float32Array(n), brilho = new Float32Array(n), acab = new Float32Array(n);
   let k = 0;
   for (const p of partes) {
     const pos = p.g.getAttribute('position');
@@ -100,12 +113,14 @@ function montar(partes: Parte[]): THREE.BufferGeometry {
       cor[k * 3] = c[0]; cor[k * 3 + 1] = c[1]; cor[k * 3 + 2] = c[2];
       pinta[k] = p.pinta ? 1 : 0;
       brilho[k] = p.brilho ?? 0;
+      acab[k] = acabamento(p, c);
     }
     p.g.dispose();
   }
   geo.setAttribute('color', new THREE.BufferAttribute(cor, 3));
   geo.setAttribute('aPinta', new THREE.BufferAttribute(pinta, 1));
   geo.setAttribute('aBrilho', new THREE.BufferAttribute(brilho, 1));
+  geo.setAttribute('aAcab', new THREE.BufferAttribute(acab, 1));
   geo.computeBoundingSphere();
   return geo;
 }
@@ -204,24 +219,38 @@ function geoMoto() {
 
 /** Material único dos veículos: cor da instância só onde `aPinta`=1; vidros/letreiros brilham. */
 function materialVeiculo(uNoite: { value: number }) {
-  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 });
+  // Fase 12: físico com verniz (clearcoat) na lataria — reflete o céu HDRI como carro de verdade
+  const m = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08 });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uNoite = uNoite;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <color_pars_vertex>', '#include <color_pars_vertex>\nattribute float aPinta;\nattribute float aBrilho;\nvarying float vBrilho;')
+      .replace('#include <color_pars_vertex>', '#include <color_pars_vertex>\nattribute float aPinta;\nattribute float aBrilho;\nattribute float aAcab;\nvarying float vBrilho;\nvarying float vAcab;')
       .replace('#include <color_vertex>', `
         vColor = vec4(color, 1.0);
         #ifdef USE_INSTANCING_COLOR
           vColor.rgb *= mix(vec3(1.0), instanceColor.rgb, aPinta);
         #endif
-        vBrilho = aBrilho;`);
+        vBrilho = aBrilho;
+        vAcab = aAcab;`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uNoite;\nvarying float vBrilho;')
+      .replace('#include <common>', '#include <common>\nuniform float uNoite;\nvarying float vBrilho;\nvarying float vAcab;')
+      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+        int acabV = int(vAcab + 0.5);
+        if (acabV == 0) { roughnessFactor = 0.32; metalnessFactor = 0.35; }
+        else if (acabV == 1) { roughnessFactor = 0.04; metalnessFactor = 0.0; }
+        else if (acabV == 2) { roughnessFactor = 0.85; metalnessFactor = 0.0; }
+        else if (acabV == 3) { roughnessFactor = 0.18; metalnessFactor = 1.0; }
+        else if (acabV == 4) { roughnessFactor = 0.1; metalnessFactor = 0.0; }
+        else { roughnessFactor = 0.6; metalnessFactor = 0.0; }`)
+      .replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>
+        #ifdef USE_CLEARCOAT
+          material.clearcoat *= acabV == 0 ? 1.0 : (acabV == 1 ? 0.6 : 0.0);
+        #endif`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         if (vBrilho > 1.5) totalEmissiveRadiance += diffuseColor.rgb * (0.35 + uNoite * 1.6);
         else if (vBrilho > 0.5) totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * 0.55 * uNoite;`);
   };
-  m.customProgramCacheKey = () => 'veiculo-pinta-brilho';
+  m.customProgramCacheKey = () => 'veiculo-pbr-verniz';
   return m;
 }
 

@@ -11,6 +11,8 @@ import { Rng } from '../../sim/core/rng';
 import { BUILD_HALF, HM_RES, HM_STEP, HM_VERTS, MAP_SIZE } from '../../world/constants';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { uniformsTerreno } from './climaVisual';
+import { texturasPiso } from '../materiais/biblioteca';
+import { GLSL_DETALHE } from '../materiais/detalhe';
 
 interface Paleta { grama: string; grama2: string; mata: string; solo: string; areia: string; rocha: string; fundo: string }
 
@@ -93,33 +95,57 @@ function construirChunk(hm: Heightmap, ci: number, cj: number, p: Paleta, nz: (x
 
 export function criarMaterialTerreno(): THREE.MeshStandardMaterial {
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 });
+  // Fase 12: capim, terra e rocha fotográficos (ambientCG, CC0) como detalhe sobre a paleta do bioma
+  const grama = texturasPiso('Grass004'), terra = texturasPiso('Ground103'), rocha = texturasPiso('Rock064');
   m.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, uniformsTerreno);
+    Object.assign(sh.uniforms, uniformsTerreno, {
+      tGrama: { value: grama.map }, tTerra: { value: terra.map }, tRocha: { value: rocha.map },
+      tGramaN: { value: grama.normalMap }, tTerraN: { value: terra.normalMap }, tRochaN: { value: rocha.normalMap },
+    });
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vMundo;')
-      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMundo = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      .replace('#include <common>', '#include <common>\nvarying vec3 vMundo;\nvarying float vInclT;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMundo = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvInclT = 1.0 - normalize(objectNormal).y;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vMundo;
+varying float vInclT;
 uniform float uSecura, uMolhado, uGeada;
+uniform sampler2D tGrama, tTerra, tRocha, tGramaN, tTerraN, tRochaN;
+${GLSL_DETALHE}
+float wGramaT = 0.0, wRochaT = 0.0;
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
+// fotos de capim/terra/rocha escolhidas pela cor do bioma e pela declividade
+wGramaT = clamp((diffuseColor.g - max(diffuseColor.r, diffuseColor.b)) * 7.0, 0.0, 1.0);
+wRochaT = smoothstep(0.22, 0.42, vInclT);
+vec3 rzT = mix(mix(razaoDetalhe(tTerra, vMundo.xz, 4.0), razaoDetalhe(tGrama, vMundo.xz, 2.6), wGramaT), razaoDetalhe(tRocha, vMundo.xz, 7.0), wRochaT);
+diffuseColor.rgb *= mix(vec3(1.0), rzT, 0.9);
 // detalhe em várias escalas: manchas de capim, terra batida e "grão" fino
 float d1 = vn(vMundo.xz * 0.045);
 float d2 = vn(vMundo.xz * 0.21);
 float d3 = vn(vMundo.xz * 0.9);
 float d4 = vn(vMundo.xz * 3.1);
-diffuseColor.rgb *= 0.72 + 0.2 * d1 + 0.22 * d2 + 0.14 * d3 + 0.1 * d4;
+diffuseColor.rgb *= 0.8 + 0.2 * d1 + 0.18 * d2 + 0.08 * d3 + 0.04 * d4;
 float seco = smoothstep(0.62, 0.8, vn(vMundo.xz * 0.08 + 17.0));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.05, 0.78), seco * 0.5);
 // estação seca: o capim amarela (só onde é verde); chuva escurece o chão; geada embranquece de manhã
 float verde = clamp((diffuseColor.g - max(diffuseColor.r, diffuseColor.b)) * 9.0, 0.0, 1.0);
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.32, 1.04, 0.58), uSecura * verde * (0.55 + 0.45 * d1));
 diffuseColor.rgb *= 1.0 - 0.2 * uMolhado;
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.93), uGeada * verde * 0.6 * d2);`);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.93), uGeada * verde * 0.6 * d2);`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+{
+  vec3 nT = normalize(mix(mix(normalDetalhe(tTerraN, vMundo.xz, 4.0), normalDetalhe(tGramaN, vMundo.xz, 2.6), wGramaT), normalDetalhe(tRochaN, vMundo.xz, 7.0), wRochaT));
+  vec3 tT = normalize((viewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
+  vec3 bT = normalize((viewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz);
+  tT = normalize(tT - dot(tT, normal) * normal);
+  bT = normalize(bT - dot(bT, normal) * normal - dot(bT, tT) * tT);
+  normal = normalize(normal + (tT * nT.x + bT * nT.y) * 0.8);
+}`);
   };
+  m.customProgramCacheKey = () => 'terreno-pbr';
   return m;
 }
 

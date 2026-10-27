@@ -11,7 +11,9 @@
  *    (3.072 m), água, vegetação e uso do solo no mapa inteiro;
  *  - ruas viram o grafo do jogo (nós nos cruzamentos, arestas curvas de até ~140 m, nomes reais);
  *  - prédios viram retângulos orientados (menor retângulo envolvente) de frente para a rua mais
- *    próxima, com andares do OSM (building:levels/height) ou estimados pelo tipo.
+ *    próxima, com andares do OSM (building:levels/height) ou estimados pelo tipo;
+ *  - Fase 12: o contorno real de cada prédio (simplificado a ~0,4 m) vai junto, para a renderização
+ *    extrudar a planta verdadeira com fachadas texturizadas.
  *
  * Saída: public/data/cidades/{IBGE}.json · Cache: data/osm-cache/, data/cache/terrarium/
  */
@@ -87,6 +89,34 @@ function casco(pts: P[]): P[] {
   for (const p of s) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
   for (let i = s.length - 1; i >= 0; i--) { const p = s[i]; while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
   return lo.slice(0, -1).concat(hi.slice(0, -1));
+}
+
+/** Douglas–Peucker num anel (sem repetir o primeiro ponto); devolve o anel anti-horário visto de cima. */
+function simplificar(pts: P[], tol: number): P[] {
+  let far = 0, dm = -1;
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[0][0], pts[i][1] - pts[0][1]); if (d > dm) { dm = d; far = i; } }
+  if (far === 0) return pts;
+  const fech = [...pts, pts[0]];
+  const idx: number[] = [0];
+  const dp = (a: number, b: number) => {
+    const [ax, az] = fech[a], [bx, bz] = fech[b];
+    const L = Math.hypot(bx - ax, bz - az) || 1e-9;
+    let d0 = 0, k = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs((bx - ax) * (az - fech[i][1]) - (ax - fech[i][0]) * (bz - az)) / L;
+      if (d > d0) { d0 = d; k = i; }
+    }
+    if (d0 > tol && k > 0) { dp(a, k); idx.push(k); dp(k, b); }
+  };
+  dp(0, far); idx.push(far); dp(far, fech.length - 1);
+  let out = idx.map((i) => fech[i]);
+  // descarta pontos colados (< 0,3 m)
+  out = out.filter((p, i) => { const q = out[(i + out.length - 1) % out.length]; return i === 0 || Math.hypot(p[0] - q[0], p[1] - q[1]) > 0.3; });
+  if (out.length < 3) return pts;
+  // anti-horário visto de cima (+Y para cima, +Z para o sul): soma x1·z2 − x2·z1 negativa
+  let a = 0;
+  for (let i = 0; i < out.length; i++) { const [x1, z1] = out[i], [x2, z2] = out[(i + 1) % out.length]; a += x1 * z2 - x2 * z1; }
+  return a > 0 ? out.reverse() : out;
 }
 
 /** Menor retângulo envolvente (rotating calipers simplificado sobre as arestas do casco). */
@@ -339,6 +369,8 @@ async function gerar(m: Mun, terr: Terrarium) {
   // ── prédios
   const predios: number[] = [];
   const nomesPredios: string[] = [];
+  /** por prédio: n e n×(dx, dz) em decímetros a partir do centro; n = 0 usa o próprio retângulo */
+  const contornos: number[] = [];
   let comAndares = 0;
   const alturaEm = (x: number, z: number) => {
     const i = Math.round((x + HALF) / PASSO), j = Math.round((z + HALF) / PASSO);
@@ -381,11 +413,19 @@ async function gerar(m: Mun, terr: Terrarium) {
       }
       return;
     }
-    emitir(r, tipo, andares, nome);
+    // planta verdadeira, quando não é praticamente o próprio retângulo
+    let cont: P[] | undefined;
+    if (pts.length > 4 || area < r.w * r.d * 0.93) {
+      let tol = 0.4;
+      cont = simplificar(pts, tol);
+      while (cont.length > 48 && tol < 4) cont = simplificar(pts, (tol *= 1.6));
+      if (cont.length < 3 || cont.length > 48) cont = undefined;
+    }
+    emitir(r, tipo, andares, nome, cont);
   };
   const hashN = (x: number, z: number) => Math.abs(Math.round(x * 73.1 + z * 19.7)) % 997;
   /** Grava um retângulo (centro, eixo θ, w ao longo de θ, d perpendicular) virado para a rua mais próxima. */
-  const emitir = (r: { x: number; z: number; ang: number; w: number; d: number }, tipo: number, andares: number, nome: string | null) => {
+  const emitir = (r: { x: number; z: number; ang: number; w: number; d: number }, tipo: number, andares: number, nome: string | null, cont?: P[]) => {
     const rua = ruaProxima(r.x, r.z);
     let ang = -r.ang, w = r.w, d = r.d;
     if (rua.e) {
@@ -403,6 +443,8 @@ async function gerar(m: Mun, terr: Terrarium) {
     if (nome) { ni = nomesPredios.length; nomesPredios.push(nome); }
     if (origemMS) deMS++;
     predios.push(r1(r.x), r1(r.z), Math.round(ang * 1000), r1(Math.max(3, w)), r1(Math.max(3, d)), andares, tipo, rua.e, ni);
+    contornos.push(cont ? cont.length : 0);
+    if (cont) for (const [px, pz] of cont) contornos.push(Math.round((px - r1(r.x)) * 10), Math.round((pz - r1(r.z)) * 10));
   };
 
   // 1) OpenStreetMap: tipo, nome e andares quando mapeados
@@ -433,6 +475,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     versao: 1, ibge: m.ibge, nome: m.nome, uf: m.uf, lat: m.lat, lon: m.lon, geradoEm: new Date().toISOString(), base: Math.round(base * 10) / 10, litoral,
     passo: PASSO, res: RES, alturas: toB64(new Uint8Array(alturas.buffer)), verde: toB64(verde),
     vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes }, predios, nomesPredios,
+    contornos: toB64(new Uint8Array(Int16Array.from(contornos).buffer)),
     estat: { predios: predios.length / CAMPOS_PREDIO, comAndares, vias: g.arestas.length / 6, km: Math.round(g.km * 10) / 10 },
   });
   await mkdir(OUT, { recursive: true });

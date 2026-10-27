@@ -608,3 +608,25 @@ Veículos procedurais detalhados (sedã, hatch, táxi, ônibus com letreiro, cam
 
 ## Testes (`tests/fase11.test.ts`, `tests/pedestres.test.ts`)
 Relevo/água/verde a partir do arquivo; grafo com nomes; arquétipos por tipo e andares; cidade que nasce construída, habitada e abastecida pela rede herdada; demolição permanente que sobrevive ao save; prédios sem rua de frente ficam de fora; arquivos gerados seguem o esquema; matemática da calçada dos pedestres.
+
+# Parte XI — Visual realista (Fase 12)
+
+## Plantas reais (`scripts/fetch-cidades.ts`, `src/data/cidadeReal.ts`)
+Cada prédio do arquivo da cidade ganha o contorno real em `contornos` (Int16 base64: n e n×(dx, dz) em decímetros a partir do centro; anel anti-horário visto de cima). Contornos que já são praticamente o retângulo (casas de quadra dividida) gravam n = 0. `contorno(c, i)` devolve a planta em coordenadas do mundo, ou o retângulo orientado (`retangulo`).
+
+## Renderização (`src/render/city/PrediosReais.tsx`)
+- Geometria estática em blocos de 512 m: paredes por aresta (u = metros ao longo do perímetro), laje triangulada ou, nas casas retangulares de duas águas, telhado com beiral de 0,4 m e oitões.
+- Estado por prédio numa textura RGBA32F (2 texels: altura, cota, flags obra/abandono/sem-telhado, semente; cor da camada). O vertex shader posiciona a base em cota − 1,5 m e o topo em cota + altura (+ cumeeira nas casas baixas); prédio demolido ou vazio desce para baixo do chão.
+- Materiais (`src/render/materiais/biblioteca.ts`): 8 fachadas fotográficas com escala real (≈3 m por andar), 3 paredes lisas, 3 telhas e brita. Escolha por tipo, andares e sorteio estável: casas em reboco pintado com a paleta regional (e telha cerâmica), prédios residenciais metade reboco, metade fachada fotográfica, comerciais altos em vidro/escritório, galpões com telha metálica.
+- Janelas desenhadas no reboco: vão de 3,2 m (casa 3,8 m), janela de 1,4 × 1,25 m com esquadria, peitoril e sombra, vidro escuro reflexivo, cortina ou persiana; porta nas casas, vitrine ou porta de enrolar nas lojas; de longe viram a média da fachada (sem serrilhado). À noite ~1/3 acende, com rodízio.
+- `Edificios.tsx` deixa de desenhar o corpo e o telhado dos prédios reais quando as texturas carregam (sem elas, volta às caixas).
+
+## Luz e chão
+- Céu HDRI do Poly Haven em `scene.environment` (luz ambiente e reflexos), intensidade pela hora e pelo tempo; a luz hemisférica fica como tingimento. Tone mapping ACES Filmic.
+- Terreno: capim, terra e rocha fotográficos (pesos pela cor do bioma e pela declividade), como razão sobre a cor do vértice, em duas escalas para quebrar a repetição; mesmo esquema no asfalto e nas calçadas (`src/render/materiais/detalhe.ts`).
+
+## Vista Google 3D (`src/ui/google3d/VistaGoogle3D.tsx`)
+Vista à parte com os Photorealistic 3D Tiles transmitidos pela Map Tiles API (chave do jogador), centrada no ponto que a câmera da cidade olha. Não interage com a simulação.
+
+## Testes (`tests/fase12.test.ts`)
+Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do retângulo; retângulo orientado; arquivos de material e HDRI presentes.

@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 1.2.0 — Fase 12: visual realista (27/10/2026)
+
+### Prédios com a planta de verdade
+- Cada prédio real é desenhado com o contorno verdadeiro do OpenStreetMap/Microsoft (formatos em L, curvas, pátios), não mais como caixa. Os 27 arquivos de cidade foram regerados com as plantas (37 MB no total).
+- Fachadas fotográficas (tijolo, pele de vidro, escritórios, residenciais) do ambientCG nas torres, com janelas que acendem à noite; casas e prédios de reboco pintado com a paleta regional, janelas com esquadria, peitoril, persianas, cortinas, portas, vitrines de loja, portas de enrolar e sujeira de chuva na base.
+- Telhado cerâmico de duas águas nas casas, laje com brita e casa de máquinas nos prédios, telha metálica nos galpões.
+- A geometria é montada uma vez por cidade; altura, obra, abandono e camadas de informação vêm de uma textura de estado na GPU.
+
+### Luz, chão e ruas
+- Céu HDRI real (Poly Haven) como luz ambiente e reflexo: vidros, carros e água refletem o céu. Tone mapping filmico (ACES).
+- Terreno com fotos de capim, terra e rocha tingidas pelo bioma; asfalto e calçada fotográficos sob as faixas pintadas.
+- Carros com lataria envernizada, vidros espelhados, calotas cromadas, pneus foscos e quinas arredondadas; pedestres com material PBR e cabeça/tronco mais redondos.
+
+### Vista Google 3D
+- Botão no painel Visual: a cidade real nos Photorealistic 3D Tiles do Google, ao vivo, no ponto para onde a câmera olha. Precisa de uma chave da Map Tiles API do jogador (`VITE_GOOGLE_MAPS_KEY` ou digitada na tela). Nada do Google é baixado, guardado ou convertido em modelo do jogo.
+
+### Verificado
+- 102 testes (5 novos: plantas das 27 capitais, retângulo orientado, arquivos de material); typecheck estrito; build ok (a Vista Google 3D fica num pacote separado, carregado só ao abrir).
+- No navegador: Rio (Copacabana com fachadas fotográficas, noite com janelas acesas) e São Paulo (plantas irregulares no centro), sem erros no console.
+
+### Limitações
+- A Vista Google 3D com tiles não pôde ser testada aqui (exige a chave e o faturamento do jogador).
+- Carros e pessoas continuam procedurais (com materiais PBR): não há modelos realistas CC0 de qualidade para baixar automaticamente.
+- Prédios construídos pelo jogador ainda usam a fachada procedural antiga.
+
 ## 1.1.0 — Fase 11: cidades reais (27/10/2026)
 
 ### Cidades reais

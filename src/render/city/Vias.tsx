@@ -13,6 +13,7 @@ import { ambiente } from './ambiente';
 import { clima } from './climaVisual';
 import { construirPerfis, type Perfil } from './perfilVias';
 import { texturaAvenida, texturaCalcada, texturaCalcadao, texturaHalo, texturaRua } from './texturas';
+import { comDetalhe } from '../materiais/detalhe';
 
 export let perfisAtuais: Map<number, Perfil> = new Map();
 
@@ -262,12 +263,13 @@ export function Vias({ hm }: { hm: Heightmap }) {
   const mats = useMemo(() => {
     const comum = { roughness: 0.92, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
     return {
-      rua: new THREE.MeshStandardMaterial({ ...comum, map: texturaRua() }),
-      avenida: new THREE.MeshStandardMaterial({ ...comum, map: texturaAvenida() }),
-      calcada: new THREE.MeshStandardMaterial({ ...comum, map: texturaCalcada(), roughness: 0.85 }),
+      // Fase 12: asfalto e calçada fotográficos (ambientCG) por cima das faixas pintadas
+      rua: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaRua() }), 'Asphalt033', 4, 0.85),
+      avenida: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaAvenida() }), 'Asphalt033', 4, 0.85),
+      calcada: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaCalcada(), roughness: 0.85 }), 'PavingStones046', 2.4, 0.75),
       calcadao: new THREE.MeshStandardMaterial({ ...comum, map: texturaCalcadao(), roughness: 0.7 }),
       lateral: new THREE.MeshStandardMaterial({ color: '#9b958a', roughness: 0.95 }),
-      cruz: new THREE.MeshStandardMaterial({ ...comum, color: '#3e4042', roughness: 0.9 }),
+      cruz: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, color: '#3e4042', roughness: 0.9 }), 'Asphalt033', 4, 0.85),
       poste: new THREE.MeshStandardMaterial({ color: '#5d6266', roughness: 0.6, metalness: 0.4 }),
       lampada: new THREE.MeshStandardMaterial({ color: '#2b2b2b', emissive: new THREE.Color('#ffb04a'), emissiveIntensity: 0 }),
       pilar: new THREE.MeshStandardMaterial({ color: '#a8a39a', roughness: 0.9 }),

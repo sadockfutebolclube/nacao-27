@@ -76,8 +76,8 @@ function geoPessoa(): THREE.BufferGeometry {
   const caixa = (w: number, h: number, d: number, x: number, y: number, z: number) => new THREE.BoxGeometry(w, h, d).translate(x, y, z);
   const partes: ParteP[] = [
     // cabeça facetada: faces de cima/de trás viram cabelo (cor por face, sem degradê)
-    { g: new THREE.IcosahedronGeometry(0.115, 0).translate(0, 1.6, 0), parte: P.fixo, cor: C.pele },
-    { g: new THREE.CylinderGeometry(0.16, 0.13, 0.52, 6).scale(1, 1, 0.62).translate(0, 1.2, 0), parte: P.fixo, cor: C.camisa },
+    { g: new THREE.IcosahedronGeometry(0.115, 1).translate(0, 1.6, 0), parte: P.fixo, cor: C.pele },
+    { g: new THREE.CylinderGeometry(0.16, 0.13, 0.52, 10).scale(1, 1, 0.62).translate(0, 1.2, 0), parte: P.fixo, cor: C.camisa },
     { g: caixa(0.3, 0.14, 0.19, 0, 0.93, 0), parte: P.fixo, cor: C.calca },
     { g: caixa(0.12, 0.84, 0.14, 0.08, 0.5, 0), parte: P.pernaE, cor: C.calca },
     { g: caixa(0.12, 0.84, 0.14, -0.08, 0.5, 0), parte: P.pernaD, cor: C.calca },
@@ -118,9 +118,9 @@ function geoPessoa(): THREE.BufferGeometry {
   return geo;
 }
 
-/** Lambert com passada no vertex shader. iAnim = (fase, ritmo rad/s, tom de pele 0–1, guarda-chuva 0/1). */
+/** PBR (reage ao céu HDRI) com passada no vertex shader. iAnim = (fase, ritmo rad/s, tom de pele 0–1, guarda-chuva 0/1). */
 function materialPessoa(u: { uTempo: { value: number }; uAmp: { value: number } }) {
-  const m = new THREE.MeshLambertMaterial();
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0 });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTempo = u.uTempo;
     sh.uniforms.uAmp = u.uAmp;

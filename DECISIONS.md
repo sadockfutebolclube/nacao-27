@@ -207,3 +207,15 @@ A cidade real já tem água, luz e esgoto (das companhias estaduais). Exigir que
 
 ## D-068 · Agente para veículos e pedestres
 A pedido do usuário, um agente separado criou os modelos procedurais de veículos e os pedestres, em arquivos próprios (`Veiculos.tsx`, `Pedestres.tsx`), enquanto a importação da cidade real era feita em paralelo. Tudo procedural: nenhum modelo 3D baixado.
+
+## D-069 · Planta real extrudada, estado na GPU
+O retângulo orientado da Fase 11 fazia toda cidade parecer maquete. O gerador agora grava o contorno simplificado (Douglas–Peucker, 0,4 m, até 48 vértices) e a renderização extruda a planta verdadeira. Como são dezenas de milhares de prédios, a geometria é estática (blocos de 512 m) e tudo o que a simulação muda — altura, cota do terreno, obra, abandono, cor da camada — vai numa textura de estado lida no vertex shader. A simulação continua usando o retângulo para lotes e ocupação; só o desenho mudou.
+
+## D-070 · Materiais fotográficos CC0 em array de texturas
+Fachadas, rebocos, telhas e pisos vêm do ambientCG (CC0) e o céu do Poly Haven (CC0): fotos reais, sem atribuição obrigatória e sem risco de licença. As 15 camadas dos prédios ficam em duas DataArrayTexture (cor+rugosidade, normal+emissão), então um único material desenha qualquer prédio. Texturas reduzidas para 1024/512 px (6 MB no repositório). No chão e nas ruas a foto entra como razão sobre a cor existente, preservando a paleta do bioma e as faixas pintadas.
+
+## D-071 · Google 3D só ao vivo, com a chave do jogador
+O pedido de "usar bastante o Google Maps" é atendido do único jeito que os termos permitem: os Photorealistic 3D Tiles são transmitidos ao vivo (3d-tiles-renderer, Apache-2.0) numa vista à parte, com a atribuição do Google na tela, usando a chave da Map Tiles API do próprio jogador. Nada é baixado, guardado ou misturado aos prédios jogáveis, que continuam vindo de dados abertos (D-063). A chave nunca vai para o repositório.
+
+## D-072 · Carros e pessoas: PBR em vez de modelos baixados
+Não há modelos realistas de carros e pessoas brasileiros com licença livre e download automatizável (os pacotes CC0 conhecidos — Kenney, Quaternius — são estilizados). Os modelos procedurais da Fase 11 ganharam materiais físicos (verniz, vidro, cromo, borracha) e quinas arredondadas, que com o céu HDRI dão o salto maior de realismo pelo menor custo.

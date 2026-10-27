@@ -19,6 +19,7 @@ import { useApp } from '../../app/store';
 import { GRUPOS, TERR_CELL, TERR_RES } from '../../sim/city/territorio';
 import { BUILD_HALF } from '../../world/constants';
 import { estiloRegional } from './estilos';
+import { usePrediosReais } from './prediosReaisEstado';
 
 const VIDRO = ['#7b93a8', '#5f7a8c', '#8aa1a8', '#a7b6bf', '#6d8a99'];
 const GALPAO = ['#c8c4bc', '#a8b0b4', '#d0c9b8', '#9fa8a0', '#b9c2c9'];
@@ -69,6 +70,7 @@ export function Edificios({ hm }: { hm: Heightmap }) {
   const wv = useGame((s) => s.worldVersion);
   const camada = useGame((s) => s.camada);
   const daltonico = useApp((s) => s.daltonico);
+  const reaisProntos = usePrediosReais((s) => s.pronto);
 
   const uniforms = useMemo(() => ({ uNoite: { value: 0 }, uTempo: { value: 0 }, uCeu: { value: new THREE.Color() }, uCamada: { value: 0 } }), []);
   const mats = useMemo(() => ({
@@ -92,7 +94,7 @@ export function Edificios({ hm }: { hm: Heightmap }) {
 
   // sv/wv: o estado vive em `mundo` (mutável); as versões disparam a remontagem
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dados = useMemo(() => montar(camada, daltonico), [sv, wv, camada, daltonico]);
+  const dados = useMemo(() => montar(camada, daltonico, reaisProntos), [sv, wv, camada, daltonico, reaisProntos]);
   const capacidade = useMemo(() => {
     const cap: Record<Parte, number> = {} as Record<Parte, number>;
     for (const k of Object.keys(dados) as Parte[]) cap[k] = Math.max(64, 2 ** Math.ceil(Math.log2(dados[k].mat.length + 1)));
@@ -166,7 +168,7 @@ function territorioIdx(_st: ArrayLike<number>, o: number): number {
   return cj * TERR_RES + ci;
 }
 
-function corCamada(camada: Camada, st: ArrayLike<number>, o: number, c: THREE.Color, alto: boolean): THREE.Color | null {
+export function corCamada(camada: Camada, st: ArrayLike<number>, o: number, c: THREE.Color, alto: boolean): THREE.Color | null {
   const flags = st[o + 5];
   switch (camada) {
     case 'agua': return c.set(flags & FLAG.AGUA ? '#3fa9f5' : '#ff4d4d');
@@ -193,7 +195,7 @@ function corCamada(camada: Camada, st: ArrayLike<number>, o: number, c: THREE.Co
   }
 }
 
-function montar(camada: Camada, alto: boolean): Record<Parte, Dados> {
+function montar(camada: Camada, alto: boolean, reaisProntos: boolean): Record<Parte, Dados> {
   const out = Object.fromEntries((['corpo', 'telhado', 'caixa', 'toldo', 'muro', 'chamine', 'mastro', 'lanca'] as Parte[]).map((k) => [k, { mat: [], cor: [] } as Dados])) as Record<Parte, Dados>;
   out.corpo.fac = [];
   const L = mundo.lots, S = mundo.lotState;
@@ -249,7 +251,11 @@ function montar(camada: Camada, alto: boolean): Record<Parte, Dados> {
     else cor = new THREE.Color(GALPAO[Math.floor(look * GALPAO.length * 4.1) % GALPAO.length]);
     if (camadaAtiva) cor = corCamada(camada, S, o, cTmp, alto)!.clone();
 
+    // Fase 12: o corpo e o telhado dos prédios reais saem da planta verdadeira (PrediosReais)
+    const plantaReal = real && reaisProntos;
+
     if (prog < 1) {
+      if (plantaReal) continue;
       const hObra = Math.max(1.2, H * Math.min(1, prog * 1.15));
       push('corpo', 0, y0, lz, W, hObra + 0.6, D, ang, x, z, camadaAtiva ? cor : '#9a958c');
       out.corpo.fac!.push(4, a.peDireito, seed, 0);
@@ -262,17 +268,25 @@ function montar(camada: Camada, alto: boolean): Record<Parte, Dados> {
       continue;
     }
 
-    push('corpo', 0, y0, lz, W, H + 0.6, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
-    const estiloNum = a.estilo === 'casa' ? 0 : a.estilo === 'predio' ? 1 : a.estilo === 'vidro' ? 2 : 3;
     const loja = a.zone === Zone.Comercial && a.level <= 2 ? 1 : 0;
-    out.corpo.fac!.push(estiloNum, a.peDireito, seed, abandonado ? -1 : loja);
+    if (!plantaReal) {
+      push('corpo', 0, y0, lz, W, H + 0.6, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
+      const estiloNum = a.estilo === 'casa' ? 0 : a.estilo === 'predio' ? 1 : a.estilo === 'vidro' ? 2 : 3;
+      out.corpo.fac!.push(estiloNum, a.peDireito, seed, abandonado ? -1 : loja);
+    }
     const topo = y0 + H + 0.6;
 
     if (camadaAtiva) continue;
 
     // telhado / laje
     const telha = a.telhado === 'telha' || (a.estilo === 'casa' && a.telhado !== 'galpao' && ((look * 29.7) % 1) < E.telhaEmCasas);
-    if (telha) {
+    if (plantaReal) {
+      // casa de máquinas e reservatório de concreto na laje dos prédios (casas reais têm telhado próprio)
+      if (andares > 3 && a.telhado !== 'galpao') {
+        push('corpo', (look - 0.5) * W * 0.25, topo - 0.2, lz, Math.min(7, W * 0.32), 3.2, Math.min(6, D * 0.3), ang, x, z, '#8f8a80');
+        out.corpo.fac!.push(5, 3, seed, 0);
+      } else if (andares <= 3 && a.estilo === 'casa' && look > 0.55) push('caixa', (look - 0.5) * (W - 3) * 0.6, topo, lz, 1.5, 1.2, 1.5, ang, x, z, '#1f63b5');
+    } else if (telha) {
       push('telhado', 0, topo, lz, W + 0.7, Math.max(1.4, W * 0.24 * E.inclinacao), D + 0.7, ang, x, z, E.telhas[Math.floor(look * 40) % E.telhas.length]);
     } else if (a.telhado === 'galpao') {
       push('telhado', 0, topo, lz, D + 0.6, Math.max(1.6, W * 0.12), W + 0.6, ang, x, z, look < 0.5 ? '#c3c7c9' : '#7f9bb3', Math.PI / 2);
@@ -292,7 +306,7 @@ function montar(camada: Camada, alto: boolean): Record<Parte, Dados> {
     }
 
     // muro chapiscado das casas
-    if (a.zone === Zone.ResBaixa) {
+    if (a.zone === Zone.ResBaixa && !plantaReal) {
       const corMuro = E.muros[Math.floor(look * 50) % E.muros.length];
       const yM = baseY - 0.4;
       const hM = 1.9;

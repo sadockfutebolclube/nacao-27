@@ -36,6 +36,12 @@ export const CidadeReal = z.object({
   /** [x, z, ângulo×1000, largura, profundidade, andares, tipo, aresta, índice do nome (−1 = sem nome)] por prédio */
   predios: z.array(z.number()),
   nomesPredios: z.array(z.string()),
+  /**
+   * Fase 12 — planta real de cada prédio, na mesma ordem de `predios`: Int16 em base64 com n e depois
+   * n×(dx, dz) em decímetros a partir do centro, eixos do mundo, anel anti-horário visto de cima;
+   * n = 0 quando a planta é o próprio retângulo (casas de quadra dividida, por exemplo).
+   */
+  contornos: z.string().optional(),
   estat: z.object({ predios: z.number(), comAndares: z.number(), vias: z.number(), km: z.number() }),
 });
 export type CidadeReal = z.infer<typeof CidadeReal>;
@@ -48,6 +54,45 @@ export interface PredioReal { x: number; z: number; angle: number; w: number; d:
 export function predio(c: CidadeReal, i: number): PredioReal {
   const p = c.predios, o = i * CAMPOS_PREDIO;
   return { x: p[o], z: p[o + 1], angle: p[o + 2] / 1000, w: p[o + 3], d: p[o + 4], andares: p[o + 5], tipo: p[o + 6], aresta: p[o + 7], nome: p[o + 8] >= 0 ? c.nomesPredios[p[o + 8]] : null };
+}
+
+const cacheContornos = new WeakMap<CidadeReal, { v: Int16Array; ini: Int32Array }>();
+
+/**
+ * Planta real do prédio `i` em coordenadas do mundo (anel anti-horário visto de cima), ou o retângulo
+ * orientado quando o arquivo não traz contorno.
+ */
+export function contorno(c: CidadeReal, i: number): [number, number][] {
+  const p = predio(c, i);
+  let cc = cacheContornos.get(c);
+  if (!cc && c.contornos) {
+    const b = deBase64(c.contornos);
+    const v = new Int16Array(b.buffer, b.byteOffset, b.byteLength / 2);
+    const n = c.predios.length / CAMPOS_PREDIO;
+    const ini = new Int32Array(n);
+    for (let k = 0, o = 0; k < n && o < v.length; k++) { ini[k] = o; o += 1 + v[o] * 2; }
+    cc = { v, ini };
+    cacheContornos.set(c, cc);
+  }
+  if (cc) {
+    const o = cc.ini[i], n = cc.v[o];
+    if (n >= 3) {
+      const out: [number, number][] = [];
+      for (let k = 0; k < n; k++) out.push([p.x + cc.v[o + 1 + k * 2] / 10, p.z + cc.v[o + 2 + k * 2] / 10]);
+      return out;
+    }
+  }
+  return retangulo(p);
+}
+
+/** Retângulo orientado do prédio (anti-horário visto de cima). +X local = (cos a, −sin a), +Z local = (sin a, cos a), como nos lotes. */
+export function retangulo(p: PredioReal): [number, number][] {
+  const c0 = Math.cos(p.angle), s0 = Math.sin(p.angle), hw = p.w / 2, hd = p.d / 2;
+  const canto = (lx: number, lz: number): [number, number] => [p.x + c0 * lx + s0 * lz, p.z - s0 * lx + c0 * lz];
+  const r = [canto(-hw, -hd), canto(hw, -hd), canto(hw, hd), canto(-hw, hd)];
+  let a = 0;
+  for (let k = 0; k < 4; k++) { const [x1, z1] = r[k], [x2, z2] = r[(k + 1) % 4]; a += x1 * z2 - x2 * z1; }
+  return a > 0 ? r.reverse() : r;
 }
 
 /** base64 → bytes (navegador e Node). */

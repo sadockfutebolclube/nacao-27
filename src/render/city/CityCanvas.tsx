@@ -15,6 +15,7 @@ import { CameraRig } from './Camera';
 import { CeuLuz } from './CeuLuz';
 import { ClimaFx } from './ClimaFx';
 import { Edificios } from './Edificios';
+import { PrediosReais } from './PrediosReais';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -31,7 +32,7 @@ function PosProcesso() {
   // a composição é remontada por nível (o EffectComposer não lida bem com passes que somem)
   if (nivel === 'baixa') return (
     <EffectComposer key="baixa" multisampling={0} enableNormalPass={false}>
-      <ToneMapping mode={ToneMappingMode.AGX} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.3} darkness={0.55} />
     </EffectComposer>
   );
@@ -40,7 +41,7 @@ function PosProcesso() {
       <Bloom mipmapBlur intensity={0.75} luminanceThreshold={1.05} luminanceSmoothing={0.2} />
       <HueSaturation saturation={0.08} />
       {tilt ? <TiltShift2 blur={0.22} taper={0.55} /> : <></>}
-      <ToneMapping mode={ToneMappingMode.AGX} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.3} darkness={0.55} />
       <SMAA />
     </EffectComposer>
@@ -51,7 +52,7 @@ function PosProcesso() {
       <Bloom mipmapBlur intensity={0.85} luminanceThreshold={1.05} luminanceSmoothing={0.2} />
       <HueSaturation saturation={0.08} />
       {tilt ? <TiltShift2 blur={0.22} taper={0.55} /> : <></>}
-      <ToneMapping mode={ToneMappingMode.AGX} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.3} darkness={0.55} />
       <SMAA />
     </EffectComposer>
@@ -85,6 +86,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         <Agua hm={hm} />
         <Vias hm={hm} />
         <Edificios hm={hm} />
+        <PrediosReais />
         <Equipamentos hm={hm} />
         <Arvores hm={hm} />
         <Favelas hm={hm} />

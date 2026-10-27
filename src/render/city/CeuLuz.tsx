@@ -11,6 +11,7 @@ import { ambiente, atualizarAmbiente, diaDoAno, direcaoLuz } from './ambiente';
 import { aplicarClima } from './climaVisual';
 import { alvoCamera } from './Camera';
 import { SOMBRA, useNivel } from '../qualidade';
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 
 /** Relógio visual: um dia completo ≈ 6 min a 1× (desacoplado do calendário, como no Cities). */
 const HORAS_POR_SEGUNDO = 24 / 360;
@@ -30,6 +31,27 @@ export function CeuLuz({ latitude }: { latitude: number }) {
     scene.fog = fog;
     return () => { scene.fog = null; };
   }, [scene, fog]);
+
+  // Fase 12: céu HDRI real (Poly Haven, CC0) como luz ambiente e reflexo de vidro, lataria e água
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    let vivo = true;
+    let env: THREE.Texture | null = null;
+    const pmrem = new THREE.PMREMGenerator(gl);
+    new HDRLoader().load(`${import.meta.env.BASE_URL}assets/hdri/kloofendal_48d_partly_cloudy_puresky.hdr`, (hdr) => {
+      if (!vivo) { hdr.dispose(); return; }
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      env = pmrem.fromEquirectangular(hdr).texture;
+      hdr.dispose();
+      scene.environment = env;
+    }, undefined, () => { /* sem HDRI: fica a luz hemisférica */ });
+    return () => {
+      vivo = false;
+      if (scene.environment === env) scene.environment = null;
+      env?.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
 
   useFrame((_, dt) => {
     const g = useGame.getState();
@@ -65,10 +87,13 @@ export function CeuLuz({ latitude }: { latitude: number }) {
       L.intensity = ambiente.intensidadeSol;
       cam.far = 3500;
     }
+    // com o HDRI, a hemisférica só tinge (pôr do sol, noite) e o céu real faz o grosso da luz ambiente
+    const comEnv = scene.environment !== null;
+    scene.environmentIntensity = comEnv ? (0.06 + 0.84 * (1 - ambiente.noite)) * (1 - 0.35 * Math.min(1, ambiente.densidadeExtra * 1500)) : 1;
     if (hemi.current) {
       hemi.current.color.copy(ambiente.hemiCeu);
       hemi.current.groundColor.set('#5c5038').lerp(new THREE.Color('#141820'), ambiente.noite);
-      hemi.current.intensity = ambiente.intensidadeHemi;
+      hemi.current.intensity = ambiente.intensidadeHemi * (comEnv ? 0.4 : 1);
     }
     fog.color.copy(ambiente.corNevoa);
     fog.density = 0.00016 + 0.00008 * ambiente.noite + ambiente.densidadeExtra;

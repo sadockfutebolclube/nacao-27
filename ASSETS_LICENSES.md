@@ -33,7 +33,7 @@
 three (MIT), @react-three/fiber (MIT), @react-three/drei (MIT), @react-three/postprocessing (MIT), postprocessing (Zlib), react/react-dom (MIT), zustand (MIT), zod (MIT), idb-keyval (Apache-2.0), simplex-noise (MIT), tailwindcss (MIT), vite (MIT), vitest (MIT), d3-geo (ISC, só no script de dados), tsx (MIT), typescript (Apache-2.0).
 
 ## Planejado (conferir a licença de cada pacote ao importar)
-Kenney (CC0), Quaternius (CC0), Poly Haven (CC0), ambientCG (CC0), Freesound (CC0/CC-BY — atribuir aqui).
+Kenney (CC0), Quaternius (CC0), Freesound (CC0/CC-BY — atribuir aqui).
 
 ## Dados geográficos das cidades reais (Fase 11)
 | Dado | Fonte | Licença | Atribuição exigida |
@@ -42,4 +42,16 @@ Kenney (CC0), Quaternius (CC0), Poly Haven (CC0), ambientCG (CC0), Freesound (CC
 | Contornos de prédios detectados por satélite (onde o OSM não tem) | Microsoft Global ML Building Footprints (`scripts/lib/msbuildings.ts`) | ODbL 1.0 | “© Microsoft” — exibida no jogo |
 | Relevo | Tiles Terrarium (Mapzen/Tilezen no AWS Open Data: SRTM, GMTED2010, ETOPO1) | domínio público / atribuição | “SRTM/Mapzen” — exibida no jogo |
 
-Os arquivos derivados em `public/data/cidades/` são uma base derivada do OpenStreetMap e seguem a ODbL. O Google Maps/3D Tiles **não** é usado: os termos do Google proíbem extrair ou armazenar a geometria.
+Os arquivos derivados em `public/data/cidades/` são uma base derivada do OpenStreetMap e seguem a ODbL. Nenhuma geometria do Google é extraída ou armazenada: os termos do Google proíbem (ver Vista Google 3D abaixo).
+
+## Materiais e céu fotográficos (Fase 12)
+| Asset | Fonte | Licença |
+|---|---|---|
+| Fachadas Facade001, 005, 006, 014, 017, 018A/B, 019A/B, 020A/B; Plaster001, PaintedPlaster017, Concrete034; RoofingTiles006, 013A, 014A; Gravel043; Grass004, Ground103, Rock064; Asphalt033; PavingStones046, 128 (`public/assets/materiais/`, reduzidos a 1024/512 px) | ambientCG — https://ambientcg.com | CC0 1.0 |
+| Céu HDRI kloofendal_48d_partly_cloudy_puresky (`public/assets/hdri/`) | Poly Haven — https://polyhaven.com | CC0 1.0 |
+
+## Vista Google 3D (Fase 12, opcional)
+| Item | Fonte | Licença/termos |
+|---|---|---|
+| Leitor de 3D Tiles | `3d-tiles-renderer` (NASA-AMMOS) | Apache-2.0 |
+| Photorealistic 3D Tiles | Google Map Tiles API, com a chave do jogador | Termos do Google Maps Platform: só exibição ao vivo, atribuição do Google na tela, sem baixar/guardar/extrair. Nada do Google fica no repositório. |

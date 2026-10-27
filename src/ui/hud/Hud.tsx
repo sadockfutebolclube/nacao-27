@@ -1,5 +1,5 @@
 /** HUD da Visão Cidade: tudo em PT-BR, cara de jogo de estratégia (painéis translúcidos, números condensados). */
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { fmt, useApp } from '../../app/store';
 import type { SiglaUF } from '../../data/schemas';
 import { cidadao, bairroEm } from '../../data/nomes';
@@ -27,6 +27,9 @@ import { BarraLinha, FavelaInfo, PainelHabitacao, PainelSeguranca, PainelTranspo
 import { TIPOS_LINHA } from '../../sim/city/transporte';
 import { GRUPOS as GRUPOS_CRIME, TERR_CELL, TERR_RES } from '../../sim/city/territorio';
 import { BUILD_HALF } from '../../world/constants';
+
+/** Fase 12: tiles fotorrealistas do Google ao vivo (biblioteca carregada só quando abre) */
+const VistaGoogle3D = lazy(() => import('../google3d/VistaGoogle3D'));
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
@@ -261,8 +264,16 @@ function PainelVisual() {
   const luzSodio = useGame((s) => s.luzSodio);
   const tilt = useGame((s) => s.tiltShift);
   const set = useGame((s) => s.set);
+  const [google, setGoogle] = useState(false);
+  useEffect(() => {
+    if (!google) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setGoogle(false); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [google]);
   return (
     <div className="painel rounded-xl p-3 pointer-events-auto surgir w-80 text-sm">
+      {google && <Suspense fallback={null}><VistaGoogle3D fechar={() => setGoogle(false)} /></Suspense>}
       <div className="flex items-center justify-between">
         <span className="text-suave text-xs">Hora do dia</span>
         <label className="text-xs flex items-center gap-1.5"><input type="checkbox" checked={horaAuto} onChange={(e) => { if (!e.target.checked) set({ hora: ambiente.hora }); set({ horaAuto: e.target.checked }); }} /> automática</label>
@@ -282,6 +293,9 @@ function PainelVisual() {
         <button onClick={() => set({ tiltShift: !tilt })} className={`flex-1 px-2 py-1.5 rounded text-xs ${tilt ? 'bg-acento text-tinta font-semibold' : 'bg-white/5'}`}>Modo maquete (tilt-shift)</button>
         <button onClick={() => set({ modoFoto: true })} className="flex-1 px-2 py-1.5 rounded text-xs bg-white/5 flex items-center justify-center gap-1"><Icone nome="camera" tamanho={14} /> Modo foto (H)</button>
       </div>
+      <button onClick={() => setGoogle(true)} className="w-full mt-2 px-2 py-1.5 rounded text-xs bg-white/5 hover:bg-white/10" title="Photorealistic 3D Tiles do Google, ao vivo (precisa de chave da Map Tiles API)">
+        Vista Google 3D (cidade real, ao vivo)
+      </button>
     </div>
   );
 }

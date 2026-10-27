@@ -73,6 +73,10 @@ Outros comandos:
 - Clique num prédio para ver o nome e o tipo; demolir um prédio real é permanente.
 - Para gerar outros municípios: baixe os extratos regionais da Geofabrik em `data/osm-cache/` (o script usa o Overpass se não estiverem lá) e rode `npm run fetch-cidades -- <código IBGE>`.
 
+### Visual realista e Vista Google 3D (Fase 12)
+- Prédios reais com a planta verdadeira, fachadas fotográficas, telhas, laje e janelas que acendem à noite; céu HDRI, asfalto, calçadas e terreno fotográficos (materiais CC0 do ambientCG e do Poly Haven, em `public/assets/`; para baixar de novo: `npm run fetch-assets` e depois `scripts/comprimir-materiais.ps1`).
+- **Vista Google 3D** (painel Visual): mostra a cidade nos Photorealistic 3D Tiles do Google, ao vivo. Precisa de uma chave sua da Map Tiles API (Google Cloud, com faturamento): ponha `VITE_GOOGLE_MAPS_KEY=...` no `.env.local` ou digite na tela (fica só no navegador). O jogo não baixa nem guarda nada do Google.
+
 ### Primeiros passos, opções e conquistas (Fase 10)
 - Na primeira partida, a assessora (ou o assessor, no Planalto) explica o que fazer e avança sozinha quando você faz. Recolha, desligue ou recomece em **Opções**.
 - **Opções** (menu ou Esc): tamanho da interface, daltonismo, alto contraste, reduzir movimento, qualidade gráfica (automática por padrão) e som.

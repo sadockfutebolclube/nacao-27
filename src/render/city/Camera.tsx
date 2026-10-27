@@ -34,6 +34,8 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
 
   useEffect(() => {
     controlsRef = ref.current;
+    // gancho de depuração só em desenvolvimento (screenshots com câmera posicionada)
+    if (import.meta.env.DEV) (window as unknown as { __n27cam: unknown }).__n27cam = ref.current;
     const down = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       teclas.current.add(e.key.toLowerCase());

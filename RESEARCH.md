@@ -149,3 +149,9 @@ Kenney.nl (CC0), Quaternius (CC0), Poly Haven (CC0: HDRIs, texturas, modelos), a
 - **Microsoft Global ML Building Footprints** (ODbL): índice `dataset-links.csv`, um arquivo por quadkey de nível 9 (Brasil: 1.154 arquivos; Aracaju 21 MB, Rio 170 MB, São Paulo 147 MB compactados). Altura quase sempre desconhecida no Brasil.
 - **Cobertura de prédios no OSM** é desigual: Aracaju tinha ~600 prédios mapeados nos 3 × 3 km centrais; o satélite acrescentou ~8.400 contornos.
 - **Relevo**: Terrarium z14 (~9,5 m/px no equador).
+
+## 13. Fase 12 — visual realista
+- **ambientCG** (https://ambientcg.com, CC0): Facade001/005/006/014/017/018/019/020, Plaster001, PaintedPlaster017, Concrete034, RoofingTiles006/013A/014A, Gravel043, Grass004, Ground103, Rock064, Asphalt033, PavingStones046/128 — pacotes 1K-JPG (cor, NormalGL, rugosidade, emissão quando há). Facade001/005/006 não têm mapa de emissão; as variantes B de 018/019/020 trazem as janelas acesas.
+- **Poly Haven** (https://polyhaven.com, CC0): HDRI `kloofendal_48d_partly_cloudy_puresky` (1K).
+- **Google Map Tiles API — Photorealistic 3D Tiles**: exige chave com faturamento; os termos proíbem baixar/armazenar/extrair a geometria fora do cache temporário e exigem a atribuição exibida. Leitor: `3d-tiles-renderer` 0.5.3 (NASA-AMMOS, Apache-2.0) com `GoogleCloudAuthPlugin`.
+- **Modelos de veículos/pessoas**: Kenney Car Kit e Quaternius (CC0) são estilizados; não há pacote livre realista adequado — mantidos os procedurais com PBR.

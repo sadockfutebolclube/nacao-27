@@ -716,3 +716,8 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Luz** (`CeuLuz.tsx`): `CSM` com `CASCATAS` e `MAPA_CASCATA` por nível, `maxFar` 1.800 m, `ligarCSM(csm, id, material)` (varredura a cada 0,5 s para materiais novos), luzes do CSM com a cor e a intensidade do sol; `SEM_CSM` (dev) volta à luz única.
 - **F3** (`estadoDebug.ts`): `Contagem` ganha `solta`, `predioDeslocado`, `predioRemovido`, `minirrotatoria`; `Problema.tipo` ganha `solta` e `predio`.
 - **Testes** (`tests/fase21.test.ts`).
+
+## Fase 23 — passo em orçamento, LOD e F4
+- `step()` agenda o trabalho do dia (`trabalhoPesado`) em `Orcamento` e roda até `orcamentoMs` (padrão do worker: 4 ms). O worker termina a fila em fatias entre os ticks. Fases: redes → serviços sociais → território → favelas → (semana) favelas + transporte → poluição → valor do solo → demanda → crescimento → agregados.
+- LOD: lotes fora do foco da câmera atualizam valor do solo e crime a cada 4º dia; o modo síncrono (`orcamentoMs = Infinity`) é completo.
+- F4 mostra passo, fila e custo por fase; `npm run medir-simulacao` mede os dois modos.

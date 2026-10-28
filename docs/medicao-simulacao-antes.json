@@ -1,0 +1,115 @@
+{
+ "predios": 152698,
+ "lotes": 139264,
+ "montagemMs": 4032,
+ "dias": 60,
+ "passoDiario": {
+  "n": 60,
+  "media": 1178.82,
+  "p90": 7817.69,
+  "max": 8159.7
+ },
+ "tickLeve": {
+  "n": 180,
+  "media": 0,
+  "p90": 0,
+  "max": 0.07
+ },
+ "pioresTicks": [
+  8159.7,
+  8030.9,
+  8017.3
+ ],
+ "fases": {
+  "transporte.semanal": {
+   "n": 8,
+   "media": 7692.18,
+   "p90": 8004.77,
+   "max": 8004.77
+  },
+  "redesDeServico": {
+   "n": 60,
+   "media": 61.01,
+   "p90": 70.98,
+   "max": 84.39
+  },
+  "valorDoSolo": {
+   "n": 60,
+   "media": 40.48,
+   "p90": 46.38,
+   "max": 57.17
+  },
+  "servicosSociais.atualizar": {
+   "n": 60,
+   "media": 13.86,
+   "p90": 16.52,
+   "max": 27.66
+  },
+  "camposDePoluicao": {
+   "n": 60,
+   "media": 11.66,
+   "p90": 13.54,
+   "max": 18.39
+  },
+  "crescimento": {
+   "n": 60,
+   "media": 9.9,
+   "p90": 10.99,
+   "max": 11.75
+  },
+  "territorio.atualizar": {
+   "n": 60,
+   "media": 6.08,
+   "p90": 7.46,
+   "max": 33.54
+  },
+  "calcularDemanda": {
+   "n": 60,
+   "media": 5.09,
+   "p90": 5.44,
+   "max": 8.28
+  },
+  "contabilizarAgregados": {
+   "n": 60,
+   "media": 1.95,
+   "p90": 2.14,
+   "max": 3.2
+  },
+  "passoEventos": {
+   "n": 60,
+   "media": 1.27,
+   "p90": 1.51,
+   "max": 4.64
+  },
+  "favelas.semanal": {
+   "n": 8,
+   "media": 5.44,
+   "p90": 11.2,
+   "max": 11.2
+  },
+  "fechamentoMensal": {
+   "n": 2,
+   "media": 20.47,
+   "p90": 22.95,
+   "max": 22.95
+  },
+  "verificarNoticias": {
+   "n": 60,
+   "media": 0.38,
+   "p90": 0.42,
+   "max": 7.03
+  },
+  "favelas.diario": {
+   "n": 60,
+   "media": 0.01,
+   "p90": 0.02,
+   "max": 0.22
+  },
+  "atualizarSnapshotEstado": {
+   "n": 0,
+   "media": 0,
+   "p90": 0,
+   "max": 0
+  }
+ }
+}

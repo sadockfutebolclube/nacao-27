@@ -11,6 +11,7 @@ import type { EstadoInit } from '../../sim/estado/calibracao';
 import type { SimInit } from '../../sim/protocol';
 import { CityCanvas } from '../../render/city/CityCanvas';
 import { PainelDebugMapa } from '../../ui/PainelDebugMapa';
+import { PainelPerformance } from '../../ui/PainelPerformance';
 import { Hud } from '../../ui/hud/Hud';
 import { pontoInicial } from '../../world/inicio';
 import { generateTerrain, type Heightmap } from '../../world/terrain';
@@ -108,6 +109,7 @@ export function GameScreen() {
     <>
       {hm && init && <CityCanvas hm={hm} latitude={init.latitude} inicio={inicio} />}
       <PainelDebugMapa />
+      <PainelPerformance />
       {hm && pronto && <Hud />}
       {(!hm || !pronto) && <LoadingScreen etapa={!hm ? 'Levantando o relevo e a mata nativa…' : 'Abrindo o Diário Oficial…'} />}
     </>

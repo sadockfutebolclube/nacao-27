@@ -7,7 +7,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { MapControls as MapControlsImpl } from 'three-stdlib';
-import { useGame } from '../../sim/bridge';
+import { enviarFoco, useGame } from '../../sim/bridge';
 import { BUILD_HALF } from '../../world/constants';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 
@@ -75,7 +75,16 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
     };
   }, [ferramenta]);
 
+  const foco = useRef({ x: 1e9, z: 1e9, raio: 0, t: 0 });
   useFrame((_, dt) => {
+    // Fase 23: avisa o worker onde a câmera olha (a cada 0,5 s, se andou > 150 m ou o zoom mudou o raio) — LOD da simulação
+    const agora = performance.now();
+    if (agora - foco.current.t > 500 && ref.current) {
+      foco.current.t = agora;
+      const a = ref.current.target;
+      const raio = Math.round(Math.min(3000, Math.max(900, camera.position.distanceTo(a) * 3)) / 200) * 200;
+      if (Math.hypot(a.x - foco.current.x, a.z - foco.current.z) > 150 || raio !== foco.current.raio) { foco.current.x = a.x; foco.current.z = a.z; foco.current.raio = raio; enviarFoco(a.x, a.z, raio); }
+    }
     const c = ref.current;
     if (!c) return;
     const k = teclas.current;

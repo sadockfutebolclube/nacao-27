@@ -26,7 +26,8 @@ import { Copernicus } from './lib/copernicus.ts';
 import { limitarInclinacao, removerOutliers, suavizarGaussiano } from '../src/world/relevo.ts';
 import { createNoise2D } from 'simplex-noise';
 import { larguraVia } from '../src/world/roads.ts';
-import { extrairRegiao, REGIAO_UF, type AlvoCidade } from './lib/geofabrik.ts';
+import { exportarCidade } from './exportar-cidade.ts';
+import { alvosDesatualizados, extrairRegiao, REGIAO_UF, type AlvoCidade } from './lib/geofabrik.ts';
 import { prediosMS } from './lib/msbuildings.ts';
 import { existsSync } from 'node:fs';
 
@@ -574,7 +575,11 @@ function montarCaminhos(els: ElOSM[], xz: (lat: number, lon: number) => P) {
 
 interface Mun { ibge: string; nome: string; lat: number; lon: number; capital: boolean; uf: string }
 
+/** Cronômetro das etapas da geração: imprime o tempo desde a marca anterior (Fase 23: onde vão os minutos). */
+const cronometro = () => { let t = performance.now(); const total = t; const etapas: [string, number][] = []; const f = (nome: string) => { const n = performance.now(); etapas.push([nome, n - t]); console.log(`    ⏱ ${nome}: ${((n - t) / 1000).toFixed(1)} s`); t = n; }; f.resumo = () => { console.log(`    ⏱ total da cidade: ${((performance.now() - total) / 1000).toFixed(1)} s`); return etapas; }; return f; };
+
 async function gerar(m: Mun, terr: Terrarium) {
+  const marca = cronometro();
   const { xz, latlon } = projetor(m.lat, m.lon);
   const [la0, lo0] = latlon(-BUILD, BUILD), [la1, lo1] = latlon(BUILD, -BUILD);
   const bbB = `${la0.toFixed(5)},${lo0.toFixed(5)},${la1.toFixed(5)},${lo1.toFixed(5)}`;
@@ -597,6 +602,7 @@ async function gerar(m: Mun, terr: Terrarium) {
   await sleep(1000);
   const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub|coastline)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
 
+  marca('leitura dos caches do OSM');
   // ── relevo (Fase 19: Copernicus GLO-30 filtrado; Terrarium só onde faltar ladrilho)
   const alt = new Float32Array(RES * RES);
   const cop = new Copernicus(join(ROOT, 'data', 'cache', 'dem'));
@@ -657,6 +663,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     alturas[k] = Math.round(Math.max(-30, Math.min(3200, h)) * 10);
   }
 
+  marca('relevo (DEM, filtros, água do OSM)');
   // ── vegetação (32 m)
   const verde = new Uint8Array(VERDE_RES * VERDE_RES);
   for (const e of natureza) {
@@ -670,6 +677,19 @@ async function gerar(m: Mun, terr: Terrarium) {
   const usos: { p: P[]; tipo: number }[] = [];
   for (const e of vias) if (e.tags?.landuse && e.geometry && e.geometry.length > 3) usos.push({ p: e.geometry.map((g) => xz(g.lat, g.lon)), tipo: e.tags.landuse === 'industrial' ? 2 : e.tags.landuse === 'residential' ? 0 : 1 });
 
+  // Fase 23: caixa envolvente de cada polígono — o teste ponto-no-polígono só roda onde a caixa contém o ponto
+  const usoCx = new Float64Array(usos.length * 4);
+  usos.forEach((u, i) => {
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (const [px, pz] of u.p) { if (px < x0) x0 = px; if (px > x1) x1 = px; if (pz < z0) z0 = pz; if (pz > z1) z1 = pz; }
+    usoCx[i * 4] = x0; usoCx[i * 4 + 1] = x1; usoCx[i * 4 + 2] = z0; usoCx[i * 4 + 3] = z1;
+  });
+  /** tipo do primeiro uso do solo (na ordem do OSM) que contém o ponto, ou -1 */
+  const usoEm = (x: number, z: number) => {
+    for (let i = 0; i < usos.length; i++) if (x >= usoCx[i * 4] && x <= usoCx[i * 4 + 1] && z >= usoCx[i * 4 + 2] && z <= usoCx[i * 4 + 3] && dentro(usos[i].p, x, z)) return usos[i].tipo;
+    return -1;
+  };
+  marca('vegetação e uso do solo');
   // ── ruas
   const ways = vias.filter((e) => e.type === 'way' && e.tags?.highway && e.geometry && e.nodes && e.geometry.length >= 2);
   const g = montarVias(ways, xz);
@@ -683,8 +703,8 @@ async function gerar(m: Mun, terr: Terrarium) {
   console.log(`    caminhos: ${caminhos.cont.reduce((a, b) => a + b, 0)} (escadas ${caminhos.cont[0]}, calçadas ${caminhos.cont[1]}, trilhas ${caminhos.cont[2]}, estradinhas ${caminhos.cont[3]}, ciclovias ${caminhos.cont[4]}, calçadões ${caminhos.cont[5]}), ${caminhos.pontos} pontos`);
   await writeFile(join(ROOT, 'data', 'cache', 'rotatorias-descartadas.json'), JSON.stringify(rot.descartadas, null, 1));
   // amostras das arestas para achar a rua mais próxima de cada prédio
-  const amostras = new Map<string, { x: number; z: number; e: number; tx: number; tz: number }[]>();
   const nA = g.arestas.length / 8;
+  const amX: number[] = [], amZ: number[] = [], amE: number[] = [], amTx: number[] = [], amTz: number[] = [];
   for (let k = 0; k < nA; k++) {
     const a = g.arestas[k * 8] - 1, b = g.arestas[k * 8 + 1] - 1, cx = g.arestas[k * 8 + 2], cz = g.arestas[k * 8 + 3];
     const ax = g.nos[a * 2], az = g.nos[a * 2 + 1], bx = g.nos[b * 2], bz = g.nos[b * 2 + 1];
@@ -692,10 +712,21 @@ async function gerar(m: Mun, terr: Terrarium) {
     for (let s = 0; s <= n; s++) {
       const t = s / n, u = 1 - t;
       const x = u * u * ax + 2 * u * t * cx + t * t * bx, z = u * u * az + 2 * u * t * cz + t * t * bz;
-      const key = `${Math.floor(x / 40)},${Math.floor(z / 40)}`;
       const tgx = 2 * u * (cx - ax) + 2 * t * (bx - cx), tgz = 2 * u * (cz - az) + 2 * t * (bz - cz), tl = Math.hypot(tgx, tgz) || 1;
-      (amostras.get(key) ?? amostras.set(key, []).get(key)!).push({ x, z, e: k + 1, tx: tgx / tl, tz: tgz / tl });
+      amX.push(x); amZ.push(z); amE.push(k + 1); amTx.push(tgx / tl); amTz.push(tgz / tl);
     }
+  }
+  // Fase 23: grade CSR de células de 40 m (índice numérico, sem string por consulta); a ordem dentro da célula é a de inserção,
+  // então o desempate "primeira amostra mais próxima" é o mesmo de antes
+  const GC = 40, GN = Math.ceil((2 * BUILD + 400) / GC) + 4, GOFF = Math.floor(BUILD / GC) + 3;
+  const gIni = new Int32Array(GN * GN + 1), gItens = new Int32Array(amX.length);
+  const gCel = (x: number, z: number) => { const i = Math.floor(x / GC) + GOFF, j = Math.floor(z / GC) + GOFF; return i >= 0 && j >= 0 && i < GN && j < GN ? j * GN + i : -1; };
+  {
+    const c = new Int32Array(amX.length);
+    for (let q = 0; q < amX.length; q++) { c[q] = gCel(amX[q], amZ[q]); if (c[q] >= 0) gIni[c[q] + 1]++; }
+    for (let q = 0; q < GN * GN; q++) gIni[q + 1] += gIni[q];
+    const pos = gIni.slice(0, GN * GN);
+    for (let q = 0; q < amX.length; q++) if (c[q] >= 0) gItens[pos[c[q]]++] = q;
   }
   // Fase 21: prédio que invade a pista (centro da pista a menos de 30% da meia largura do retângulo) sai do jogo
   const hwE: number[] = [], nivelE: number[] = [];
@@ -706,35 +737,45 @@ async function gerar(m: Mun, terr: Terrarium) {
   }
   /** Pior invasão da pista (amostra de via a menos de 30% da meia largura do retângulo): devolve o empurrão que a tira, ou null. */
   const sobrePista = (x: number, z: number, a: number, w: number, d: number): { ex: number; ez: number } | null => {
-    const cu = Math.cos(a), su = Math.sin(a), rc = Math.ceil((Math.max(w, d) / 2 + 24) / 40);
-    const cx = Math.floor(x / 40), cz = Math.floor(z / 40);
+    const cu = Math.cos(a), su = Math.sin(a), rc = Math.ceil((Math.max(w, d) / 2 + 24) / GC);
+    const ci = Math.floor(x / GC) + GOFF, cj = Math.floor(z / GC) + GOFF;
     let pior: { ex: number; ez: number } | null = null, folga = 0;
-    for (let dx = -rc; dx <= rc; dx++) for (let dz = -rc; dz <= rc; dz++) for (const sm of amostras.get(`${cx + dx},${cz + dz}`) ?? []) {
-      if (nivelE[sm.e - 1]) continue; // sob viaduto ou sobre túnel o prédio pode ficar
-      const ddx = sm.x - x, ddz = sm.z - z, u = ddx * cu - ddz * su, v = ddx * su + ddz * cu;
-      const dist = Math.hypot(Math.max(Math.abs(u) - w / 2, 0), Math.max(Math.abs(v) - d / 2, 0)), lim = hwE[sm.e - 1] * 0.3;
-      if (dist < lim && lim - dist > folga) {
-        folga = lim - dist;
-        // empurra o prédio para longe da amostra, até a pista deixar de ser invadida (+ 1,2 m de folga)
-        const l = Math.hypot(ddx, ddz) || 1;
-        const quanto = (hwE[sm.e - 1] - dist) + 1.2;
-        pior = { ex: (-ddx / l) * quanto, ez: (-ddz / l) * quanto };
+    for (let dx = -rc; dx <= rc; dx++) for (let dz = -rc; dz <= rc; dz++) {
+      const i = ci + dx, j = cj + dz;
+      if (i < 0 || j < 0 || i >= GN || j >= GN) continue;
+      for (let q = gIni[j * GN + i], f = gIni[j * GN + i + 1]; q < f; q++) {
+        const sm = gItens[q], e = amE[sm] - 1;
+        if (nivelE[e]) continue; // sob viaduto ou sobre túnel o prédio pode ficar
+        const ddx = amX[sm] - x, ddz = amZ[sm] - z, u = ddx * cu - ddz * su, v = ddx * su + ddz * cu;
+        const dist = Math.hypot(Math.max(Math.abs(u) - w / 2, 0), Math.max(Math.abs(v) - d / 2, 0)), lim = hwE[e] * 0.3;
+        if (dist < lim && lim - dist > folga) {
+          folga = lim - dist;
+          // empurra o prédio para longe da amostra, até a pista deixar de ser invadida (+ 1,2 m de folga)
+          const l = Math.hypot(ddx, ddz) || 1;
+          const quanto = (hwE[e] - dist) + 1.2;
+          pior = { ex: (-ddx / l) * quanto, ez: (-ddz / l) * quanto };
+        }
       }
     }
     return pior;
   };
   const ruaProxima = (x: number, z: number) => {
-    let melhor = { d: Infinity, x: 0, z: 0, e: 0, tx: 1, tz: 0 };
-    for (let raio = 1; raio <= 4 && melhor.e === 0; raio++) {
-      const cx = Math.floor(x / 40), cz = Math.floor(z / 40);
-      for (let dx = -raio; dx <= raio; dx++) for (let dz = -raio; dz <= raio; dz++) for (const s of amostras.get(`${cx + dx},${cz + dz}`) ?? []) {
-        const d = Math.hypot(s.x - x, s.z - z);
-        if (d < melhor.d) melhor = { d, ...s };
+    let md = Infinity, mq = -1;
+    const ci = Math.floor(x / GC) + GOFF, cj = Math.floor(z / GC) + GOFF;
+    for (let raio = 1; raio <= 4 && mq < 0; raio++) {
+      for (let dx = -raio; dx <= raio; dx++) for (let dz = -raio; dz <= raio; dz++) {
+        const i = ci + dx, j = cj + dz;
+        if (i < 0 || j < 0 || i >= GN || j >= GN) continue;
+        for (let q = gIni[j * GN + i], f = gIni[j * GN + i + 1]; q < f; q++) {
+          const sm = gItens[q], d = Math.hypot(amX[sm] - x, amZ[sm] - z);
+          if (d < md) { md = d; mq = sm; }
+        }
       }
     }
-    return melhor;
+    return mq < 0 ? { d: Infinity, x: 0, z: 0, e: 0, tx: 1, tz: 0 } : { d: md, x: amX[mq], z: amZ[mq], e: amE[mq], tx: amTx[mq], tz: amTz[mq] };
   };
 
+  marca('ruas (grafo, soltas, rotatórias, caminhos)');
   // ── semáforos (no cruzamento mais perto, até 22 m) e faixas de pedestre no meio de quarteirão
   const semaforos = new Set<number>();
   const faixasPed: number[] = [];
@@ -767,6 +808,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     }
   }
 
+  marca('semáforos e travessias');
   // ── prédios
   const predios: number[] = [];
   const nomesPredios: string[] = [];
@@ -780,8 +822,8 @@ async function gerar(m: Mun, terr: Terrarium) {
     return alturas[Math.max(0, Math.min(RES - 1, j)) * RES + Math.max(0, Math.min(RES - 1, i))] / 10;
   };
   // retângulo orientado de frente para a rua mais próxima
-  const ocupado = new Map<string, P[][]>();
-  const celula = (x: number, z: number) => `${Math.floor(x / 25)},${Math.floor(z / 25)}`;
+  const ocupado = new Map<number, P[][]>();
+  const celula = (x: number, z: number) => (Math.floor(x / 25) + 4096) * 8192 + Math.floor(z / 25) + 4096;
   let deMS = 0;
   let origemMS = false;
   const adicionar = (pts: P[], tipo: number, andares: number, nome: string | null, origemOSM: boolean) => {
@@ -792,8 +834,9 @@ async function gerar(m: Mun, terr: Terrarium) {
     if (Math.abs(r.x) > BUILD - 12 || Math.abs(r.z) > BUILD - 12 || alturaEm(r.x, r.z) < 0.5) return;
     if (!origemOSM) {
       // não duplica prédio que o OSM já tem: centro dentro de algum contorno do OSM por perto
-      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (const p of ocupado.get(`${Math.floor(r.x / 25) + dx},${Math.floor(r.z / 25) + dz}`) ?? []) if (dentro(p, r.x, r.z)) return;
-      for (const u of usos) if (dentro(u.p, r.x, r.z)) { tipo = u.tipo; break; }
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (const p of ocupado.get((Math.floor(r.x / 25) + dx + 4096) * 8192 + Math.floor(r.z / 25) + dz + 4096) ?? []) if (dentro(p, r.x, r.z)) return;
+      const uso = usoEm(r.x, r.z);
+      if (uso >= 0) tipo = uso;
       // satélite sem altura: casa ou sobrado (área grande é quadra geminada, não prédio alto)
       if (andares <= 0) andares = tipo === 2 ? 1 : area < 110 ? 1 : 1 + (hashN(r.x, r.z) % 2);
     } else {
@@ -871,7 +914,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     const pts = e.geometry.slice(0, -1).map((gg) => xz(gg.lat, gg.lon));
     let tipo = tipoPredio(t.building, t.amenity, t.shop);
     const r0 = obb(pts);
-    if (t.building === 'yes' && tipo === 0) for (const u of usos) if (dentro(u.p, r0.x, r0.z)) { tipo = u.tipo; break; }
+    if (t.building === 'yes' && tipo === 0) { const uso = usoEm(r0.x, r0.z); if (uso >= 0) tipo = uso; }
     let andares = 0;
     if (t['building:levels']) andares = parseFloat(t['building:levels']);
     else if (t.height) andares = parseFloat(t.height) / 3.1;
@@ -879,6 +922,7 @@ async function gerar(m: Mun, terr: Terrarium) {
     else andares = andaresPadrao(t.building, tipo, areaPoli(pts));
     adicionar(pts, tipo, andares, t.name ?? null, true);
   }
+  marca('prédios do OSM');
   // 2) Microsoft (satélite): completa onde o OSM não mapeou prédios
   if (!process.argv.includes('--so-osm')) {
     const [la0, lo0] = latlon(-BUILD, BUILD), [la1, lo1] = latlon(BUILD, -BUILD);
@@ -911,7 +955,13 @@ async function gerar(m: Mun, terr: Terrarium) {
   });
   await mkdir(OUT, { recursive: true });
   const json = JSON.stringify(dados);
+  marca('validação (zod) e serialização');
   await writeFile(join(OUT, `${m.ibge}.json`), json);
+  marca('gravação do arquivo');
+  const bin = await exportarCidade(ROOT, m.ibge);
+  console.log(`    binário: núcleo ${(bin.nucleo / 1e6).toFixed(2)} MB + ${bin.tiles} tiles = ${(bin.bytes / 1e6).toFixed(2)} MB (JSON: ${(json.length / 1e6).toFixed(1)} MB)`);
+  marca('exportação binária (núcleo + tiles)');
+  marca.resumo();
   console.log(`  ${m.nome}/${m.uf}: ${dados.estat.predios} prédios (${dados.estat.predios - deMS} do OSM, ${deMS} da Microsoft; ${dados.estat.comAndares} com andares no OSM), ${dados.estat.vias} trechos de rua (${dados.estat.km} km), ${litoral ? 'litoral' : `base ${base.toFixed(0)} m`} · ${(json.length / 1e6).toFixed(1)} MB`);
 }
 
@@ -929,9 +979,14 @@ async function main() {
   const terr = new Terrarium(join(ROOT, 'data', 'cache', 'terrarium'), 14);
   // Overpass sobrecarregado? Se os extratos regionais da Geofabrik estiverem em data/osm-cache/{regiao}.osm.pbf,
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).
+  // Fase 23: extrai de novo só o que o hash (caixas + versão do extrator) não reconhece; `--osm-saida=pasta` e `--sem-recorte` servem às medições
+  const saidaOsm = args.find((x) => x.startsWith('--osm-saida='))?.slice('--osm-saida='.length) ?? CACHE_OSM;
+  const caixaDe = (m: Mun, h: number): [number, number, number, number] => { const { latlon } = projetor(m.lat, m.lon); const [s0, w0] = latlon(-h, h), [n0, e0] = latlon(h, -h); return [s0, w0, n0, e0]; };
+  const alvoDe = (m: Mun): AlvoCidade => ({ ibge: m.ibge, construivel: caixaDe(m, BUILD), mapa: caixaDe(m, HALF) });
   const porRegiao = new Map<string, Mun[]>();
+  const defasados = new Set((await alvosDesatualizados(alvo.map(alvoDe), saidaOsm)).map((x) => x.ibge));
   for (const m of alvo) {
-    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-trilhos.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-caminhos.json`))) continue;
+    if (!defasados.has(m.ibge) && !args.includes('--refazer-osm')) continue;
     const r = REGIAO_UF[m.uf];
     porRegiao.set(r, [...(porRegiao.get(r) ?? []), m]);
   }
@@ -939,13 +994,9 @@ async function main() {
     const pbf = join(CACHE_OSM, `${regiao}.osm.pbf`);
     if (!existsSync(pbf)) { console.log(`(sem ${regiao}.osm.pbf: usa o Overpass para ${ms.length} cidade(s))`); continue; }
     console.log(`Extraindo ${ms.length} cidade(s) de ${regiao}.osm.pbf…`);
-    const alvos: AlvoCidade[] = ms.map((m) => {
-      const { latlon } = projetor(m.lat, m.lon);
-      const caixa = (h: number): [number, number, number, number] => { const [s0, w0] = latlon(-h, h), [n0, e0] = latlon(h, -h); return [s0, w0, n0, e0]; };
-      return { ibge: m.ibge, construivel: caixa(BUILD), mapa: caixa(HALF) };
-    });
-    await extrairRegiao(pbf, alvos, CACHE_OSM);
+    await extrairRegiao(pbf, ms.map(alvoDe), saidaOsm, { semRecorte: args.includes('--sem-recorte') });
   }
+  if (args.includes('--so-extrair')) return;
   for (const m of alvo) {
     try { await readFile(join(OUT, `${m.ibge}.json`)); if (!args.includes('--refazer')) { console.log(`  ${m.nome}: já existe`); continue; } } catch { /* gera */ }
     console.log(`${m.nome}/${m.uf} (${m.ibge})…`);

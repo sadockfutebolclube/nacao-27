@@ -3,7 +3,7 @@
  * (src/data/cidadeReal.ts), grafo de ruas do OpenStreetMap e os prédios existentes como lotes fixos.
  * Puro e determinístico: o Worker e a renderização montam o mesmo mundo a partir do mesmo arquivo.
  */
-import { CAMPOS_ARESTA, CAMPOS_PREDIO, deBase64, FLAG_VIA, type CidadeReal } from '../data/cidadeReal';
+import { CAMPOS_ARESTA, CAMPOS_PREDIO, bytesDe, FLAG_VIA, type CidadeReal } from '../data/cidadeReal';
 import type { Bioma, Terreno } from '../data/schemas';
 import { BUILD_HALF, HM_STEP, HM_VERTS, MAP_SIZE } from './constants';
 import type { RoadEdge as RoadEdgeNovo, RoadGraph } from './roads';
@@ -33,9 +33,9 @@ export const PICOS_RIO: { nome: string; lat: number; lon: number; alt: number; s
 /** Relevo real: alturas do arquivo interpoladas para a grade do jogo, água rebaixada, verde do OSM. O arquivo cobre
  * a própria extensão ((res − 1) × passo, centrada na origem); fora dela vale a borda. */
 export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed: number): Heightmap {
-  const bytes = deBase64(c.alturas);
+  const bytes = bytesDe(c, 'alturas')!;
   const alt = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
-  const verde = deBase64(c.verde);
+  const verde = bytesDe(c, 'verde')!;
   const vRes = Math.round(Math.sqrt(verde.length));
   const h = new Float32Array(HM_VERTS * HM_VERTS);
   const forest = new Uint8Array(HM_VERTS * HM_VERTS);

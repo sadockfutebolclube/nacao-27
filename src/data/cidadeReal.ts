@@ -26,6 +26,10 @@ export const CidadeReal = z.object({
   alturas: z.string(),
   /** Uint8 0–255 de vegetação, grade de 32 m (192×192), base64 */
   verde: z.string(),
+  /** Fase 23: os mesmos dados já em bytes (o carregador binário preenche estes e deixa as strings vazias; veja `bytesDe`) */
+  alturasBytes: z.instanceof(Uint8Array).optional(),
+  verdeBytes: z.instanceof(Uint8Array).optional(),
+  contornosBytes: z.instanceof(Uint8Array).optional(),
   vias: z.object({
     /** [x, z] por nó (id = índice + 1) */
     nos: z.array(z.number()),
@@ -76,6 +80,14 @@ export const CidadeReal = z.object({
 });
 export type CidadeReal = z.infer<typeof CidadeReal>;
 
+/** Bytes de um dos campos que o JSON guarda em base64 (alturas Int16, verde Uint8, contornos Int16). */
+export function bytesDe(c: CidadeReal, campo: 'alturas' | 'verde' | 'contornos'): Uint8Array | null {
+  const direto = c[`${campo}Bytes`];
+  if (direto) return direto;
+  const b64 = c[campo];
+  return b64 ? deBase64(b64) : null;
+}
+
 export const CAMPOS_PREDIO = 9;
 export const CAMPOS_ARESTA = 6;
 
@@ -109,8 +121,9 @@ const cacheContornos = new WeakMap<CidadeReal, { v: Int16Array; ini: Int32Array 
 export function contorno(c: CidadeReal, i: number): [number, number][] {
   const p = predio(c, i);
   let cc = cacheContornos.get(c);
-  if (!cc && c.contornos) {
-    const b = deBase64(c.contornos);
+  const bc = !cc ? bytesDe(c, 'contornos') : null;
+  if (!cc && bc) {
+    const b = bc;
     const v = new Int16Array(b.buffer, b.byteOffset, b.byteLength / 2);
     const n = c.predios.length / CAMPOS_PREDIO;
     const ini = new Int32Array(n);

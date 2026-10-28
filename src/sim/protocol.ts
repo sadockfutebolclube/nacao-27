@@ -138,19 +138,33 @@ export const LOT_STATE_STRIDE = 13;
 /** Bits de flags em lotState[5]. */
 export const FLAG = { AGUA: 1, ENERGIA: 2, ESGOTO: 4, ABANDONADO: 8 } as const;
 
+/** Desempenho da simulação (painel F4): passo = o que cada `step()`/fatia custa, trabalhos = o que cada fase do dia custa. */
+export interface PerfSim {
+  passoMs: { ultimo: number; p50: number; p95: number; p99: number; max: number };
+  /** 0 = síncrono */
+  orcamentoMs: number;
+  lotes: number; lotesPerto: number; raioFoco: number;
+  fila: string[]; diasPulados: number; concluidos: number;
+  trabalhos: { nome: string; fatias: number; ms: number; ema: number; pior: number }[];
+}
+
 export type ToWorker =
   | { type: 'init'; init: SimInit; real?: CidadeReal | null }
   | { type: 'load'; save: SaveData; real?: CidadeReal | null }
   | { type: 'speed'; speed: number }
   | { type: 'cmd'; id: number; cmd: Command }
   | { type: 'save'; id: number }
+  /** câmera: lotes a menos de `raio` m de (x, z) rodam a simulação completa todo dia; os outros, em LOD (Fase 23) */
+  | { type: 'foco'; x: number; z: number; raio: number }
+  /** ms de CPU por passo para o trabalho pesado do dia; 0 = síncrono */
+  | { type: 'orcamento'; ms: number }
   /** só desenvolvimento/testes: avança N dias de uma vez */
   | { type: 'avancar'; dias: number };
 
 export type FromWorker =
   | { type: 'ready'; init: SimInit }
   | { type: 'world'; version: number; roads: RoadGraphJSON; lots: Float32Array; services: ServiceInst[] }
-  | { type: 'state'; version: number; lotState: Float32Array; pollution: Float32Array; stats: Stats; news: Noticia[]; render: CidadeRender }
+  | { type: 'state'; version: number; lotState: Float32Array; pollution: Float32Array; stats: Stats; news: Noticia[]; render: CidadeRender; perf: PerfSim }
   | { type: 'cmdResult'; id: number; ok: boolean; msg?: string; custo?: number }
   | { type: 'saved'; id: number; save: SaveData }
   | { type: 'error'; msg: string };

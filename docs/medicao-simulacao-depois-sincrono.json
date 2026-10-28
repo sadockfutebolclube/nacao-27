@@ -1,0 +1,174 @@
+{
+ "modo": "síncrono (como antes da Fase 23)",
+ "predios": 152698,
+ "lotes": 139264,
+ "montagemMs": 3834,
+ "dias": 60,
+ "quadro": {
+  "n": 240,
+  "media": 81.32,
+  "p50": 0,
+  "p95": 100.04,
+  "p99": 1731.51,
+  "max": 1810.75
+ },
+ "cpuPorDiaMs": 325.3,
+ "velocidadeMaxima": 6.1,
+ "diasPulados": 0,
+ "pioresQuadros": [
+  {
+   "ms": 1810.8,
+   "fase": "agregados",
+   "dia": 17
+  },
+  {
+   "ms": 1743.8,
+   "fase": "agregados",
+   "dia": 10
+  },
+  {
+   "ms": 1731.5,
+   "fase": "agregados",
+   "dia": 31
+  },
+  {
+   "ms": 1723.4,
+   "fase": "agregados",
+   "dia": 24
+  },
+  {
+   "ms": 1711.1,
+   "fase": "agregados",
+   "dia": 3
+  },
+  {
+   "ms": 1699.5,
+   "fase": "agregados",
+   "dia": 59
+  },
+  {
+   "ms": 1682.5,
+   "fase": "agregados",
+   "dia": 45
+  },
+  {
+   "ms": 1670.2,
+   "fase": "agregados",
+   "dia": 52
+  }
+ ],
+ "fases": {
+  "transporte.semanalFatiado": {
+   "n": 9,
+   "media": 1627.05,
+   "p50": 1614.45,
+   "p95": 1717.24,
+   "p99": 1717.24,
+   "max": 1717.24
+  },
+  "redesDeServico": {
+   "n": 60,
+   "media": 17.62,
+   "p50": 16.33,
+   "p95": 25.97,
+   "p99": 37.05,
+   "max": 37.05
+  },
+  "valorDoSolo": {
+   "n": 60,
+   "media": 17.11,
+   "p50": 16.11,
+   "p95": 26.33,
+   "p99": 28.85,
+   "max": 28.85
+  },
+  "servicosSociais.atualizar": {
+   "n": 60,
+   "media": 15.59,
+   "p50": 14.74,
+   "p95": 22.12,
+   "p99": 23.37,
+   "max": 23.37
+  },
+  "crescimento": {
+   "n": 60,
+   "media": 11.83,
+   "p50": 11.47,
+   "p95": 15.19,
+   "p99": 17.73,
+   "max": 17.73
+  },
+  "territorio.atualizar": {
+   "n": 60,
+   "media": 7.28,
+   "p50": 6.48,
+   "p95": 12.27,
+   "p99": 16.39,
+   "max": 16.39
+  },
+  "calcularDemanda": {
+   "n": 60,
+   "media": 4.48,
+   "p50": 4.22,
+   "p95": 6.03,
+   "p99": 6.9,
+   "max": 6.9
+  },
+  "camposDePoluicao": {
+   "n": 60,
+   "media": 3.18,
+   "p50": 2.82,
+   "p95": 5.53,
+   "p99": 9.16,
+   "max": 9.16
+  },
+  "passoEventos": {
+   "n": 60,
+   "media": 1.38,
+   "p50": 1.23,
+   "p95": 1.95,
+   "p99": 3.54,
+   "max": 3.54
+  },
+  "contabilizarAgregados": {
+   "n": 60,
+   "media": 0.89,
+   "p50": 0.79,
+   "p95": 1.41,
+   "p99": 2.72,
+   "max": 2.72
+  },
+  "favelas.semanal": {
+   "n": 9,
+   "media": 5.14,
+   "p50": 4.73,
+   "p95": 9.88,
+   "p99": 9.88,
+   "max": 9.88
+  },
+  "verificarNoticias": {
+   "n": 60,
+   "media": 0.29,
+   "p50": 0.25,
+   "p95": 0.58,
+   "p99": 1.65,
+   "max": 1.65
+  },
+  "fechamentoMensal": {
+   "n": 2,
+   "media": 3.15,
+   "p50": 3.19,
+   "p95": 3.19,
+   "p99": 3.19,
+   "max": 3.19
+  },
+  "favelas.diario": {
+   "n": 60,
+   "media": 0.01,
+   "p50": 0,
+   "p95": 0.02,
+   "p99": 0.06,
+   "max": 0.06
+  }
+ }
+}

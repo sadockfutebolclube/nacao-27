@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 1.12.0 — Fase 23: simulação em orçamento e geração em 22 s (28/10/2026)
+
+Medições antes/depois em `docs/fase23-medicoes.md`.
+
+### Simulação
+- O trabalho pesado do dia (redes, serviços sociais, território, favelas, transporte semanal, poluição, valor do solo, demanda, crescimento, agregados) virou **gerador** sob `Orcamento` (`src/sim/orcamento.ts`): cada `step()` gasta no máximo ~4 ms nele e o worker termina a fila em fatias de 4 ms entre um tick e o próximo. Se o dia anterior ainda não acabou, o novo dia é engolido por ele (contado em "dias engolidos"). `orcamentoMs = Infinity` mantém o modo síncrono e completo (testes, "avançar N dias", salvar).
+- **LOD pela câmera**: o worker recebe o foco e os lotes fora do raio (900–3000 m, conforme o zoom) rodam valor do solo e crime a cada 4º dia, escalonados por índice, com a taxa de alisamento dos dias parados.
+- **Tipado e sem alocação**: Dijkstra em CSR com heap tipado (`dijkstraEm`), nó mais próximo em grade, `HashLotes` (hash espacial) nos laços equipamento × lote, tabelas por arquétipo, posições em `Float64Array`, caches por versão do mundo (redes, grafo compacto, manutenção das vias).
+- **Painel F4** (`PainelPerformance`): fps e p95 do desenho, passo da simulação (último, mediana, p95, p99, pior), orçamento ajustável, fila, lotes no foco e custo por fase.
+- Resultado no Rio (139 mil lotes): passo mediano 5 ms, p99 12 ms, pior 17 ms (antes: 8,2 s no pior); CPU por dia 1.179 → 127 ms. O pior passo ainda passa de 16 ms em algumas rodadas.
+
+### Geração de dados
+- Relevo 138,7 → 10,8 s (`limitarInclinacao` só reconfere o que mudou) e prédios 55 → 5 s (grades numéricas, caixa dos polígonos de uso): **201 → 22 s** com saída idêntica.
+- Extração do OSM: `data/osm-cache/manifesto.json` guarda o hash (caixas + `EXTRATOR_VERSAO`) de cada cidade e só extrai o que o hash não reconhece; a 1ª leitura grava um **recorte por caixa** (32 MB, NDJSON gzip) do PBF de 862 MB e as seguintes leem só ele (3,5 s). Com `osmium` no PATH o pré-filtro usa `osmium extract` (**não está instalado aqui: esse ramo não foi executado**). A 1ª leitura do PBF continua levando minutos.
+- Saída em **binário** (`src/data/cidadeBinaria.ts`): núcleo + 104 tiles de 1 km, ida e volta idêntica à `CidadeReal` do JSON; o carregador usa o binário e cai no JSON. 11,1 MB contra 16,2 MB; decodificar leva o mesmo que JSON + zod. O carregamento **sob demanda por tile ainda não está ligado**: hoje o jogo busca todos os tiles.
+- Testes: `tests/fase23.test.ts` (16).
+
 ## 1.11.1 — Correção: tela cinza ao dar zoom (28/10/2026)
 
 ### Causa raiz

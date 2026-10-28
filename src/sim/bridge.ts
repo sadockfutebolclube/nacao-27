@@ -3,6 +3,7 @@
  * em `mundo` (mutável, sem re-render); a UI assina só versões e estatísticas via Zustand.
  */
 import { medir } from '../render/medir';
+import { definirPerfSim } from './estadoPerf';
 import type { CidadeReal } from '../data/cidadeReal';
 import { create } from 'zustand';
 import { emptyGraph, graphFromJSON, type RoadGraph, type RoadType } from '../world/roads';
@@ -150,6 +151,7 @@ function tratar(ev: MessageEvent<FromWorker>) {
         versoes.transitoVersion = g.transitoVersion + 1;
       }
       const noticias = m.news.length ? [...m.news.slice().reverse(), ...g.noticias].slice(0, 60) : g.noticias;
+      definirPerfSim(m.perf);
       useGame.setState((s) => ({ ...versoes, stats: m.stats, noticias, stateVersion: s.stateVersion + 1 }));
       break;
     }
@@ -191,6 +193,12 @@ export function pararSimulacao() {
   worker = null;
   pendentes.clear();
 }
+
+/** A câmera avisa o worker onde está olhando: o que está perto roda a simulação completa, o resto em LOD. */
+export function enviarFoco(x: number, z: number, raio: number) { post({ type: 'foco', x, z, raio }); }
+
+/** Orçamento de CPU por passo da simulação (ms); 0 = síncrono (painel F4). */
+export function definirOrcamento(ms: number) { post({ type: 'orcamento', ms }); }
 
 export function setVelocidade(v: number) {
   useGame.getState().set({ velocidade: v });

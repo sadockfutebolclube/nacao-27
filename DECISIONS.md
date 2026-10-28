@@ -303,3 +303,20 @@ Em material DoubleSide o three inverte a normal das faces "de trás"; com o enro
 
 ## D-100 · Desmontar o CSM devolve o shader de cada material
 `CSM.dispose()` do three apaga o `onBeforeCompile` de todo material que passou por `setupMaterial`; como o terreno e os prédios têm `onBeforeCompile` próprio, qualquer troca de qualidade os deixava sem shader. `ligarCSM` guarda o gancho e a chave de programa originais em `material.userData`; `desligarCSM` os restaura e esvazia `csm.shaders` antes do `dispose()`. Hipóteses de near/far, névoa, globo, culling e distância mínima foram medidas antes e não eram a causa.
+
+# Parte XXI — Orçamento por passo e geração rápida (Fase 23)
+
+## D-101 · Trabalho do dia em geradores sob orçamento
+O custo do dia está em laços sobre 139 mil lotes e num modelo de transporte de segundos. Em vez de otimizar só a média, o trabalho vira geradores que cedem a vez; `Orcamento.rodar(ms)` limita o passo e o excedente fica na fila. Com `Infinity` a ordem e o resultado são os de antes (os 143 testes anteriores passam sem mudança). Um dia que chega com o anterior ainda em andamento é engolido (coalescência) em vez de empilhar.
+
+## D-102 · LOD pela câmera só no modo com orçamento
+Lotes longe do foco rodam valor do solo e crime a cada 4º dia (taxa acumulada `1 − (1 − k)^dt`). Só com orçamento: testes e "avançar N dias" ficam exatos. Crescimento e redes seguem completos (têm sorteios e limiares).
+
+## D-103 · Modelo semanal de transporte em amostra
+Com orçamento, 1 zona de origem em 4 por semana (as de índice ≡ semana mod 4); volumes e viagens × 4, tempo por zona só nas amostradas. Sem orçamento: completo.
+
+## D-104 · Cache da extração por hash de caixa + versão
+`manifesto.json` + `EXTRATOR_VERSAO`; recorte por caixa com folga de 0,08° (~9 km). Sem `osmium` o recorte é feito em Node; com ele, `osmium extract` (não testado aqui).
+
+## D-105 · Binário por núcleo + tiles, com o JSON de reserva
+Tiles guardam o índice original do prédio (nada é reordenado: os índices nos saves continuam valendo). Ganho medido: −31% de bytes, decodificação equivalente ao JSON; o ganho de verdade vem com o carregamento por tile.

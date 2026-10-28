@@ -6,6 +6,7 @@ import { DadosClima, type NormaisUF } from './clima';
 import { EleitoradoUF } from './eleitorado';
 import { MunicipiosUF } from './municipios';
 import { CidadeReal } from './cidadeReal';
+import { decodificarCidade, listaTiles, nomeNucleo, nomeTile } from './cidadeBinaria';
 import { DadosUF, IndiceUFs, type SiglaUF } from './schemas';
 
 const base = `${import.meta.env.BASE_URL}data`;
@@ -14,6 +15,12 @@ async function json<T>(path: string): Promise<T> {
   const res = await fetch(`${base}/${path}`);
   if (!res.ok) throw new Error(`Não consegui carregar ${path} (HTTP ${res.status}). Rode "npm run fetch-data".`);
   return (await res.json()) as T;
+}
+
+async function binario(path: string): Promise<Uint8Array> {
+  const res = await fetch(`${base}/${path}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} em ${path}`);
+  return new Uint8Array(await res.arrayBuffer());
 }
 
 let indiceCache: Promise<IndiceUFs> | null = null;
@@ -75,6 +82,15 @@ export function cidadesReais(): Promise<string[]> {
 export async function carregarCidadeReal(ibge: string): Promise<CidadeReal | null> {
   if (!(await cidadesReais()).includes(ibge)) return null;
   try {
+    // Fase 23: formato binário (núcleo + tiles de 1 km, buscados em paralelo); o JSON de antes fica de reserva
+    try {
+      const nucleo = await binario(nomeNucleo(ibge));
+      const ids = listaTiles(nucleo);
+      const tiles = new Map(await Promise.all(ids.map(async (t) => [t, await binario(nomeTile(ibge, t))] as const)));
+      return decodificarCidade(nucleo, tiles);
+    } catch (e) {
+      console.warn('[cidade real] binário indisponível, usando o JSON', e);
+    }
     return CidadeReal.parse(await json<unknown>(`cidades/${ibge}.json`));
   } catch (e) {
     console.warn('[cidade real] indisponível', e);

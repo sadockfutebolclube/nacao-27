@@ -45,7 +45,8 @@ export class ServicosSociais {
   atualizar(sim: Simulation, passo = true) {
     const n = sim.lots.length;
     if (this.saude.length !== n) this.redimensionar(n);
-    const lots = sim.lots;
+    const H = sim.hashLotes, lx = sim.lotX, lz = sim.lotZ;
+    const lod = sim.orcamentoMs !== Infinity, dia = sim.dia;
     const eficiencias = new Map<number, number>();
     const lotacao: Record<RedeSocial, number> = { saude: 0, educacao: 0, seguranca: 0 };
 
@@ -59,11 +60,13 @@ export class ServicosSociais {
         const r = eq.raio!;
         // população atendida no raio (moradores formais + favelas)
         let pop = 0;
-        for (let i = 0; i < n; i++) {
+        // Fase 23: só os lotes da vizinhança (hash espacial), não a cidade inteira por equipamento
+        const k0 = H.consulta(s.x, s.z, r), ids0 = H.saida;
+        for (let q = 0; q < k0; q++) {
+          const i = ids0[q];
           if (!sim.arch[i] || !sim.occ[i]) continue;
-          const l = lots[i];
-          if (Math.abs(l.x - s.x) > r || Math.abs(l.z - s.z) > r) continue;
-          if (arquetipoPorId(sim.arch[i]).moradores && Math.hypot(l.x - s.x, l.z - s.z) < r) pop += sim.occ[i];
+          if (Math.abs(lx[i] - s.x) > r || Math.abs(lz[i] - s.z) > r) continue;
+          if (arquetipoPorId(sim.arch[i]).moradores && Math.hypot(lx[i] - s.x, lz[i] - s.z) < r) pop += sim.occ[i];
         }
         pop += sim.favelas.populacaoNoRaio(s.x, s.z, r);
         // equipamento em área dominada funciona mal (tiroteio, fechamento)
@@ -71,10 +74,11 @@ export class ServicosSociais {
         const ef = Math.min(1, eq.capacidade / Math.max(1, pop)) * (1 - 0.45 * dominio);
         eficiencias.set(s.id, ef);
         capTot += eq.capacidade; demTot += pop;
-        for (let i = 0; i < n; i++) {
-          const l = lots[i];
-          if (Math.abs(l.x - s.x) > r || Math.abs(l.z - s.z) > r) continue;
-          const d = Math.hypot(l.x - s.x, l.z - s.z);
+        const k1 = H.consulta(s.x, s.z, r), ids1 = H.saida;
+        for (let q = 0; q < k1; q++) {
+          const i = ids1[q];
+          if (Math.abs(lx[i] - s.x) > r || Math.abs(lz[i] - s.z) > r) continue;
+          const d = Math.hypot(lx[i] - s.x, lz[i] - s.z);
           if (d >= r) continue;
           const v = ef * (1 - (d / r) ** 2);
           if (v > arr[i]) arr[i] = v;
@@ -90,11 +94,15 @@ export class ServicosSociais {
     const fatorUF = 1 + 0.5 * (ef.criminalidade ?? 0);
     let somaS = 0, somaE = 0, somaSeg = 0, somaC = 0, pesos = 0;
     for (let i = 0; i < n; i++) {
-      const l = lots[i];
-      const terr = sim.territorio.controleEm(l.x, l.z);
-      const abandonado = sim.flags[i] & FLAG.ABANDONADO ? 0.12 : 0;
-      const alvo = clamp((0.06 + 0.32 * Math.pow(1 - sim.lv[i] / 100, 1.5) + 0.3 * desemprego + 0.55 * terr + abandonado - 0.35 * this.seguranca[i] + sim.crimeExtra) * fatorUF, 0, 1);
-      if (passo) this.crime[i] += (alvo - this.crime[i]) * 0.1;
+      // LOD (Fase 23): longe do foco o crime de cada lote anda a cada 4º dia, com a taxa de todos os dias parados
+      if (passo && (!lod || sim.perto[i] || ((i + dia) & 3) === 0)) {
+        const dt = lod ? Math.min(16, Math.max(1, dia - sim.ultimoDiaCrime[i])) : 1;
+        sim.ultimoDiaCrime[i] = dia;
+        const terr = sim.territorio.controleEm(lx[i], lz[i]);
+        const abandonado = sim.flags[i] & FLAG.ABANDONADO ? 0.12 : 0;
+        const alvo = clamp((0.06 + 0.32 * Math.pow(1 - sim.lv[i] / 100, 1.5) + 0.3 * desemprego + 0.55 * terr + abandonado - 0.35 * this.seguranca[i] + sim.crimeExtra) * fatorUF, 0, 1);
+        this.crime[i] += (alvo - this.crime[i]) * (dt <= 1 ? 0.1 : 1 - Math.pow(0.9, dt));
+      }
       if (sim.arch[i] && sim.occ[i] && arquetipoPorId(sim.arch[i]).moradores) {
         const w = sim.occ[i];
         somaS += this.saude[i] * w; somaE += this.educacao[i] * w; somaSeg += this.seguranca[i] * w; somaC += this.crime[i] * w; pesos += w;

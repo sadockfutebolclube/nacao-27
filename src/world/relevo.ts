@@ -63,24 +63,40 @@ export function suavizarGaussiano(h: Float32Array, n: number, terra: Uint8Array,
  */
 export function limitarInclinacao(h: Float32Array, n: number, passo: number, max: number, terra: Uint8Array, iteracoes = 80, regiao?: { i0: number; i1: number; j0: number; j1: number }): { iteracoes: number; ajustados: number } {
   const i0 = regiao?.i0 ?? 0, i1 = regiao?.i1 ?? n - 1, j0 = regiao?.j0 ?? 0, j1 = regiao?.j1 ?? n - 1;
-  const vizinhos: [number, number, number][] = [[1, 0, 1], [0, 1, 1], [1, 1, Math.SQRT2], [-1, 1, Math.SQRT2]];
+  // 4 vizinhos "para a frente" de cada célula: (+1,0), (0,+1), (+1,+1), (−1,+1) e o comprimento de cada passo
+  const DI = [1, 0, 1, -1], DJ = [0, 1, 1, 1], DIST = [1, 1, Math.SQRT2, Math.SQRT2];
   const tocados = new Uint8Array(h.length);
+  // Fase 23: só reconfere as células cujo par de vizinhos mudou desde a última conferência (o resto não pode estar violado).
+  // A ordem de varredura é a mesma da versão de varredura total, então o resultado é idêntico; só some o trabalho nulo
+  // (antes: 400 varreduras da grade inteira, 138 s no Rio, para ajustar ~11 mil vértices).
+  const sujo = new Uint8Array(h.length);
+  for (let j = j0; j <= j1; j++) sujo.fill(1, j * n + i0, j * n + i1 + 1);
+  const marcar = (c: number) => {
+    const ci = c % n, cj = (c - ci) / n;
+    for (let dj = -1; dj <= 1; dj++) {
+      const jj = cj + dj;
+      if (jj < j0 || jj > j1) continue;
+      for (let di = -1; di <= 1; di++) { const ii = ci + di; if (ii >= i0 && ii <= i1) sujo[jj * n + ii] = 1; }
+    }
+  };
   let it = 0;
   for (; it < iteracoes; it++) {
     let mexeu = false;
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const k = j * n + i;
-      for (const [di, dj, dist] of vizinhos) {
-        const ii = i + di, jj = j + dj;
+      if (!sujo[k]) continue;
+      sujo[k] = 0;
+      for (let v = 0; v < 4; v++) {
+        const ii = i + DI[v], jj = j + DJ[v];
         if (ii < i0 || ii > i1 || jj > j1) continue;
         const q = jj * n + ii;
-        const d = h[k] - h[q], lim = max * passo * dist;
+        const d = h[k] - h[q], lim = max * passo * DIST[v];
         if (Math.abs(d) <= lim + 0.01) continue;
         const excesso = Math.abs(d) - lim;
         const alto = d > 0 ? k : q, baixo = d > 0 ? q : k;
-        if (terra[baixo] && terra[alto]) { h[alto] -= excesso / 2; h[baixo] += excesso / 2; tocados[alto] = tocados[baixo] = 1; }
-        else if (terra[alto]) { h[alto] -= excesso; tocados[alto] = 1; }
-        else if (terra[baixo]) { h[baixo] += excesso; tocados[baixo] = 1; }
+        if (terra[baixo] && terra[alto]) { h[alto] -= excesso / 2; h[baixo] += excesso / 2; tocados[alto] = tocados[baixo] = 1; marcar(alto); marcar(baixo); }
+        else if (terra[alto]) { h[alto] -= excesso; tocados[alto] = 1; marcar(alto); }
+        else if (terra[baixo]) { h[baixo] += excesso; tocados[baixo] = 1; marcar(baixo); }
         mexeu = true;
       }
     }

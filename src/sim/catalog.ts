@@ -126,3 +126,20 @@ export const CONSUMO = {
   energiaMorador: 1, energiaComercio: 1, energiaIndustria: 1.6,
   esgotoFator: 0.8,
 };
+
+/** Tabela por arquétipo (Fase 23): os laços por lote leem números, sem montar objeto nem consultar o catálogo a cada lote. */
+interface LinhaArq { agua: number; energia: number; esgoto: number; moradores: number; empregos: number; zona: Zone; nivel: number }
+let TAB_ARQ: LinhaArq[] | null = null;
+export const tabArq = (): LinhaArq[] => TAB_ARQ ??= (() => {
+  const t: LinhaArq[] = [{ agua: 0, energia: 0, esgoto: 0, moradores: 0, empregos: 0, zona: Zone.None, nivel: 0 }];
+  for (let id = 1; ; id++) {
+    const a = arquetipoPorId(id);
+    if (!a) break;
+    const ind = a.zone === Zone.Industrial;
+    const agua = a.moradores * CONSUMO.aguaMorador + a.empregos * CONSUMO.aguaEmprego;
+    const energia = a.moradores * CONSUMO.energiaMorador + a.empregos * (ind ? CONSUMO.energiaIndustria : CONSUMO.energiaComercio);
+    const cap = a.moradores + a.empregos;
+    t.push({ agua: cap ? agua : 0, energia: cap ? energia : 0, esgoto: cap ? agua * CONSUMO.esgotoFator : 0, moradores: a.moradores, empregos: a.empregos, zona: a.zone, nivel: a.level });
+  }
+  return t;
+})();

@@ -4,9 +4,9 @@
  * congestionamento (BPR). Roda uma vez por semana de jogo no Worker.
  */
 import { BUILD_HALF } from '../../world/constants';
-import { compactar, comprimentoPolilinha, dijkstra, noMaisProximo, rotaPorVias } from '../../world/rotas';
+import { arvoreVazia, compactar, comprimentoPolilinha, dijkstraEm, noMaisProximo, rotaPorVias } from '../../world/rotas';
 import type { RoadGraph, V2 } from '../../world/roads';
-import { arquetipoPorId } from '../catalog';
+import { tabArq } from '../catalog';
 import type { PoliticaVans } from './territorio';
 import type { Simulation } from '../simulation';
 
@@ -175,21 +175,42 @@ export class Transporte {
 
   // ── Modelo semanal ──────────────────────────────────────────────────────────────
 
-  semanal(sim: Simulation) {
+  private cacheG: { versao: number; G: ReturnType<typeof compactar> } | null = null;
+
+  /** Grafo em CSR + grade dos nós: só muda com a rede viária (`rebuildLots` já deixa pronto, fora do caminho do tick). */
+  grafoCompacto(sim: Simulation) {
+    if (this.cacheG && this.cacheG.versao === sim.worldVersion) return this.cacheG.G;
+    const G = compactar(sim.graph);
+    noMaisProximo(G, 0, 0, 1); // monta a grade de nós agora
+    this.cacheG = { versao: sim.worldVersion, G };
+    return G;
+  }
+
+  /** Roda o modelo inteiro de uma vez (testes, "avançar N dias", chamadas síncronas). */
+  semanal(sim: Simulation) { const g = this.semanalFatiado(sim, 1, 0); while (!g.next().done); }
+
+  /**
+   * Modelo semanal em fatias (Fase 23): cede a vez a cada ~1,5 ms para o orçamento do passo da simulação. `passo` = 1 processa
+   * todas as zonas de origem; com `passo` = 4 só um quarto delas por semana (as de índice ≡ `fase` mod 4) e os volumes e
+   * viagens dessas zonas valem × 4 — as demais mantêm o tempo da última vez. Em cada semana o modelo ainda mexe em volumes e
+   * resumo uma vez só, no fim (nada fica pela metade).
+   */
+  *semanalFatiado(sim: Simulation, passo: number, fase: number): Generator<void, void, void> {
     const ZR = ZONA_RES, NZ = ZR * ZR;
     const res = new Float64Array(NZ), jobs = new Float64Array(NZ), lvSum = new Float64Array(NZ), sx = new Float64Array(NZ), sz = new Float64Array(NZ), peso = new Float64Array(NZ);
     const zonaDe = (x: number, z: number) => {
       const i = clamp(Math.floor((x + BUILD_HALF) / ZONA_CELL), 0, ZR - 1), j = clamp(Math.floor((z + BUILD_HALF) / ZONA_CELL), 0, ZR - 1);
       return j * ZR + i;
     };
+    const tab = tabArq();
     for (let i = 0; i < sim.lots.length; i++) {
+      if ((i & 32767) === 32767) yield;
       if (!sim.arch[i] || !sim.occ[i]) continue;
-      const l = sim.lots[i];
-      const k = zonaDe(l.x, l.z);
-      const a = arquetipoPorId(sim.arch[i]);
-      if (a.moradores) { res[k] += sim.occ[i]; lvSum[k] += sim.lv[i] * sim.occ[i]; }
+      const x = sim.lotX[i], z = sim.lotZ[i];
+      const k = zonaDe(x, z);
+      if (tab[sim.arch[i]].moradores) { res[k] += sim.occ[i]; lvSum[k] += sim.lv[i] * sim.occ[i]; }
       else jobs[k] += sim.occ[i];
-      sx[k] += l.x * sim.occ[i]; sz[k] += l.z * sim.occ[i]; peso[k] += sim.occ[i];
+      sx[k] += x * sim.occ[i]; sz[k] += z * sim.occ[i]; peso[k] += sim.occ[i];
     }
     for (const f of sim.favelas.ativas()) {
       const p = sim.favelas.populacao(f);
@@ -205,8 +226,9 @@ export class Transporte {
       lvZ[k] = res[k] > 0 ? lvSum[k] / res[k] : 30;
     }
 
-    const G = compactar(sim.graph);
+    const G = this.grafoCompacto(sim);
     const nE = G.arestaIds.length;
+    yield;
     // capacidade e tempo de cada aresta (BRT ocupa uma faixa da avenida)
     const brtArestas = new Set<number>();
     for (const l of this.linhas) if (l.tipo === 'brt' && l.status === 'operando') for (const e of l.arestas) brtArestas.add(e);
@@ -218,6 +240,7 @@ export class Transporte {
       volAnt[k] = this.volumes.get(G.arestaIds[k]) ?? 0;
       tc[k] = t0[k] * (1 + 0.15 * Math.pow(volAnt[k] / cap[k], 4));
     }
+    yield;
     // nó de acesso de cada zona
     const noZona = new Int32Array(NZ).fill(-1), acessoZona = new Float64Array(NZ);
     for (let k = 0; k < NZ; k++) {
@@ -227,6 +250,7 @@ export class Transporte {
       if (n >= 0) acessoZona[k] = Math.hypot(G.x[n] - cx[k], G.z[n] - cz[k]) / 8;
     }
 
+    yield;
     // rede de transporte coletivo: um nó por (linha, parada)
     const operando = this.linhas.filter((l) => l.status === 'operando');
     const fatorTransito = new Map<number, number>();
@@ -280,19 +304,32 @@ export class Transporte {
     const teta = 0.15;
     const vansOk = this.vans !== 'combater';
 
+    // buffers reaproveitados em todas as origens (zero alocação por par origem × destino)
+    const arvC = arvoreVazia(G.nodeIds.length);
+    const dJ = new Int32Array(NZ), dSTP = new Int32Array(NZ);
+    const dF = new Float64Array(NZ), dMed = new Float64Array(NZ), dSh = new Float64Array(NZ * 4);
+    const lgA = new Float64Array(5), lgB = new Float64Array(5), cc = new Float64Array(4);
+    /** logit dos 4 modos sobre os custos em `cc`: out[0..3] = parcelas, out[4] = custo esperado (min) */
+    const logit4 = (comCarro: boolean, out: Float64Array) => {
+      let soma = 0;
+      for (let m = 0; m < 4; m++) { const e = (m > 0 || comCarro) && Number.isFinite(cc[m]) ? Math.exp(-teta * cc[m]) : 0; out[m] = e; soma += e; }
+      if (soma > 0) { for (let m = 0; m < 4; m++) out[m] /= soma; out[4] = -Math.log(soma) / teta; } else { out[0] = out[1] = out[2] = out[3] = 0; out[4] = Infinity; }
+    };
+    let inicioFatia = performance.now();
+
     for (let i = 0; i < NZ; i++) {
+      if (passo > 1 && i % passo !== fase) continue;
       const trabalhadores = res[i] * 0.5;
       if (trabalhadores < 1) continue;
       // árvore de carros
-      const arv = noZona[i] >= 0 ? dijkstra(G, noZona[i], (k) => tc[k]) : null;
+      const arv = noZona[i] >= 0 ? dijkstraEm(G, noZona[i], tc, arvC) : null;
       // árvore do coletivo
       const distTP = new Float64Array(nos.length).fill(Infinity);
       const predTP = new Int32Array(nos.length).fill(-1);
       if (nos.length) {
-        const fila: [number, number][] = [];
         for (let s = 0; s < nos.length; s++) {
           const d = Math.hypot(nos[s].x - cx[i], nos[s].z - cz[i]);
-          if (d < 750) { distTP[s] = d / 1.3 + nos[s].headway / 2; fila.push([distTP[s], s]); }
+          if (d < 750) distTP[s] = d / 1.3 + nos[s].headway / 2;
         }
         // Dijkstra simples (rede pequena)
         const feito = new Uint8Array(nos.length);
@@ -306,8 +343,7 @@ export class Transporte {
       }
       const own = clamp(0.12 + 0.7 * lvZ[i] / 100, 0.08, 0.85);
       // custos generalizados para cada destino
-      const dest: { j: number; f: number; tCar: number; tTP: number; tPe: number; tInf: number; sTP: number; sh: number[]; tMed: number }[] = [];
-      let A = 0;
+      let nd = 0, A = 0;
       for (let j = 0; j < NZ; j++) {
         if (jobs[j] <= 0) continue;
         const dEuc = Math.hypot(cx[j] - cx[i], cz[j] - cz[i]);
@@ -320,47 +356,54 @@ export class Transporte {
         }
         const tPe = dEuc < 2500 ? Math.max(120, dEuc / 1.3) : Infinity;
         const tInf = vansOk && Number.isFinite(tCar) ? tCar * 1.25 + 360 : Infinity;
-        const C = [tCar / 60 + 6, tTP / 60 + this.tarifa * 2, (1.4 * tPe) / 60, tInf / 60 + (this.vans === 'regularizar' ? 9 : 11)];
-        const logit = (disp: boolean[]) => {
-          const e = C.map((c, m) => (disp[m] && Number.isFinite(c) ? Math.exp(-teta * c) : 0));
-          const s = e.reduce((a, b) => a + b, 0);
-          return { sh: s > 0 ? e.map((x) => x / s) : [0, 0, 0, 0], cstar: s > 0 ? -Math.log(s) / teta : Infinity };
-        };
-        const comCarro = logit([true, true, true, true]);
-        const semCarro = logit([false, true, true, true]);
-        const cstar = own * comCarro.cstar + (1 - own) * semCarro.cstar;
+        cc[0] = tCar / 60 + 6; cc[1] = tTP / 60 + this.tarifa * 2; cc[2] = (1.4 * tPe) / 60; cc[3] = tInf / 60 + (this.vans === 'regularizar' ? 9 : 11);
+        logit4(true, lgA);
+        logit4(false, lgB);
+        const cstar = own * lgA[4] + (1 - own) * lgB[4];
         if (!Number.isFinite(cstar)) continue;
-        const sh = [0, 1, 2, 3].map((m) => own * comCarro.sh[m] + (1 - own) * semCarro.sh[m]);
-        const tempos = [tCar, tTP, tPe, tInf];
         let tMed = 0;
-        for (let m = 0; m < 4; m++) if (sh[m] > 0) tMed += sh[m] * tempos[m];
+        const o = nd * 4;
+        for (let m = 0; m < 4; m++) {
+          const sh = own * lgA[m] + (1 - own) * lgB[m];
+          dSh[o + m] = sh;
+          if (sh > 0) tMed += sh * (m === 0 ? tCar : m === 1 ? tTP : m === 2 ? tPe : tInf);
+        }
         const f = jobs[j] * Math.exp(-0.055 * cstar);
         A += f;
-        dest.push({ j, f, tCar, tTP, tPe, tInf, sTP, sh, tMed });
+        dJ[nd] = j; dF[nd] = f; dSTP[nd] = sTP; dMed[nd] = tMed; nd++;
       }
       if (A <= 0) continue;
-      for (const d of dest) {
-        const T = (trabalhadores * d.f) / A;
-        somaTempo += T * d.tMed; somaViagens += T;
-        tempoZona[i] += T * d.tMed; pesoZona[i] += T;
-        mCarro += T * d.sh[0]; mTP += T * d.sh[1]; mPe += T * d.sh[2]; mInf += T * d.sh[3];
+      for (let q = 0; q < nd; q++) {
+        const j = dJ[q], o = q * 4;
+        const T = (trabalhadores * dF[q]) / A;
+        somaTempo += T * dMed[q]; somaViagens += T;
+        tempoZona[i] += T * dMed[q]; pesoZona[i] += T;
+        mCarro += T * dSh[o]; mTP += T * dSh[o + 1]; mPe += T * dSh[o + 2]; mInf += T * dSh[o + 3];
         // carros e vans na hora de pico (40% das viagens da manhã)
-        const veiculos = (T * d.sh[0]) / 1.25 + (T * d.sh[3]) / 12;
-        if (veiculos > 0 && arv && noZona[d.j] >= 0) {
-          let u = noZona[d.j];
+        const veiculos = (T * dSh[o]) / 1.25 + (T * dSh[o + 3]) / 12;
+        if (veiculos > 0 && arv && noZona[j] >= 0) {
+          let u = noZona[j];
           let guarda = 0;
           while (u !== noZona[i] && arv.pred[u] >= 0 && guarda++ < 5000) { volNovo[arv.pred[u]] += veiculos * 0.4; u = arv.predNo[u]; }
         }
         // embarques por linha (ida e volta)
-        if (d.sh[1] > 0 && d.sTP >= 0) {
-          const pass = T * d.sh[1] * 2;
-          let s = d.sTP, linhaAtual = -1, guarda = 0;
+        if (dSh[o + 1] > 0 && dSTP[q] >= 0) {
+          const pass = T * dSh[o + 1] * 2;
+          let s = dSTP[q], linhaAtual = -1, guarda = 0;
           while (s >= 0 && guarda++ < 500) {
             if (nos[s].linha !== linhaAtual) { viagens[nos[s].linha] += pass; linhaAtual = nos[s].linha; }
             s = predTP[s];
           }
         }
       }
+      // cede a vez ao orçamento do passo a cada ~1,5 ms
+      if (performance.now() - inicioFatia > 1.5) { yield; inicioFatia = performance.now(); }
+    }
+    if (passo > 1) {
+      // só 1/passo das origens rodou: as grandezas absolutas valem × passo (as razões — modal, tempo médio — não mudam)
+      for (let k = 0; k < nE; k++) volNovo[k] *= passo;
+      for (let l = 0; l < viagens.length; l++) viagens[l] *= passo;
+      somaTempo *= passo; somaViagens *= passo; mCarro *= passo; mTP *= passo; mPe *= passo; mInf *= passo;
     }
 
     // média sucessiva dos volumes (equilíbrio aproximado)
@@ -379,7 +422,10 @@ export class Transporte {
       const capHora = (60 / Math.max(0.2, l.headwayMin)) * TIPOS_LINHA[l.tipo].cap;
       l.lotacao = capHora > 0 ? (viagens[li] / 2) * 0.35 / capHora : 0;
     });
-    for (let k = 0; k < NZ; k++) this.zonaTempo[k] = pesoZona[k] > 0 ? tempoZona[k] / pesoZona[k] / 60 : 30;
+    for (let k = 0; k < NZ; k++) {
+      if (passo > 1 && k % passo !== fase) continue; // zona fora da amostra desta semana: mantém o tempo da última vez
+      this.zonaTempo[k] = pesoZona[k] > 0 ? tempoZona[k] / pesoZona[k] / 60 : 30;
+    }
     const tot = mCarro + mTP + mPe + mInf || 1;
     this.resumo = {
       tempoMedio: somaViagens > 0 ? somaTempo / somaViagens / 60 : 0,

@@ -22,3 +22,6 @@ Texturas, HDRI e modelos estão em `ASSETS_LICENSES.md`.
 - É um modelo de **superfície**: prédios, copas e pedreiras aparecem como degraus e espetos. O gerador remove outliers (Hampel 5×5), aplica gaussiana de σ = 1,5 célula (16 m) só entre terra e terra e limita a inclinação a 50° (tangente 1,2).
 - Mar, baía e lagoas já vêm em 0 m no Copernicus; o jogo usa isso como máscara de água (terra = acima de 0,3 m) e deixa de usar a linha de costa do OSM (que "vazava" mar para dentro do continente).
 - Para refazer: `npm run fetch-cidades -- --refazer` (os ladrilhos ficam em `data/cache/dem/`, ~47 MB).
+
+## Fase 23 — extração e cache
+- Nenhuma fonte nova. O extrato do Sudeste (Geofabrik, mesma URL acima) agora gera `data/osm-cache/recorte-<hash>.ndjson.gz` (caixa do Rio + 0,08°) e `manifesto.json`; ambos são derivados e ficam fora do git. Saída binária em `public/data/cidades/<ibge>/`.

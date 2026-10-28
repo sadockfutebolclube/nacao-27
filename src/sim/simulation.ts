@@ -21,8 +21,10 @@ import { insideFootprint, serviceFootprint } from '../world/services';
 import { generateTerrain, sampleForest, sampleHeight, sampleWaterDist, type Heightmap } from '../world/terrain';
 import { arquetipoReal, grafoReal, lotesFixos, terrenoReal } from '../world/cidadeReal';
 import { predio, type CidadeReal } from '../data/cidadeReal';
-import { arquetipo, arquetipoPorId, CONSUMO, equipamento, LV_PARA_NIVEL, MAX_LEVEL, Zone } from './catalog';
+import { arquetipo, arquetipoPorId, CONSUMO, equipamento, LV_PARA_NIVEL, MAX_LEVEL, tabArq, Zone } from './catalog';
 import { hash01, hash32, Rng } from './core/rng';
+import { HashLotes } from './hash';
+import { Orcamento } from './orcamento';
 import { Estado } from './estado/estado';
 import { Favelas } from './city/favelas';
 import { ServicosSociais } from './city/servicos';
@@ -35,6 +37,8 @@ import {
 } from './protocol';
 
 export const TICKS_POR_DIA = 4;
+/** com orçamento, o modelo semanal de transporte roda 1 zona de origem em N por semana (valores × N) */
+const PASSO_TRANSPORTE_LOD = 4;
 /** No dia 1º o fechamento é do mês anterior. */
 const mes0Fechamento = (mesAtual: number) => ((mesAtual + 10) % 12) + 1;
 const DIAS_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -44,6 +48,9 @@ const ANO_INICIAL = 2027;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const clamp01 = (v: number) => clamp(v, 0, 1);
+
+/** fração que o alisamento diário (taxa 0,15 / 0,10) cobre em `dt` dias de uma vez — a conta dos lotes distantes, que rodam a cada 4º dia */
+const alisar = (taxa: number, dt: number) => (dt <= 1 ? taxa : 1 - Math.pow(1 - taxa, dt));
 
 export const ledgerVazio = (): Ledger => ({
   receitas: { icms: 0, consumo: 0, tarifas: 0, repasse: 0, royalties: 0, passagens: 0 },
@@ -85,6 +92,34 @@ export class Simulation {
 
   pollution = new Float32Array(FIELD_RES * FIELD_RES);
   poluicaoAgua: number;
+
+  // ── Fase 23: orçamento por passo, LOD de simulação e tabelas tipadas dos lotes ──
+  readonly orcamento = new Orcamento();
+  /** rótulo da fase em andamento (as fatias do `Orcamento` entram no painel F4 por fase) */
+  /**
+   * ms de CPU que cada `step()` pode gastar no trabalho pesado do dia. `Infinity` = síncrono e completo (testes, "avançar N dias",
+   * salvar): o resultado é o de antes da Fase 23. Finito = o trabalho vira geradores que cedem a vez e o que não coube
+   * continua nos passos seguintes; os lotes longe do foco rodam a cada 4º dia.
+   */
+  orcamentoMs = Infinity;
+  /** foco da câmera (m): dentro de `raio` o lote é simulado todo dia */
+  foco = { x: 0, z: 0, raio: 1400 };
+  lotX = new Float64Array(0); lotZ = new Float64Array(0); lotY = new Float64Array(0);
+  /** 1 = lote dentro do foco da câmera */
+  perto = new Uint8Array(0);
+  hashLotes: HashLotes = new HashLotes([], [], 0);
+  /** último dia em que o valor do solo / a criminalidade de cada lote foram atualizados (LOD) */
+  ultimoDiaValor = new Int32Array(0);
+  ultimoDiaCrime = new Int32Array(0);
+  private estaticos: { orla: Float64Array; bonus: Float64Array; penFav: Float64Array; campoAdd: Int32Array; campoClamp: Int32Array } | null = null;
+  private cacheRedes: { versao: number; arestas: number; servicos: number; compLote: Int32Array; nComp: number; servComp: Int32Array; capA: Float64Array; capE: Float64Array; capS: Float64Array; demA: Float64Array; demE: Float64Array; demS: Float64Array; rA: Float64Array; rE: Float64Array; rS: Float64Array; fAg: Float64Array; fEn: Float64Array; fEs: Float64Array; tem: Uint8Array; cA: Float64Array; cE: Float64Array; cS: Float64Array } | null = null;
+  private custoVias: { versao: number; n: number; v: number } | null = null;
+  private polAlt: Float32Array<ArrayBuffer> | null = null;
+  /** dias cujo trabalho pesado foi engolido por um ainda em andamento (relógio mais rápido que a máquina) */
+  diasPulados = 0;
+  /** duração dos últimos 240 passos (ms) */
+  readonly stepMs = new Float32Array(240);
+  private stepI = 0;
 
   tick = 0;
   caixa: number;
@@ -146,6 +181,7 @@ export class Simulation {
     this.init = init;
     this.rng = new Rng(init.seed);
     this.real = real ?? null;
+    this.orcamento.rotulo = () => this.faseAtual;
     this.hm = hm ?? (this.real ? terrenoReal(this.real, init.terreno, init.bioma, init.seed) : generateTerrain(init.seed, init.terreno, init.bioma));
     if (this.real) this.graph = grafoReal(this.real, (i, av) => nomeRua(init.seed ^ (i * 2654435761), av));
     const divida = Math.max(0, init.efeitos.dividaInicial ?? 0);
@@ -277,8 +313,72 @@ export class Simulation {
     }
     this.lots = lots;
     this.worldVersion++;
+    this.orcamento.cancelar(); // o trabalho em andamento enxerga lotes que já não existem
+    this.prepararTabelas();
+    this.custoManutencaoVias();
+    this.transporte.grafoCompacto(this);
+    this.prepararRedes(); // o custo (componentes do grafo, equipamento → rede) entra na obra, não no primeiro tick depois dela
     this.servicosSociais.redimensionar(n);
     if (n && this.dia > 0) this.servicosSociais.atualizar(this, false);
+  }
+
+  /** Manutenção mensal das vias: o comprimento de cada trecho só muda com a rede viária (cache por versão do mundo). */
+  private custoManutencaoVias(): number {
+    if (!this.custoVias || this.custoVias.versao !== this.worldVersion || this.custoVias.n !== this.graph.edges.size) {
+      let v = 0;
+      for (const e of this.graph.edges.values()) v += edgeLength(this.graph, e) * ROAD_SPECS[e.type].manutencaoM;
+      this.custoVias = { versao: this.worldVersion, n: this.graph.edges.size, v };
+    }
+    return this.custoVias.v;
+  }
+
+  /** Posição, hash espacial e tabelas estáticas dos lotes (recalculadas a cada `rebuildLots`). */
+  private prepararTabelas() {
+    const n = this.lots.length;
+    this.lotX = new Float64Array(n); this.lotZ = new Float64Array(n); this.lotY = new Float64Array(n);
+    for (let i = 0; i < n; i++) { const l = this.lots[i]; this.lotX[i] = l.x; this.lotZ[i] = l.z; this.lotY[i] = l.baseY; }
+    this.hashLotes = new HashLotes(this.lotX, this.lotZ, n, 64);
+    this.perto = new Uint8Array(n);
+    this.ultimoDiaValor = new Int32Array(n).fill(this.dia);
+    this.ultimoDiaCrime = new Int32Array(n).fill(this.dia);
+    this.cacheRedes = null;
+    const R = FIELD_RES;
+    const orla = new Float64Array(n), campoAdd = new Int32Array(n), campoClamp = new Int32Array(n);
+    for (let i = 0; i < n; i++) {
+      orla[i] = clamp01(1 - (sampleWaterDist(this.hm, this.lotX[i], this.lotZ[i]) - 30) / 480);
+      const fi = Math.floor((this.lotX[i] + BUILD_HALF) / FIELD_CELL), fj = Math.floor((this.lotZ[i] + BUILD_HALF) / FIELD_CELL);
+      campoAdd[i] = fi >= 0 && fj >= 0 && fi < R && fj < R ? fj * R + fi : -1;
+      campoClamp[i] = clamp(fj, 0, R - 1) * R + clamp(fi, 0, R - 1);
+    }
+    // bônus/penalidade dos equipamentos de lazer e dos "sujos" (termelétrica, ETE, subestação) por lote: só muda com os equipamentos
+    const bonus = new Float64Array(n);
+    for (const sv of this.services) {
+      const eq = equipamento(sv.eq);
+      const lazer = eq.rede === 'lazer', sujo = sv.eq === 'termeletrica' || sv.eq === 'ete' || sv.eq === 'subestacao';
+      if (!lazer && !sujo) continue;
+      const raio = lazer ? eq.raio! : 160;
+      const k = this.hashLotes.consulta(sv.x, sv.z, raio), ids = this.hashLotes.saida;
+      for (let q = 0; q < k; q++) {
+        const i = ids[q], d = Math.hypot(sv.x - this.lotX[i], sv.z - this.lotZ[i]);
+        if (d >= raio) continue;
+        if (lazer) bonus[i] += eq.bonus! * (1 - d / raio);
+        if (sujo) bonus[i] -= 12 * (1 - d / 160);
+      }
+    }
+    this.estaticos = { orla, bonus, penFav: new Float64Array(n), campoAdd, campoClamp };
+    this.atualizarPerto();
+  }
+
+  /** Marca os lotes dentro do foco da câmera (simulação completa); o resto roda em LOD. */
+  atualizarPerto() {
+    const { x, z, raio } = this.foco, r2 = raio * raio;
+    for (let i = 0; i < this.perto.length; i++) { const dx = this.lotX[i] - x, dz = this.lotZ[i] - z; this.perto[i] = dx * dx + dz * dz < r2 ? 1 : 0; }
+  }
+
+  /** Move o foco da câmera (o worker chama quando a câmera anda mais de ~150 m). */
+  definirFoco(x: number, z: number, raio = this.foco.raio) {
+    this.foco.x = x; this.foco.z = z; this.foco.raio = raio;
+    this.atualizarPerto();
   }
 
   /** Lote novo de um prédio real: já construído e ocupado (a cidade existe antes do jogador). */
@@ -539,8 +639,23 @@ export class Simulation {
   // ── Passo de simulação ──────────────────────────────────────────────────────────
 
   step() {
+    const t0 = performance.now();
     this.tick++;
     if (this.tick % TICKS_POR_DIA === 0) this.passoDiario();
+    // o que o trabalho pesado do dia não terminou continua aqui, dentro do orçamento (Infinity = termina tudo)
+    if (this.orcamento.pendentes) this.orcamento.rodar(this.orcamentoMs);
+    this.stepMs[this.stepI++ % this.stepMs.length] = performance.now() - t0;
+  }
+
+  /** Termina já o trabalho pendente (salvar, avançar N dias, testes). */
+  drenar() { this.orcamento.drenar(); }
+
+  /** Roda uma fatia do trabalho pendente (o worker usa entre um tick e o próximo). Devolve true se a fila esvaziou. */
+  trabalhar(ms: number): boolean {
+    const t0 = performance.now();
+    const livre = this.orcamento.rodar(ms);
+    this.stepMs[this.stepI++ % this.stepMs.length] = performance.now() - t0;
+    return livre;
   }
 
   private passoDiario() {
@@ -551,26 +666,17 @@ export class Simulation {
       this.climaMes.enchente = Math.max(this.climaMes.enchente, cl.enchente);
       this.crimeExtra *= 0.97;
     }
-    this.redesDeServico();
-    this.servicosSociais.atualizar(this);
-    this.territorio.atualizar(this, (this.estado?.politicas.doutrina ?? 'confronto') as Doutrina, this.transporte.vans);
-    {
-      const { mes } = this.data();
-      // deslizamentos seguem a chuva real dos últimos 3 dias (com o clima) ou o calendário (sem ele)
-      const p99 = Math.max(25, this.clima.normais(mes).p99);
-      const fc = 20 * Math.pow(clamp(this.clima.resumo.chuva3d / p99 - 0.4, 0, 2), 2);
-      const desl = this.favelas.diario(this, mes, this.init.regiao === 'Nordeste', fc);
-      if (desl) this.estado?.registrarTragedia(desl.mortos);
+    const semanal = this.dia % 7 === 0;
+    if (this.orcamentoMs === Infinity) {
+      this.orcamento.drenar();
+      const g = this.trabalhoPesado(semanal, 1, 0);
+      while (!g.next().done);
+    } else if (this.orcamento.emAndamento('diario')) {
+      this.diasPulados++; // o trabalho de ontem ainda não acabou: este dia é engolido por ele (o estado é o mesmo)
+    } else {
+      // o modelo semanal de transporte roda em amostra (1 zona de origem em 4 por semana, valores × 4)
+      this.orcamento.agendar('diario', this.trabalhoPesado(semanal, PASSO_TRANSPORTE_LOD, Math.floor(this.dia / 7) % PASSO_TRANSPORTE_LOD));
     }
-    if (this.dia % 7 === 0) {
-      this.favelas.semanal(this);
-      this.transporte.semanal(this);
-    }
-    this.camposDePoluicao();
-    this.valorDoSolo();
-    this.calcularDemanda();
-    this.crescimento();
-    this.contabilizarAgregados();
     this.verificarNoticias();
     const { dia } = this.data();
     if (dia === 1) this.fechamentoMensal();
@@ -584,7 +690,50 @@ export class Simulation {
     this.passoEventos(dia === 1);
   }
 
-  // ── Eventos (storylets), festas e efeitos visuais ───────────────────────────────
+  /** Tudo o que o dia faz sobre os lotes, na ordem de sempre, em fatias que cedem a vez (veja `Orcamento`). */
+  private *trabalhoPesado(semanal: boolean, passoTransporte: number, fase: number): Generator<void, void, void> {
+    this.faseAtual = 'redes'; yield* this.redesDeServico();
+    this.faseAtual = 'serviços sociais'; this.servicosSociais.atualizar(this); yield;
+    this.faseAtual = 'território'; this.territorio.atualizar(this, (this.estado?.politicas.doutrina ?? 'confronto') as Doutrina, this.transporte.vans); yield;
+    this.faseAtual = 'favelas';
+    {
+      const { mes } = this.data();
+      // deslizamentos seguem a chuva real dos últimos 3 dias (com o clima) ou o calendário (sem ele)
+      const p99 = Math.max(25, this.clima.normais(mes).p99);
+      const fc = 20 * Math.pow(clamp(this.clima.resumo.chuva3d / p99 - 0.4, 0, 2), 2);
+      const desl = this.favelas.diario(this, mes, this.init.regiao === 'Nordeste', fc);
+      if (desl) this.estado?.registrarTragedia(desl.mortos);
+    }
+    yield;
+    if (semanal) {
+      this.faseAtual = 'favelas (semana)'; this.favelas.semanal(this); yield;
+      this.faseAtual = 'transporte (semana)'; yield* this.transporte.semanalFatiado(this, passoTransporte, fase);
+    }
+    this.faseAtual = 'poluição'; yield* this.camposDePoluicao();
+    this.faseAtual = 'valor do solo'; yield* this.valorDoSolo();
+    this.faseAtual = 'demanda'; this.calcularDemanda(); yield;
+    this.faseAtual = 'crescimento'; yield* this.crescimento();
+    this.faseAtual = 'agregados'; this.contabilizarAgregados();
+  }
+
+  /** Resumo de desempenho para o painel F4. */
+  perf() {
+    const v = Array.from(this.stepMs).filter((x) => x > 0).sort((a, b) => a - b);
+    const q = (p: number) => (v.length ? v[Math.min(v.length - 1, Math.floor(v.length * p))] : 0);
+    let perto = 0;
+    for (let i = 0; i < this.perto.length; i++) perto += this.perto[i];
+    return {
+      passoMs: { ultimo: this.stepMs[(this.stepI + this.stepMs.length - 1) % this.stepMs.length], p50: q(0.5), p95: q(0.95), p99: q(0.99), max: v.length ? v[v.length - 1] : 0 },
+      orcamentoMs: this.orcamentoMs === Infinity ? 0 : this.orcamentoMs,
+      lotes: this.lots.length, lotesPerto: perto, raioFoco: this.foco.raio,
+      fila: this.orcamento.nomesPendentes, diasPulados: this.diasPulados, concluidos: this.orcamento.concluidos,
+      trabalhos: [...this.orcamento.stats.values()].map((t) => ({ nome: t.nome, fatias: t.fatias, ms: t.ms, ema: t.ema, pior: t.pior })),
+    };
+  }
+  /** fase do trabalho pesado em andamento (rótulo das fatias no painel F4) */
+  private faseAtual = '';
+
+  // ── Eventos (storylets), festas e efeitos visuais  // ── Eventos (storylets), festas e efeitos visuais ───────────────────────────────
 
   festaHoje(): Festa | null {
     const { dia, mes, ano } = this.data();
@@ -720,122 +869,148 @@ export class Simulation {
     return { ctx, textos };
   }
 
-  /** Redes de água, energia e esgoto: componentes conexos do grafo viário. */
-  private redesDeServico() {
+  /** Componentes conexos do grafo por lote e por equipamento: só mudam quando as vias ou os equipamentos mudam. */
+  private prepararRedes() {
+    const c = this.cacheRedes;
+    if (c && c.versao === this.worldVersion && c.arestas === this.graph.edges.size && c.servicos === this.services.length) return c;
     const comp = components(this.graph);
-    const edgeComp = new Map<number, number>();
-    for (const e of this.graph.edges.values()) edgeComp.set(e.id, comp.get(e.a)!);
-
-    type Cap = { agua: number; energia: number; esgoto: number };
-    const capPorComp = new Map<number, Cap>();
-    for (const s of this.services) {
-      const eq = equipamento(s.eq);
-      const near = findEdgeNear(this.graph, s.x, s.z, Math.max(eq.w, eq.d) + 16);
-      s.conectado = !!near;
-      if (!near || (eq.rede !== 'agua' && eq.rede !== 'energia' && eq.rede !== 'esgoto')) continue;
-      const c = edgeComp.get(near.edge.id)!;
-      const cap = capPorComp.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
-      const cl = this.clima.resumo;
-      cap[eq.rede] += eq.capacidade * (eq.rede === 'agua' ? 1 - 0.35 * cl.estiagem : eq.rede === 'energia' ? 1 - 0.18 * cl.calor : 1);
-      capPorComp.set(c, cap);
+    const idx = new Map<number, number>();
+    const edgeIdx = new Map<number, number>();
+    for (const e of this.graph.edges.values()) {
+      const cc = comp.get(e.a)!;
+      let k = idx.get(cc);
+      if (k === undefined) { k = idx.size; idx.set(cc, k); }
+      edgeIdx.set(e.id, k);
     }
+    const n = this.lots.length, nC = idx.size;
+    const compLote = new Int32Array(n);
+    for (let i = 0; i < n; i++) compLote[i] = edgeIdx.get(this.lots[i].edge) ?? -1;
+    const servComp = new Int32Array(this.services.length).fill(-1);
+    this.services.forEach((sv, si) => {
+      const eq = equipamento(sv.eq);
+      const near = findEdgeNear(this.graph, sv.x, sv.z, Math.max(eq.w, eq.d) + 16);
+      sv.conectado = !!near;
+      if (near) servComp[si] = edgeIdx.get(near.edge.id)!;
+    });
+    const f = () => new Float64Array(nC);
+    return (this.cacheRedes = {
+      versao: this.worldVersion, arestas: this.graph.edges.size, servicos: this.services.length, compLote, nComp: nC, servComp,
+      capA: f(), capE: f(), capS: f(), demA: f(), demE: f(), demS: f(), rA: f(), rE: f(), rS: f(), fAg: f(), fEn: f(), fEs: f(), tem: new Uint8Array(nC),
+      cA: new Float64Array(n), cE: new Float64Array(n), cS: new Float64Array(n),
+    });
+  }
+
+  /** Redes de água, energia e esgoto: componentes conexos do grafo viário (tabelas tipadas, sem alocação por lote). */
+  private *redesDeServico(): Generator<void, void, void> {
+    const R = this.prepararRedes();
+    const { compLote, servComp, capA, capE, capS, demA, demE, demS, rA, rE, rS, tem, cA, cE, cS, fAg, fEn, fEs } = R;
+    const n = this.lots.length, tab = tabArq();
+    capA.fill(0); capE.fill(0); capS.fill(0); demA.fill(0); demE.fill(0); demS.fill(0); tem.fill(0);
+    const ordemCap: number[] = [];
+    const cl = this.clima.resumo;
+    this.services.forEach((sv, si) => {
+      const eq = equipamento(sv.eq);
+      const c = servComp[si];
+      if (c < 0 || (eq.rede !== 'agua' && eq.rede !== 'energia' && eq.rede !== 'esgoto')) return;
+      if (!tem[c]) { tem[c] = 1; ordemCap.push(c); }
+      const v = eq.capacidade * (eq.rede === 'agua' ? 1 - 0.35 * cl.estiagem : eq.rede === 'energia' ? 1 - 0.18 * cl.calor : 1);
+      (eq.rede === 'agua' ? capA : eq.rede === 'energia' ? capE : capS)[c] += v;
+    });
 
     // demanda por componente
-    const dem = new Map<number, Cap>();
-    const n = this.lots.length;
-    const consumo = (i: number): Cap => {
-      if (!this.arch[i] || this.progress[i] < 1) return { agua: 0, energia: 0, esgoto: 0 };
-      const a = arquetipoPorId(this.arch[i]);
-      const cap = a.moradores + a.empregos;
-      const ind = a.zone === Zone.Industrial;
-      const agua = a.moradores * CONSUMO.aguaMorador + a.empregos * CONSUMO.aguaEmprego;
-      const energia = a.moradores * CONSUMO.energiaMorador + a.empregos * (ind ? CONSUMO.energiaIndustria : CONSUMO.energiaComercio);
-      return cap ? { agua, energia, esgoto: agua * CONSUMO.esgotoFator } : { agua: 0, energia: 0, esgoto: 0 };
-    };
-    const cons: Cap[] = new Array(n);
     for (let i = 0; i < n; i++) {
-      cons[i] = consumo(i);
-      const c = edgeComp.get(this.lots[i].edge);
-      if (c === undefined) continue;
-      const d = dem.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
-      d.agua += cons[i].agua; d.energia += cons[i].energia; d.esgoto += cons[i].esgoto;
-      dem.set(c, d);
+      if ((i & 32767) === 32767) yield;
+      const t = this.arch[i] && this.progress[i] >= 1 ? tab[this.arch[i]] : null;
+      const a = t ? t.agua : 0, e = t ? t.energia : 0, sg = t ? t.esgoto : 0;
+      cA[i] = a; cE[i] = e; cS[i] = sg;
+      const c = compLote[i];
+      if (c < 0) continue;
+      demA[c] += a; demE[c] += e; demS[c] += sg;
     }
+    yield;
 
     // Fase 11: as redes que já existiam na cidade real atendem os prédios originais, proporcionalmente
     if (this.real) {
-      const demReal = new Map<number, Cap>();
+      rA.fill(0); rE.fill(0); rS.fill(0);
       const totReal = { agua: 0, energia: 0, esgoto: 0 };
+      const vistos: number[] = [];
+      const visto = new Uint8Array(rA.length);
       for (let i = 0; i < n; i++) {
+        if ((i & 32767) === 32767) yield;
         if (!this.realLote[i]) continue;
-        const c = edgeComp.get(this.lots[i].edge);
-        if (c === undefined) continue;
-        const d = demReal.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
-        d.agua += cons[i].agua; d.energia += cons[i].energia; d.esgoto += cons[i].esgoto;
-        totReal.agua += cons[i].agua; totReal.energia += cons[i].energia; totReal.esgoto += cons[i].esgoto;
-        demReal.set(c, d);
+        const c = compLote[i];
+        if (c < 0) continue;
+        if (!visto[c]) { visto[c] = 1; vistos.push(c); }
+        rA[c] += cA[i]; rE[c] += cE[i]; rS[c] += cS[i];
+        totReal.agua += cA[i]; totReal.energia += cE[i]; totReal.esgoto += cS[i];
       }
       // dimensionada uma vez, na fundação: 5% de folga; esgoto só na cobertura real da UF
       this.herdada ??= { agua: totReal.agua * 1.05, energia: totReal.energia * 1.05, esgoto: totReal.esgoto * 1.05 * this.init.esgotoUF / 100 };
-      for (const [c, d] of demReal) {
-        const cap = capPorComp.get(c) ?? { agua: 0, energia: 0, esgoto: 0 };
-        for (const k of ['agua', 'energia', 'esgoto'] as const) if (totReal[k] > 0) cap[k] += this.herdada[k] * (d[k] / totReal[k]);
-        capPorComp.set(c, cap);
+      for (const c of vistos) {
+        if (!tem[c]) { tem[c] = 1; ordemCap.push(c); }
+        if (totReal.agua > 0) capA[c] += this.herdada.agua * (rA[c] / totReal.agua);
+        if (totReal.energia > 0) capE[c] += this.herdada.energia * (rE[c] / totReal.energia);
+        if (totReal.esgoto > 0) capS[c] += this.herdada.esgoto * (rS[c] / totReal.esgoto);
       }
     }
 
-    const tot = { agua: [0, 0, 0, 0], energia: [0, 0, 0, 0], esgoto: [0, 0, 0, 0] };
-    for (const cap of capPorComp.values()) { tot.agua[0] += cap.agua; tot.energia[0] += cap.energia; tot.esgoto[0] += cap.esgoto; }
-    let esgotoBruto = 0;
+    yield;
+    let capTotA = 0, capTotE = 0, capTotS = 0;
+    for (const c of ordemCap) { capTotA += capA[c]; capTotE += capE[c]; capTotS += capS[c]; }
+    // fração atendida de cada rede em cada componente: uma divisão por componente, não por lote
+    for (let c = 0; c < demA.length; c++) {
+      fAg[c] = demA[c] > 0 ? capA[c] / demA[c] : capA[c] > 0 ? 1 : 0;
+      fEn[c] = demE[c] > 0 ? capE[c] / demE[c] : capE[c] > 0 ? 1 : 0;
+      fEs[c] = demS[c] > 0 ? capS[c] / demS[c] : capS[c] > 0 ? 1 : 0;
+    }
+    let esgotoBruto = 0, usoA = 0, usoE = 0, usoS = 0, totalN = 0, atA = 0, atE = 0, atS = 0;
     for (let i = 0; i < n; i++) {
-      const c = edgeComp.get(this.lots[i].edge);
-      const cap = c !== undefined ? capPorComp.get(c) : undefined;
-      const d = c !== undefined ? dem.get(c) : undefined;
+      if ((i & 32767) === 32767) yield;
+      const c = compLote[i];
       let f = this.flags[i] & FLAG.ABANDONADO;
-      const ratio = (k: keyof Cap) => (cap && d && d[k] > 0 ? cap[k] / d[k] : cap && cap[k] > 0 ? 1 : 0);
-      const ord = this.ordem[i];
-      if (ord < ratio('agua')) f |= FLAG.AGUA;
-      if (ord < ratio('energia')) f |= FLAG.ENERGIA;
-      if (ord < ratio('esgoto')) f |= FLAG.ESGOTO;
+      if (c >= 0) {
+        const ord = this.ordem[i];
+        if (ord < fAg[c]) f |= FLAG.AGUA;
+        if (ord < fEn[c]) f |= FLAG.ENERGIA;
+        if (ord < fEs[c]) f |= FLAG.ESGOTO;
+      }
       this.flags[i] = f;
-      const ci = cons[i];
-      if (ci.agua > 0) {
-        tot.agua[1] += ci.agua; tot.agua[3]++; if (f & FLAG.AGUA) { tot.agua[2]++; }
-        tot.energia[1] += ci.energia; tot.energia[3]++; if (f & FLAG.ENERGIA) tot.energia[2]++;
-        tot.esgoto[1] += ci.esgoto; tot.esgoto[3]++;
-        if (f & FLAG.ESGOTO) tot.esgoto[2]++; else esgotoBruto += ci.esgoto;
+      if (cA[i] > 0) {
+        usoA += cA[i]; usoE += cE[i]; usoS += cS[i]; totalN++;
+        if (f & FLAG.AGUA) atA++;
+        if (f & FLAG.ENERGIA) atE++;
+        if (f & FLAG.ESGOTO) atS++; else esgotoBruto += cS[i];
       }
     }
-    const pack = (t: number[]): RedeStats => ({ capacidade: t[0], uso: t[1], atendidos: t[2], total: t[3] });
-    this.redes.agua = pack(tot.agua);
-    this.redes.energia = pack(tot.energia);
-    this.redes.esgoto = pack(tot.esgoto);
+    this.redes.agua = { capacidade: capTotA, uso: usoA, atendidos: atA, total: totalN };
+    this.redes.energia = { capacidade: capTotE, uso: usoE, atendidos: atE, total: totalN };
+    this.redes.esgoto = { capacidade: capTotS, uso: usoS, atendidos: atS, total: totalN };
 
     // Poluição da água: esgoto in natura + indústria + memória do passado (dados reais da UF)
     let indDespejo = 0;
-    for (const s of this.services) if (s.eq === 'termeletrica') indDespejo += 0.03;
+    for (const sv of this.services) if (sv.eq === 'termeletrica') indDespejo += 0.03;
     esgotoBruto += this.favelas.populacaoSemSaneamento() * CONSUMO.esgotoFator;
     const esgotoRef = this.estado ? this.estado.esgotoPct : this.init.esgotoUF;
     const alvo = clamp01(0.06 + (1 - esgotoRef / 100) * 0.3 + esgotoBruto / (esgotoBruto + 25_000) * 0.6 + indDespejo);
     this.poluicaoAgua += (alvo - this.poluicaoAgua) * 0.01;
   }
 
-  private camposDePoluicao() {
-    const R = FIELD_RES;
-    const p = this.pollution;
-    const next = new Float32Array(R * R);
-    const add = (x: number, z: number, v: number) => {
-      const i = Math.floor((x + BUILD_HALF) / FIELD_CELL), j = Math.floor((z + BUILD_HALF) / FIELD_CELL);
-      if (i >= 0 && j >= 0 && i < R && j < R) next[j * R + i] += v;
-    };
-    for (let i = 0; i < this.lots.length; i++) {
+  private *camposDePoluicao(): Generator<void, void, void> {
+    const R = FIELD_RES, p = this.pollution, n = this.lots.length, tab = tabArq();
+    const E = this.estaticos!;
+    // dois buffers que se alternam: nada é alocado por dia
+    let next = this.polAlt;
+    if (!next || next.length !== R * R || next === p) next = new Float32Array(R * R); else next.fill(0);
+    for (let i = 0; i < n; i++) {
       if (!this.arch[i] || this.progress[i] < 1) continue;
-      const a = arquetipoPorId(this.arch[i]);
-      if (a.zone === Zone.Industrial) add(this.lots[i].x, this.lots[i].z, a.level === 2 ? 0.5 : 0.25);
+      const t = tab[this.arch[i]];
+      if (t.zona === Zone.Industrial && E.campoAdd[i] >= 0) next[E.campoAdd[i]] += t.nivel === 2 ? 0.5 : 0.25;
     }
-    for (const s of this.services) {
-      const eq = equipamento(s.eq);
-      if (eq.poluicao) add(s.x, s.z, eq.poluicao * 0.25);
+    for (const sv of this.services) {
+      const eq = equipamento(sv.eq);
+      if (!eq.poluicao) continue;
+      const i = Math.floor((sv.x + BUILD_HALF) / FIELD_CELL), j = Math.floor((sv.z + BUILD_HALF) / FIELD_CELL);
+      if (i >= 0 && j >= 0 && i < R && j < R) next[j * R + i] += eq.poluicao * 0.25;
     }
     for (let j = 0; j < R; j++) for (let i = 0; i < R; i++) {
       const k = j * R + i;
@@ -846,64 +1021,68 @@ export class Simulation {
       if (j < R - 1) { viz += p[k + R]; nv++; }
       next[k] += (p[k] * 0.6 + (viz / nv) * 0.4) * 0.9;
     }
+    this.polAlt = p;
     this.pollution = next;
-    for (let i = 0; i < this.lots.length; i++) {
-      const l = this.lots[i];
-      const fi = Math.floor((l.x + BUILD_HALF) / FIELD_CELL), fj = Math.floor((l.z + BUILD_HALF) / FIELD_CELL);
-      const v = next[clamp(fj, 0, R - 1) * R + clamp(fi, 0, R - 1)];
+    yield;
+    for (let i = 0; i < n; i++) {
+      const v = next[E.campoClamp[i]];
       this.lotPol[i] = v / (v + 1.5);
     }
   }
 
-  private valorDoSolo() {
-    const ef = this.init.efeitos;
-    const lazer = this.services.filter((s) => equipamento(s.eq).rede === 'lazer');
-    const sujos = this.services.filter((s) => ['termeletrica', 'ete', 'subestacao'].includes(s.eq));
-    for (let i = 0; i < this.lots.length; i++) {
-      const l = this.lots[i];
-      const dAgua = sampleWaterDist(this.hm, l.x, l.z);
-      const orla = clamp01(1 - (dAgua - 30) / 480);
-      let v = 24;
-      v += orla * (30 + 10 * (ef.turismo ?? 0)) * (1 - this.poluicaoAgua * 0.7);
-      for (const s of lazer) {
-        const eq = equipamento(s.eq);
-        const d = Math.hypot(s.x - l.x, s.z - l.z);
-        if (d < eq.raio!) v += eq.bonus! * (1 - d / eq.raio!);
+  private *valorDoSolo(): Generator<void, void, void> {
+    const ef = this.init.efeitos, n = this.lots.length, ss = this.servicosSociais;
+    const E = this.estaticos!, H = this.hashLotes;
+    const lod = this.orcamentoMs !== Infinity, dia = this.dia;
+    const orlaK = (30 + 10 * (ef.turismo ?? 0)) * (1 - this.poluicaoAgua * 0.7);
+    // vizinhança informal: cada favela só olha os lotes do raio dela (hash espacial), não a cidade inteira
+    const pen = E.penFav;
+    pen.fill(0);
+    for (const fv of this.favelas.ativas()) {
+      const Rr = this.favelas.raioAproximado(fv) + 90;
+      const k = H.consulta(fv.cx, fv.cz, Rr), ids = H.saida;
+      const m = fv.status === 'urbanizada' ? 3 : 10;
+      for (let q = 0; q < k; q++) {
+        const i = ids[q], d = Math.hypot(fv.cx - this.lotX[i], fv.cz - this.lotZ[i]);
+        if (d < Rr) pen[i] += m * (1 - d / Rr);
       }
-      for (const s of sujos) {
-        const d = Math.hypot(s.x - l.x, s.z - l.z);
-        if (d < 160) v -= 12 * (1 - d / 160);
-      }
+    }
+    yield;
+    const extra = 15 * (ef.qualidadeVida ?? 0) + 6 * (ef.renda ?? 0);
+    const usaTransp = this.transporte.resumo.viagensDia > 0;
+    for (let i = 0; i < n; i++) {
+      if ((i & 16383) === 16383) yield;
+      // LOD: longe do foco o lote roda a cada 4º dia (escalonado por índice), com a taxa de alisamento de todos os dias parados
+      if (lod && !this.perto[i] && ((i + dia) & 3) !== 0) continue;
+      const dt = lod ? clamp(dia - this.ultimoDiaValor[i], 1, 16) : 1;
+      this.ultimoDiaValor[i] = dia;
+      const x = this.lotX[i], z = this.lotZ[i];
+      let v = 24 + E.orla[i] * orlaK + E.bonus[i];
       const f = this.flags[i];
       if (f & FLAG.AGUA) v += 7;
       if (f & FLAG.ENERGIA) v += 7;
       if (f & FLAG.ESGOTO) v += 7;
       v -= 50 * this.lotPol[i];
-      v += 15 * (ef.qualidadeVida ?? 0) + 6 * (ef.renda ?? 0);
+      v += extra;
       // Fase 4: serviços sociais, crime, domínio territorial, vizinhança informal e acessibilidade
-      const ss = this.servicosSociais;
-      v += 8 * ss.saude[i] + 8 * ss.educacao[i] + 5 * ss.seguranca[i] - 30 * ss.crime[i] - 12 * this.territorio.controleEm(l.x, l.z);
-      for (const fv of this.favelas.ativas()) {
-        const R = this.favelas.raioAproximado(fv) + 90;
-        const d = Math.hypot(fv.cx - l.x, fv.cz - l.z);
-        if (d < R) v -= (fv.status === 'urbanizada' ? 3 : 10) * (1 - d / R);
-      }
-      if (this.transporte.resumo.viagensDia > 0) v += 8 * clamp((40 - this.transporte.tempoEm(l.x, l.z)) / 30, -1, 1);
+      v += 8 * ss.saude[i] + 8 * ss.educacao[i] + 5 * ss.seguranca[i] - 30 * ss.crime[i] - 12 * this.territorio.controleEm(x, z);
+      v -= pen[i];
+      if (usaTransp) v += 8 * clamp((40 - this.transporte.tempoEm(x, z)) / 30, -1, 1);
       // mora alto, mora bem: vista nas encostas suaves
-      v += clamp((l.baseY - 6) * 0.15, 0, 6);
-      this.lv[i] += (clamp(v, 0, 100) - this.lv[i]) * 0.15;
+      v += clamp((this.lotY[i] - 6) * 0.15, 0, 6);
+      this.lv[i] += (clamp(v, 0, 100) - this.lv[i]) * alisar(0.15, dt);
     }
   }
 
   private calcularDemanda() {
-    const ef = this.init.efeitos;
+    const ef = this.init.efeitos, tab = tabArq();
     let resCap = 0, comCap = 0, indCap = 0;
     for (let i = 0; i < this.lots.length; i++) {
       if (!this.arch[i] || (this.flags[i] & FLAG.ABANDONADO)) continue;
-      const a = arquetipoPorId(this.arch[i]);
-      resCap += a.moradores; // inclui obras: evita superoferta
-      if (a.zone === Zone.Comercial) comCap += a.empregos;
-      if (a.zone === Zone.Industrial) indCap += a.empregos;
+      const t = tab[this.arch[i]];
+      resCap += t.moradores; // inclui obras: evita superoferta
+      if (t.zona === Zone.Comercial) comCap += t.empregos;
+      if (t.zona === Zone.Industrial) indCap += t.empregos;
     }
     const R = Math.max(this.populacao, resCap * 0.9) + this.populacaoInformal;
     const W = 0.5 * R;
@@ -921,7 +1100,7 @@ export class Simulation {
     this.demanda.i += (clamp(i, -1, 1) - this.demanda.i) * s;
   }
 
-  private crescimento() {
+  private *crescimento(): Generator<void, void, void> {
     const n = this.lots.length;
     const novosMax = { r: Math.ceil(2 + 26 * Math.max(0, this.demanda.r)), c: Math.ceil(1 + 14 * Math.max(0, this.demanda.c)), i: Math.ceil(1 + 10 * Math.max(0, this.demanda.i)) };
     const novos = { r: 0, c: 0, i: 0 };
@@ -930,6 +1109,7 @@ export class Simulation {
     // ordem de varredura varia por dia para não favorecer sempre os mesmos lotes
     const start = this.rng.int(0, Math.max(0, n - 1));
     for (let k = 0; k < n; k++) {
+      if (k > 0 && (k & 16383) === 0) yield;
       const i = (start + k) % n;
       const z = this.zone[i] as Zone;
       const a = this.arch[i] ? arquetipoPorId(this.arch[i]) : null;
@@ -993,14 +1173,15 @@ export class Simulation {
 
   private contabilizarAgregados() {
     let pop = 0, jobs = 0, jobsCom = 0, jobsInd = 0;
+    const tab = tabArq();
     for (let i = 0; i < this.lots.length; i++) {
       if (!this.arch[i] || this.progress[i] < 1) continue;
-      const a = arquetipoPorId(this.arch[i]);
+      const a = tab[this.arch[i]];
       if (a.moradores) pop += this.occ[i];
       else {
         const cap = (this.flags[i] & FLAG.ABANDONADO) ? 0 : a.empregos;
         jobs += cap;
-        if (a.zone === Zone.Comercial) jobsCom += cap; else jobsInd += cap;
+        if (a.zona === Zone.Comercial) jobsCom += cap; else jobsInd += cap;
       }
     }
     this.populacao = pop;
@@ -1052,9 +1233,7 @@ export class Simulation {
     L.receitas.repasse = Math.round(repasse);
     // com o Estado ativo, royalties e dívida são contabilizados no Tesouro estadual
     L.receitas.royalties = this.estado ? 0 : Math.round(4_000_000 * Math.max(0, ef.receitaRoyalties ?? 0));
-    let vias = 0;
-    for (const e of this.graph.edges.values()) vias += edgeLength(this.graph, e) * ROAD_SPECS[e.type].manutencaoM;
-    L.despesas.vias = Math.round(vias);
+    L.despesas.vias = Math.round(this.custoManutencaoVias());
     L.despesas.equipamentos = this.services.reduce((s, x) => s + equipamento(x.eq).manutencao, 0);
     L.despesas.divida = this.estado ? 0 : Math.round(900_000 * Math.max(0, ef.dividaInicial ?? 0));
     const tr = this.transporte.financasMes();
@@ -1071,7 +1250,8 @@ export class Simulation {
     const W = this.populacao * 0.5;
     const desemprego = W > 0 ? clamp01((W - this.empregos) / W) : 0;
     let polCasa = 0, nCasa = 0;
-    for (let i = 0; i < this.lots.length; i++) if (this.arch[i] && arquetipoPorId(this.arch[i]).moradores) { polCasa += this.lotPol[i]; nCasa++; }
+    const tab = tabArq();
+    for (let i = 0; i < this.lots.length; i++) if (this.arch[i] && tab[this.arch[i]].moradores) { polCasa += this.lotPol[i]; nCasa++; }
     const pol = nCasa ? polCasa / nCasa : 0;
     const ss = this.servicosSociais.resumo;
     const mob = this.transporte.resumo;
@@ -1328,6 +1508,7 @@ export class Simulation {
   }
 
   serialize(): SaveData {
+    this.drenar(); // o save nunca guarda um dia pela metade
     return {
       formato: 'nacao27', versao: 1, salvoEm: new Date().toISOString(),
       init: this.init,

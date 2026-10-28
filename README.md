@@ -158,3 +158,5 @@ tests         Vitest
 Documentação: [RESEARCH.md](RESEARCH.md) · [DECISIONS.md](DECISIONS.md) · [SIMULATION.md](SIMULATION.md) · [ASSETS_LICENSES.md](ASSETS_LICENSES.md)
 
 Personagens, grupos e logradouros são fictícios ou genéricos. Tom: sátira aos vícios da política em geral, sem partidarismo.
+
+**Depuração:** F3 mapa (vias, relevo); F4 desempenho (passo da simulação, orçamento, fila e custo por fase). `npm run medir-simulacao` mede a simulação.

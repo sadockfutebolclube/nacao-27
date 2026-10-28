@@ -51,6 +51,8 @@ export interface GrafoCompacto {
   arestaIds: number[];
   comprimento: Float64Array;
   avenida: Uint8Array;
+  /** adjacência em CSR (Fase 23): os vizinhos de u são csrViz[csrInicio[u] .. csrInicio[u+1]) e a aresta de cada um, em csrAresta */
+  csrInicio: Int32Array; csrViz: Int32Array; csrAresta: Int32Array;
 }
 
 export function compactar(g: RoadGraph): GrafoCompacto {
@@ -76,39 +78,142 @@ export function compactar(g: RoadGraph): GrafoCompacto {
     adj[a].push({ viz: b, aresta: k });
     adj[b].push({ viz: a, aresta: k });
   }
-  return { nodeIds, indice, x, z, adj, arestaIds, comprimento: Float64Array.from(comp), avenida: Uint8Array.from(av) };
+  const csrInicio = new Int32Array(nodeIds.length + 1);
+  for (let u = 0; u < nodeIds.length; u++) csrInicio[u + 1] = csrInicio[u] + adj[u].length;
+  const csrViz = new Int32Array(csrInicio[nodeIds.length]), csrAresta = new Int32Array(csrInicio[nodeIds.length]);
+  for (let u = 0; u < nodeIds.length; u++) adj[u].forEach((a, q) => { csrViz[csrInicio[u] + q] = a.viz; csrAresta[csrInicio[u] + q] = a.aresta; });
+  return { nodeIds, indice, x, z, adj, arestaIds, comprimento: Float64Array.from(comp), avenida: Uint8Array.from(av), csrInicio, csrViz, csrAresta };
+}
+
+/** Heap binário em typed arrays (sem alocar por inserção): chaves e valores crescem por dobra. */
+export class HeapTipado {
+  private k = new Float64Array(1024);
+  private v = new Int32Array(1024);
+  n = 0;
+  /** chave do último `pop` */
+  chave = 0;
+  limpar() { this.n = 0; }
+  push(chave: number, valor: number) {
+    if (this.n === this.k.length) { const k2 = new Float64Array(this.n * 2), v2 = new Int32Array(this.n * 2); k2.set(this.k); v2.set(this.v); this.k = k2; this.v = v2; }
+    let i = this.n++;
+    const k = this.k, v = this.v;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (k[p] <= chave) break;
+      k[i] = k[p]; v[i] = v[p]; i = p;
+    }
+    k[i] = chave; v[i] = valor;
+  }
+  /** remove o menor e devolve o valor dele (a chave fica em `chave`) */
+  pop(): number {
+    const k = this.k, v = this.v;
+    const rv = v[0]; this.chave = k[0];
+    const n = --this.n;
+    if (n > 0) {
+      const lk = k[n], lv = v[n];
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1;
+        if (l >= n) break;
+        const r = l + 1;
+        const m = r < n && k[r] < k[l] ? r : l;
+        if (k[m] >= lk) break;
+        k[i] = k[m]; v[i] = v[m]; i = m;
+      }
+      k[i] = lk; v[i] = lv;
+    }
+    return rv;
+  }
+}
+
+export interface ArvoreRotas { dist: Float64Array; pred: Int32Array; predNo: Int32Array }
+export const arvoreVazia = (n: number): ArvoreRotas => ({ dist: new Float64Array(n), pred: new Int32Array(n), predNo: new Int32Array(n) });
+const heapCompartilhado = new HeapTipado();
+
+/**
+ * Dijkstra por CSR + heap tipado, escrevendo em `saida` (reaproveitável: zero alocação por busca). `custo` é o vetor de custo
+ * por aresta compacta (Infinity = proibida).
+ */
+export function dijkstraEm(G: GrafoCompacto, origem: number, custo: ArrayLike<number>, saida: ArvoreRotas): ArvoreRotas {
+  const { dist, pred, predNo } = saida;
+  dist.fill(Infinity); pred.fill(-1); predNo.fill(-1);
+  const h = heapCompartilhado;
+  h.limpar();
+  const { csrInicio, csrViz, csrAresta } = G;
+  dist[origem] = 0;
+  h.push(0, origem);
+  while (h.n) {
+    const u = h.pop();
+    const d = h.chave;
+    if (d > dist[u]) continue;
+    for (let q = csrInicio[u], f = csrInicio[u + 1]; q < f; q++) {
+      const a = csrAresta[q];
+      const c = custo[a];
+      if (c === Infinity) continue;
+      const nd = d + c, viz = csrViz[q];
+      if (nd < dist[viz]) { dist[viz] = nd; pred[viz] = a; predNo[viz] = u; h.push(nd, viz); }
+    }
+  }
+  return saida;
 }
 
 /**
  * Árvore de menor custo a partir de um nó. `custo(k)` dá o custo da aresta compacta k
  * (Infinity = proibida). Retorna distâncias e aresta predecessora de cada nó.
  */
-export function dijkstra(G: GrafoCompacto, origem: number, custo: (k: number) => number): { dist: Float64Array; pred: Int32Array; predNo: Int32Array } {
-  const n = G.nodeIds.length;
-  const dist = new Float64Array(n).fill(Infinity);
-  const pred = new Int32Array(n).fill(-1);
-  const predNo = new Int32Array(n).fill(-1);
-  const h = new HeapMin();
-  dist[origem] = 0;
-  h.push(0, origem);
-  while (h.tamanho) {
-    const [d, u] = h.pop();
-    if (d > dist[u]) continue;
-    for (const { viz, aresta } of G.adj[u]) {
-      const c = custo(aresta);
-      if (!Number.isFinite(c)) continue;
-      const nd = d + c;
-      if (nd < dist[viz]) { dist[viz] = nd; pred[viz] = aresta; predNo[viz] = u; h.push(nd, viz); }
-    }
-  }
-  return { dist, pred, predNo };
+export function dijkstra(G: GrafoCompacto, origem: number, custo: (k: number) => number): ArvoreRotas {
+  const nA = G.arestaIds.length;
+  const c = new Float64Array(nA);
+  for (let k = 0; k < nA; k++) { const v = custo(k); c[k] = Number.isFinite(v) ? v : Infinity; }
+  return dijkstraEm(G, origem, c, arvoreVazia(G.nodeIds.length));
 }
 
+/** Grade de células de 128 m sobre os nós do grafo (montada uma vez por grafo compacto, em CSR). */
+interface GradeNos { minX: number; minZ: number; nx: number; nz: number; ini: Int32Array; itens: Int32Array }
+const CEL_NOS = 128;
+const gradesNos = new WeakMap<GrafoCompacto, GradeNos>();
+function gradeNos(G: GrafoCompacto): GradeNos {
+  let g = gradesNos.get(G);
+  if (g) return g;
+  const n = G.nodeIds.length;
+  let mnx = Infinity, mnz = Infinity, mxx = -Infinity, mxz = -Infinity;
+  for (let i = 0; i < n; i++) { if (G.x[i] < mnx) mnx = G.x[i]; if (G.x[i] > mxx) mxx = G.x[i]; if (G.z[i] < mnz) mnz = G.z[i]; if (G.z[i] > mxz) mxz = G.z[i]; }
+  if (!n) { mnx = mnz = 0; mxx = mxz = 1; }
+  const nx = Math.floor((mxx - mnx) / CEL_NOS) + 1, nz = Math.floor((mxz - mnz) / CEL_NOS) + 1;
+  const ini = new Int32Array(nx * nz + 1), cel = new Int32Array(n);
+  for (let i = 0; i < n; i++) { cel[i] = Math.floor((G.z[i] - mnz) / CEL_NOS) * nx + Math.floor((G.x[i] - mnx) / CEL_NOS); ini[cel[i] + 1]++; }
+  for (let c = 0; c < nx * nz; c++) ini[c + 1] += ini[c];
+  const pos = ini.slice(0, nx * nz), itens = new Int32Array(n);
+  for (let i = 0; i < n; i++) itens[pos[cel[i]]++] = i;
+  g = { minX: mnx, minZ: mnz, nx, nz, ini, itens };
+  gradesNos.set(G, g);
+  return g;
+}
+
+/**
+ * Nó mais próximo de (x, z) a no máximo `maxD` m (-1 se nenhum). Busca em anéis de células da grade (Fase 23: antes era uma
+ * varredura de todos os nós por consulta); desempata pelo menor índice, como a varredura linear fazia.
+ */
 export function noMaisProximo(G: GrafoCompacto, x: number, z: number, maxD = Infinity): number {
+  const gr = gradeNos(G);
   let melhor = -1, bd = maxD;
-  for (let i = 0; i < G.nodeIds.length; i++) {
-    const d = Math.hypot(G.x[i] - x, G.z[i] - z);
-    if (d < bd) { bd = d; melhor = i; }
+  const ci = Math.floor((x - gr.minX) / CEL_NOS), cj = Math.floor((z - gr.minZ) / CEL_NOS);
+  const maxR = Number.isFinite(maxD) ? Math.ceil(maxD / CEL_NOS) + 1 : gr.nx + gr.nz + Math.abs(ci) + Math.abs(cj) + 2;
+  for (let r = 0; r <= maxR; r++) {
+    for (let j = cj - r; j <= cj + r; j++) {
+      if (j < 0 || j >= gr.nz) continue;
+      const borda = j === cj - r || j === cj + r;
+      for (let i = ci - r; i <= ci + r; i += borda ? 1 : 2 * r || 1) {
+        if (i < 0 || i >= gr.nx) continue;
+        const c = j * gr.nx + i;
+        for (let q = gr.ini[c], f = gr.ini[c + 1]; q < f; q++) {
+          const k = gr.itens[q], d = Math.hypot(G.x[k] - x, G.z[k] - z);
+          if (d < bd || (d === bd && melhor >= 0 && k < melhor)) { bd = d; melhor = k; }
+        }
+      }
+    }
+    // um nó num anel além de r está a pelo menos r × 128 m do ponto
+    if (melhor >= 0 && bd <= r * CEL_NOS) break;
   }
   return melhor;
 }

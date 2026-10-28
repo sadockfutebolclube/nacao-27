@@ -1,0 +1,1019 @@
+{
+  "_leia-me": "Veículos especiais (Fase 27): aeronaves, embarcações e viaturas. Modelos 3D reais em assets/models (créditos em assets/CREDITS.md). Rotas = waypoints [lat, lon, altitude m, velocidade m/s]; altitude 0 = no chão/água. As ROTAS SÃO APROXIMADAS (geometria das pistas e do canal da Baía; não são os procedimentos oficiais de aproximação nem os horários reais). O Galeão fica fora do mapa de 16 km: os voos de/para lá só aparecem enquanto cruzam a Baía. Para balancear: mude quantidade, cicloS e horario das frotas. As velocidades das embarcações estão aceleradas (~1,5–2× o real) para o movimento ser percebido numa partida. Rotas de mar ajustadas contra o relevo real do jogo (água ≥ 2,5 m de profundidade, 50 m de folga) pelo auxiliar window.__n27esp.aguaPerto (dev).",
+  "modelos": {
+    "aviao-linha-a": {
+      "arquivo": "aviao/aviao-linha-a.glb",
+      "comprimentoM": 60,
+      "frenteGraus": 0,
+      "lod": "ar",
+      "detalheM": 2600
+    },
+    "aviao-linha-b": {
+      "arquivo": "aviao/aviao-linha-b.glb",
+      "comprimentoM": 38,
+      "frenteGraus": 0,
+      "lod": "ar",
+      "detalheM": 2400
+    },
+    "aviao-pequeno": {
+      "arquivo": "aviao/aviao-pequeno.glb",
+      "comprimentoM": 8.5,
+      "frenteGraus": 180,
+      "lod": "ar",
+      "detalheM": 1200
+    },
+    "caca": {
+      "arquivo": "aviao/caca.glb",
+      "comprimentoM": 15,
+      "frenteGraus": 180,
+      "lod": "ar",
+      "detalheM": 1800
+    },
+    "heli-escuro": {
+      "arquivo": "helicoptero/heli-escuro.glb",
+      "comprimentoM": 12,
+      "frenteGraus": 0,
+      "lod": "helicoptero",
+      "detalheM": 1300,
+      "rotor": {
+        "y": 0.92,
+        "z": 0.1,
+        "raio": 5.2
+      }
+    },
+    "heli-amarelo": {
+      "arquivo": "helicoptero/heli-amarelo.glb",
+      "comprimentoM": 13,
+      "frenteGraus": 180,
+      "lod": "helicoptero",
+      "detalheM": 1300,
+      "rotor": {
+        "y": 0.95,
+        "z": 0.1,
+        "raio": 6
+      }
+    },
+    "heli-branco": {
+      "arquivo": "helicoptero/heli-branco.glb",
+      "comprimentoM": 12,
+      "frenteGraus": -90,
+      "lod": "helicoptero",
+      "detalheM": 1300,
+      "rotor": {
+        "y": 0.95,
+        "z": 0.1,
+        "raio": 5.5
+      }
+    },
+    "heli-grande": {
+      "arquivo": "helicoptero/heli-grande.glb",
+      "comprimentoM": 17,
+      "frenteGraus": 90,
+      "lod": "helicoptero",
+      "detalheM": 1500,
+      "rotor": {
+        "y": 0.95,
+        "z": 0.05,
+        "raio": 7.5
+      }
+    },
+    "heli-militar": {
+      "arquivo": "helicoptero/heli-militar.glb",
+      "comprimentoM": 15,
+      "frenteGraus": 0,
+      "lod": "helicoptero",
+      "detalheM": 1500,
+      "rotor": {
+        "y": 0.9,
+        "z": 0,
+        "raio": 6.5
+      }
+    },
+    "humvee": {
+      "arquivo": "terrestre/humvee.glb",
+      "comprimentoM": 4.9,
+      "frenteGraus": -90,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "police": {
+      "arquivo": "terrestre/police.glb",
+      "comprimentoM": 4.8,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "ambulance": {
+      "arquivo": "terrestre/ambulance.glb",
+      "comprimentoM": 5.8,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "firetruck": {
+      "arquivo": "terrestre/firetruck.glb",
+      "comprimentoM": 9,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 400
+    },
+    "truck": {
+      "arquivo": "terrestre/truck.glb",
+      "comprimentoM": 7,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "suv": {
+      "arquivo": "terrestre/suv.glb",
+      "comprimentoM": 4.8,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "van": {
+      "arquivo": "terrestre/van.glb",
+      "comprimentoM": 5.4,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 350
+    },
+    "ship-cargo-a": {
+      "arquivo": "navio/ship-cargo-a.glb",
+      "comprimentoM": 190,
+      "frenteGraus": 180,
+      "lod": "caixa",
+      "detalheM": 3500
+    },
+    "ship-cargo-b": {
+      "arquivo": "navio/ship-cargo-b.glb",
+      "comprimentoM": 170,
+      "frenteGraus": 180,
+      "lod": "caixa",
+      "detalheM": 3500
+    },
+    "ship-cargo-c": {
+      "arquivo": "navio/ship-cargo-c.glb",
+      "comprimentoM": 150,
+      "frenteGraus": 180,
+      "lod": "caixa",
+      "detalheM": 3500
+    },
+    "ship-large": {
+      "arquivo": "navio/ship-large.glb",
+      "comprimentoM": 120,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 3000
+    },
+    "ship-ocean-liner": {
+      "arquivo": "navio/ship-ocean-liner.glb",
+      "comprimentoM": 290,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 4000
+    },
+    "ship-ocean-liner-small": {
+      "arquivo": "navio/ship-ocean-liner-small.glb",
+      "comprimentoM": 68,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 2000
+    },
+    "ship-small": {
+      "arquivo": "navio/ship-small.glb",
+      "comprimentoM": 40,
+      "frenteGraus": 0,
+      "lod": "caixa",
+      "detalheM": 1500
+    },
+    "boat-fishing-small": {
+      "arquivo": "navio/boat-fishing-small.glb",
+      "comprimentoM": 14,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 900
+    },
+    "boat-sail-a": {
+      "arquivo": "navio/boat-sail-a.glb",
+      "comprimentoM": 12,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 900
+    },
+    "boat-sail-b": {
+      "arquivo": "navio/boat-sail-b.glb",
+      "comprimentoM": 14,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 900
+    },
+    "boat-speed-a": {
+      "arquivo": "navio/boat-speed-a.glb",
+      "comprimentoM": 3.3,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 500
+    },
+    "boat-speed-b": {
+      "arquivo": "navio/boat-speed-b.glb",
+      "comprimentoM": 7,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 600
+    },
+    "boat-speed-d": {
+      "arquivo": "navio/boat-speed-d.glb",
+      "comprimentoM": 8,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 600
+    },
+    "boat-tug-a": {
+      "arquivo": "navio/boat-tug-a.glb",
+      "comprimentoM": 24,
+      "frenteGraus": "proa",
+      "lod": "caixa",
+      "detalheM": 1200
+    }
+  },
+  "rotas": {
+    "sdu-pouso": {
+      "tipo": "ar",
+      "nota": "Pouso no sentido 20 (rumo sul) na pista 02R/20L do Santos Dumont: rampa de 3° vinda do norte, sobre a Baía, e rolagem na pista (geometria da pista do OpenStreetMap; rota aproximada).",
+      "pontos": [
+        [-22.7783, -43.1713, 730, 105],
+        [-22.8328, -43.1679, 420, 88],
+        [-22.8685, -43.1656, 210, 78],
+        [-22.8938, -43.1639, 63, 70],
+        [-22.9046, -43.1632, 0, 68],
+        [-22.9105, -43.1628, 0, 40],
+        [-22.9165, -43.1624, 0, 12]
+      ]
+    },
+    "sdu-decolagem": {
+      "tipo": "ar",
+      "nota": "Decolagem no sentido 02 (rumo norte) pela 02R: corrida na pista, subida sobre a Baía, curva à direita para o mar (rota aproximada).",
+      "pontos": [
+        [-22.9165, -43.1624, 0, 2],
+        [-22.9105, -43.1628, 0, 45],
+        [-22.9046, -43.1632, 0, 76],
+        [-22.89, -43.164, 140, 88],
+        [-22.879, -43.16, 380, 98],
+        [-22.873, -43.138, 700, 110],
+        [-22.88, -43.09, 1100, 125],
+        [-22.93, -43.03, 1500, 140],
+        [-23.05, -42.95, 2200, 150]
+      ]
+    },
+    "gig-pouso": {
+      "tipo": "ar",
+      "nota": "Chegada ao Galeão pela pista 15/33 no sentido 33 (rumo NO), vinda do mar sobre Niterói e a Baía. O aeroporto fica FORA do mapa de 16 km; o avião aparece até a borda.",
+      "pontos": [
+        [-22.94, -43.082, 1050, 120],
+        [-22.913, -43.121, 790, 108],
+        [-22.886, -43.1605, 524, 95],
+        [-22.8599, -43.1921, 315, 82],
+        [-22.8442, -43.2158, 157, 73],
+        [-22.8285, -43.2395, 0, 68],
+        [-22.82, -43.251, 0, 40],
+        [-22.8131, -43.2627, 0, 15]
+      ]
+    },
+    "gig-decolagem": {
+      "tipo": "ar",
+      "nota": "Saída do Galeão pela 15 (rumo SE), sobre a Baía e Niterói, rumo ao mar (corredor ~1,2 km ao lado do da chegada).",
+      "pontos": [
+        [-22.8131, -43.2627, 0, 2],
+        [-22.82, -43.251, 0, 50],
+        [-22.8285, -43.2395, 0, 85],
+        [-22.8442, -43.2158, 220, 100],
+        [-22.8599, -43.1921, 500, 112],
+        [-22.886, -43.15, 800, 122],
+        [-22.93, -43.09, 1300, 135],
+        [-23.05, -42.95, 2200, 155]
+      ]
+    },
+    "heli-turismo": {
+      "tipo": "ar",
+      "fechada": true,
+      "nota": "Passeio de helicóptero: Lagoa → Cristo Redentor (volta completa) → Pão de Açúcar (volta completa) → orla de Copacabana → Lagoa.",
+      "pontos": [
+        [-22.9706, -43.2118, 30, 4],
+        [-22.964, -43.209, 330, 30],
+        [-22.956, -43.206, 880, 32],
+        [-22.949, -43.2075, 910, 32],
+        [-22.9498, -43.2128, 910, 32],
+        [-22.9548, -43.214, 910, 32],
+        [-22.956, -43.2095, 910, 32],
+        [-22.952, -43.19, 760, 34],
+        [-22.95, -43.17, 600, 34],
+        [-22.9455, -43.159, 570, 30],
+        [-22.947, -43.154, 570, 30],
+        [-22.951, -43.155, 570, 30],
+        [-22.949, -43.16, 570, 30],
+        [-22.962, -43.17, 300, 36],
+        [-22.976, -43.185, 230, 36],
+        [-22.978, -43.201, 200, 32],
+        [-22.974, -43.21, 90, 22]
+      ]
+    },
+    "heli-imprensa": {
+      "tipo": "ar",
+      "fechada": true,
+      "nota": "Ronda do helicóptero de imprensa: Maracanã → Centro → Aterro → Botafogo → Tijuca.",
+      "pontos": [
+        [-22.9121, -43.2302, 380, 32],
+        [-22.902, -43.2, 380, 32],
+        [-22.91, -43.175, 360, 32],
+        [-22.93, -43.17, 340, 32],
+        [-22.945, -43.183, 340, 30],
+        [-22.93, -43.21, 380, 32],
+        [-22.925, -43.24, 400, 32]
+      ]
+    },
+    "aeronautica-patrulha": {
+      "tipo": "ar",
+      "fechada": true,
+      "nota": "Patrulha de caças da Aeronáutica sobre o mar, ao largo da orla.",
+      "pontos": [
+        [-23.02, -43.3, 1300, 150],
+        [-23.07, -43.2, 1400, 150],
+        [-23.05, -43.08, 1500, 150],
+        [-22.99, -43.06, 1400, 150],
+        [-22.96, -43.15, 1200, 150],
+        [-22.98, -43.28, 1250, 150]
+      ]
+    },
+    "aviao-aeroclube": {
+      "tipo": "ar",
+      "fechada": true,
+      "nota": "Avião pequeno de passeio/reboque de faixa sobre as praias.",
+      "pontos": [
+        [-22.956, -43.17, 260, 38],
+        [-22.972, -43.175, 190, 38],
+        [-22.993, -43.198, 180, 38],
+        [-23.001, -43.225, 200, 38],
+        [-22.989, -43.24, 240, 38],
+        [-22.974, -43.2, 260, 38]
+      ]
+    },
+    "mercante-entrada": {
+      "tipo": "mar",
+      "nota": "Do mar aberto pela barra (entre o Forte de Santa Cruz e o Pão de Açúcar) até o Cais do Porto.",
+      "pontos": [
+        [-23.03, -43.143, 0, 12],
+        [-23.0275, -43.1433, 0, 11.9],
+        [-23.025, -43.1436, 0, 11.9],
+        [-23.0225, -43.1439, 0, 11.9],
+        [-23.02, -43.1442, 0, 11.8],
+        [-23.0175, -43.1446, 0, 11.7],
+        [-23.015, -43.1449, 0, 11.6],
+        [-23.0125, -43.1452, 0, 11.6],
+        [-23.01, -43.1455, 0, 11.5],
+        [-23.0075, -43.1458, 0, 11.4],
+        [-23.005, -43.1461, 0, 11.4],
+        [-23.0025, -43.1465, 0, 11.4],
+        [-23, -43.1468, 0, 11.3],
+        [-22.9975, -43.1471, 0, 11.2],
+        [-22.995, -43.1474, 0, 11.1],
+        [-22.9925, -43.1477, 0, 11.1],
+        [-22.99, -43.148, 0, 11],
+        [-22.9878, -43.1483, 0, 10.8],
+        [-22.9857, -43.1485, 0, 10.7],
+        [-22.9835, -43.1488, 0, 10.5],
+        [-22.9813, -43.1491, 0, 10.3],
+        [-22.9792, -43.1493, 0, 10.2],
+        [-22.977, -43.1496, 0, 10],
+        [-22.9748, -43.1499, 0, 9.8],
+        [-22.9727, -43.1501, 0, 9.7],
+        [-22.9705, -43.1504, 0, 9.5],
+        [-22.9683, -43.1507, 0, 9.3],
+        [-22.9661, -43.1509, 0, 9.2],
+        [-22.9639, -43.1512, 0, 9],
+        [-22.9613, -43.1512, 0, 9],
+        [-22.9587, -43.1513, 0, 9],
+        [-22.9561, -43.1513, 0, 9],
+        [-22.9543, -43.1512, 0, 9],
+        [-22.9525, -43.1512, 0, 9],
+        [-22.9517, -43.1497, 0, 9],
+        [-22.9499, -43.1498, 0, 9],
+        [-22.9485, -43.1504, 0, 9],
+        [-22.9482, -43.1514, 0, 9],
+        [-22.946, -43.1511, 0, 9],
+        [-22.9438, -43.1508, 0, 9],
+        [-22.9416, -43.1505, 0, 9],
+        [-22.9394, -43.1503, 0, 9],
+        [-22.9372, -43.1502, 0, 9],
+        [-22.935, -43.15, 0, 9],
+        [-22.9325, -43.15, 0, 9],
+        [-22.93, -43.15, 0, 9],
+        [-22.9275, -43.15, 0, 9],
+        [-22.925, -43.15, 0, 9],
+        [-22.9225, -43.15, 0, 9],
+        [-22.92, -43.15, 0, 9],
+        [-22.9175, -43.15, 0, 9],
+        [-22.915, -43.15, 0, 9],
+        [-22.9131, -43.1508, 0, 9],
+        [-22.9112, -43.1517, 0, 9],
+        [-22.9093, -43.1526, 0, 9],
+        [-22.9075, -43.1535, 0, 9],
+        [-22.9056, -43.1544, 0, 9],
+        [-22.9037, -43.1552, 0, 9],
+        [-22.9018, -43.1561, 0, 9],
+        [-22.9, -43.157, 0, 9],
+        [-22.8989, -43.1595, 0, 8],
+        [-22.8977, -43.162, 0, 7],
+        [-22.8966, -43.1645, 0, 6],
+        [-22.8955, -43.1664, 0, 5.3],
+        [-22.8944, -43.1684, 0, 4.5],
+        [-22.8935, -43.1702, 0, 3.8],
+        [-22.8933, -43.1721, 0, 3],
+        [-22.8927, -43.1733, 0, 2.8],
+        [-22.893, -43.175, 0, 2.5],
+        [-22.8933, -43.176, 0, 2],
+        [-22.8933, -43.1776, 0, 1.5],
+        [-22.8933, -43.1799, 0, 1]
+      ]
+    },
+    "mercante-saida": {
+      "tipo": "mar",
+      "nota": "Do Cais do Porto de volta ao mar aberto.",
+      "pontos": [
+        [-22.8933, -43.1799, 0, 1],
+        [-22.8933, -43.1776, 0, 1.5],
+        [-22.8933, -43.176, 0, 2],
+        [-22.893, -43.175, 0, 2.5],
+        [-22.8927, -43.1733, 0, 2.8],
+        [-22.8933, -43.1721, 0, 3],
+        [-22.8935, -43.1702, 0, 3.8],
+        [-22.8944, -43.1684, 0, 4.5],
+        [-22.8955, -43.1664, 0, 5.3],
+        [-22.8966, -43.1645, 0, 6],
+        [-22.8977, -43.162, 0, 7],
+        [-22.8989, -43.1595, 0, 8],
+        [-22.9, -43.157, 0, 9],
+        [-22.9018, -43.1561, 0, 9],
+        [-22.9037, -43.1552, 0, 9],
+        [-22.9056, -43.1544, 0, 9],
+        [-22.9075, -43.1535, 0, 9],
+        [-22.9093, -43.1526, 0, 9],
+        [-22.9112, -43.1517, 0, 9],
+        [-22.9131, -43.1508, 0, 9],
+        [-22.915, -43.15, 0, 9],
+        [-22.9175, -43.15, 0, 9],
+        [-22.92, -43.15, 0, 9],
+        [-22.9225, -43.15, 0, 9],
+        [-22.925, -43.15, 0, 9],
+        [-22.9275, -43.15, 0, 9],
+        [-22.93, -43.15, 0, 9],
+        [-22.9325, -43.15, 0, 9],
+        [-22.935, -43.15, 0, 9],
+        [-22.9372, -43.1502, 0, 9],
+        [-22.9394, -43.1503, 0, 9],
+        [-22.9416, -43.1505, 0, 9],
+        [-22.9438, -43.1508, 0, 9],
+        [-22.946, -43.1511, 0, 9],
+        [-22.9482, -43.1514, 0, 9],
+        [-22.9485, -43.1504, 0, 9],
+        [-22.9499, -43.1498, 0, 9],
+        [-22.9517, -43.1497, 0, 9],
+        [-22.9525, -43.1512, 0, 9],
+        [-22.9543, -43.1512, 0, 9],
+        [-22.9561, -43.1513, 0, 9],
+        [-22.9587, -43.1513, 0, 9],
+        [-22.9613, -43.1512, 0, 9],
+        [-22.9639, -43.1512, 0, 9],
+        [-22.9661, -43.1509, 0, 9.2],
+        [-22.9683, -43.1507, 0, 9.3],
+        [-22.9705, -43.1504, 0, 9.5],
+        [-22.9727, -43.1501, 0, 9.7],
+        [-22.9748, -43.1499, 0, 9.8],
+        [-22.977, -43.1496, 0, 10],
+        [-22.9792, -43.1493, 0, 10.2],
+        [-22.9813, -43.1491, 0, 10.3],
+        [-22.9835, -43.1488, 0, 10.5],
+        [-22.9857, -43.1485, 0, 10.7],
+        [-22.9878, -43.1483, 0, 10.8],
+        [-22.99, -43.148, 0, 11],
+        [-22.9925, -43.1477, 0, 11.1],
+        [-22.995, -43.1474, 0, 11.1],
+        [-22.9975, -43.1471, 0, 11.2],
+        [-23, -43.1468, 0, 11.3],
+        [-23.0025, -43.1465, 0, 11.4],
+        [-23.005, -43.1461, 0, 11.4],
+        [-23.0075, -43.1458, 0, 11.4],
+        [-23.01, -43.1455, 0, 11.5],
+        [-23.0125, -43.1452, 0, 11.6],
+        [-23.015, -43.1449, 0, 11.6],
+        [-23.0175, -43.1446, 0, 11.7],
+        [-23.02, -43.1442, 0, 11.8],
+        [-23.0225, -43.1439, 0, 11.9],
+        [-23.025, -43.1436, 0, 11.9],
+        [-23.0275, -43.1433, 0, 11.9],
+        [-23.03, -43.143, 0, 12]
+      ]
+    },
+    "pesca-copacabana": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Barco de pesca ao largo de Copacabana/Ipanema.",
+      "pontos": [
+        [-22.995, -43.175, 0, 6.3],
+        [-23, -43.185, 0, 5.8],
+        [-23.005, -43.195, 0, 5.4],
+        [-23.0025, -43.205, 0, 5.4],
+        [-23, -43.215, 0, 5.4],
+        [-23.011, -43.225, 0, 4.5],
+        [-23.0125, -43.2119, 0, 4.8],
+        [-23.0145, -43.1944, 0, 5.3],
+        [-23.015, -43.19, 0, 5.4],
+        [-23.011, -43.1833, 0, 5.7],
+        [-23.006, -43.175, 0, 6.1],
+        [-23.003, -43.17, 0, 6.3],
+        [-22.997, -43.1737, 0, 6.3]
+      ]
+    },
+    "pesca-baia": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Barco de pesca na Baía, a leste do canal dos navios.",
+      "pontos": [
+        [-22.935, -43.1475, 0, 5],
+        [-22.925, -43.1475, 0, 5],
+        [-22.915, -43.1475, 0, 5],
+        [-22.915, -43.1465, 0, 5],
+        [-22.925, -43.1465, 0, 5],
+        [-22.935, -43.1465, 0, 5]
+      ]
+    },
+    "passeio-botafogo": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Barco de passeio (escuna/veleiro) na Baía de Botafogo e Urca.",
+      "pontos": [
+        [-22.944, -43.17, 0, 5.3],
+        [-22.941, -43.167, 0, 5.3],
+        [-22.938, -43.164, 0, 5.3],
+        [-22.9393, -43.1623, 0, 5.3],
+        [-22.9407, -43.1607, 0, 5.3],
+        [-22.942, -43.159, 0, 5.3],
+        [-22.9431, -43.1579, 0, 5.3],
+        [-22.9427, -43.1609, 0, 5.3],
+        [-22.944, -43.1627, 0, 5.3],
+        [-22.9455, -43.1638, 0, 5.3],
+        [-22.9474, -43.1635, 0, 5.3],
+        [-22.9484, -43.166, 0, 5.3],
+        [-22.9469, -43.1673, 0, 5.3],
+        [-22.9455, -43.1687, 0, 5.3]
+      ]
+    },
+    "passeio-niteroi": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Passeio de escuna no eixo da Baía, entre a barra e a Ilha Fiscal.",
+      "pontos": [
+        [-22.935, -43.15, 0, 6],
+        [-22.925, -43.15, 0, 6],
+        [-22.915, -43.15, 0, 6],
+        [-22.915, -43.1494, 0, 6],
+        [-22.925, -43.1494, 0, 6],
+        [-22.935, -43.1494, 0, 6]
+      ]
+    },
+    "jetski-copacabana": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Jetski e botes rápidos na arrebentação de Copacabana, ~250 m da areia.",
+      "pontos": [
+        [-22.9658, -43.1688, 0, 13],
+        [-22.9699, -43.1716, 0, 14.3],
+        [-22.974, -43.1745, 0, 15],
+        [-22.98, -43.179, 0, 15],
+        [-22.9841, -43.1831, 0, 14.5],
+        [-22.9868, -43.1842, 0, 14.3],
+        [-22.9882, -43.1872, 0, 14],
+        [-22.99, -43.188, 0, 12],
+        [-22.9873, -43.1843, 0, 12.3],
+        [-22.982, -43.177, 0, 13],
+        [-22.974, -43.17, 0, 14],
+        [-22.971, -43.167, 0, 13.5],
+        [-22.968, -43.164, 0, 13],
+        [-22.9669, -43.1664, 0, 13]
+      ]
+    },
+    "jetski-ipanema": {
+      "tipo": "mar",
+      "fechada": true,
+      "nota": "Jetski e botes na orla de Ipanema/Leblon, ~250 m da areia.",
+      "pontos": [
+        [-22.989, -43.196, 0, 13],
+        [-22.9893, -43.2, 0, 13.7],
+        [-22.9898, -43.206, 0, 14.7],
+        [-22.991, -43.21, 0, 14.8],
+        [-22.994, -43.216, 0, 14.3],
+        [-22.9967, -43.2225, 0, 14],
+        [-22.999, -43.23, 0, 14],
+        [-22.994, -43.231, 0, 12],
+        [-22.993, -43.225, 0, 12.5],
+        [-22.992, -43.219, 0, 13],
+        [-22.9896, -43.2129, 0, 13.5],
+        [-22.9872, -43.2068, 0, 14],
+        [-22.9886, -43.1987, 0, 13.3]
+      ]
+    },
+    "barca-ida": {
+      "tipo": "mar",
+      "nota": "Barca Praça XV → Niterói (Arariboia).",
+      "pontos": [
+        [-22.9014, -43.172, 0, 1.5],
+        [-22.9014, -43.17, 0, 4.5],
+        [-22.9015, -43.166, 0, 10.5],
+        [-22.9006, -43.1608, 0, 11.3],
+        [-22.8998, -43.1555, 0, 12],
+        [-22.8989, -43.1502, 0, 12.8],
+        [-22.898, -43.145, 0, 13.5],
+        [-22.8969, -43.14, 0, 11],
+        [-22.8958, -43.135, 0, 8.5],
+        [-22.8947, -43.13, 0, 6],
+        [-22.8942, -43.1286, 0, 3.8],
+        [-22.8938, -43.1272, 0, 1.5]
+      ]
+    },
+    "barca-volta": {
+      "tipo": "mar",
+      "nota": "Barca Niterói (Arariboia) → Praça XV.",
+      "pontos": [
+        [-22.8938, -43.1272, 0, 1.5],
+        [-22.8942, -43.1286, 0, 3.8],
+        [-22.8947, -43.13, 0, 6],
+        [-22.8958, -43.135, 0, 8.5],
+        [-22.8969, -43.14, 0, 11],
+        [-22.898, -43.145, 0, 13.5],
+        [-22.8989, -43.1502, 0, 12.8],
+        [-22.8998, -43.1555, 0, 12],
+        [-22.9006, -43.1608, 0, 11.3],
+        [-22.9015, -43.166, 0, 10.5],
+        [-22.9014, -43.17, 0, 4.5],
+        [-22.9014, -43.172, 0, 1.5]
+      ]
+    }
+  },
+  "frotas": [
+    {
+      "id": "sdu-chegadas",
+      "nome": "Santos Dumont — chegadas",
+      "categoria": "aviao",
+      "rotas": [
+        "sdu-pouso"
+      ],
+      "modelos": [
+        "aviao-linha-b",
+        "aviao-linha-a"
+      ],
+      "quantidade": 5,
+      "cicloS": 1100,
+      "horario": [6, 23],
+      "som": "jato"
+    },
+    {
+      "id": "sdu-saidas",
+      "nome": "Santos Dumont — saídas",
+      "categoria": "aviao",
+      "rotas": [
+        "sdu-decolagem"
+      ],
+      "modelos": [
+        "aviao-linha-b",
+        "aviao-linha-a"
+      ],
+      "quantidade": 5,
+      "cicloS": 1100,
+      "horario": [6, 23],
+      "som": "jato"
+    },
+    {
+      "id": "gig-chegadas",
+      "nome": "Galeão — chegadas",
+      "categoria": "aviao",
+      "rotas": [
+        "gig-pouso"
+      ],
+      "modelos": [
+        "aviao-linha-a",
+        "aviao-linha-b"
+      ],
+      "quantidade": 4,
+      "cicloS": 1300,
+      "horario": [0, 24],
+      "som": "jato"
+    },
+    {
+      "id": "gig-saidas",
+      "nome": "Galeão — saídas",
+      "categoria": "aviao",
+      "rotas": [
+        "gig-decolagem"
+      ],
+      "modelos": [
+        "aviao-linha-a",
+        "aviao-linha-b"
+      ],
+      "quantidade": 4,
+      "cicloS": 1300,
+      "horario": [0, 24],
+      "som": "jato"
+    },
+    {
+      "id": "aeronautica",
+      "nome": "Aeronáutica — patrulha",
+      "categoria": "militar",
+      "rotas": [
+        "aeronautica-patrulha"
+      ],
+      "modelos": [
+        "caca"
+      ],
+      "quantidade": 2,
+      "cicloS": 0,
+      "horario": [8, 17],
+      "espacamentoS": 3,
+      "som": "jato"
+    },
+    {
+      "id": "aeroclube",
+      "nome": "Aviação leve",
+      "categoria": "aviao",
+      "rotas": [
+        "aviao-aeroclube"
+      ],
+      "modelos": [
+        "aviao-pequeno"
+      ],
+      "quantidade": 1,
+      "cicloS": 0,
+      "horario": [8, 17],
+      "som": "helice"
+    },
+    {
+      "id": "heli-turismo",
+      "nome": "Helicópteros de turismo (Cristo e Pão de Açúcar)",
+      "categoria": "helicoptero",
+      "rotas": [
+        "heli-turismo"
+      ],
+      "modelos": [
+        "heli-amarelo",
+        "heli-branco"
+      ],
+      "quantidade": 2,
+      "cicloS": 0,
+      "horario": [8, 17],
+      "som": "helicoptero"
+    },
+    {
+      "id": "heli-imprensa",
+      "nome": "Helicóptero de imprensa (ronda)",
+      "categoria": "helicoptero",
+      "rotas": [
+        "heli-imprensa"
+      ],
+      "modelos": [
+        "heli-grande"
+      ],
+      "quantidade": 1,
+      "cicloS": 0,
+      "horario": [6, 20],
+      "som": "helicoptero"
+    },
+    {
+      "id": "mercantes",
+      "nome": "Navios mercantes (Porto do Rio)",
+      "categoria": "navio",
+      "rotas": [
+        "mercante-entrada",
+        "mercante-saida"
+      ],
+      "pausaS": 420,
+      "modelos": [
+        "ship-cargo-a",
+        "ship-cargo-b",
+        "ship-cargo-c",
+        "ship-large"
+      ],
+      "quantidade": 4,
+      "cicloS": 3200,
+      "horario": [0, 24],
+      "som": "navio"
+    },
+    {
+      "id": "cruzeiro",
+      "nome": "Navio de cruzeiro (Píer Mauá)",
+      "categoria": "navio",
+      "rotas": [
+        "mercante-entrada",
+        "mercante-saida"
+      ],
+      "pausaS": 900,
+      "modelos": [
+        "ship-ocean-liner"
+      ],
+      "quantidade": 1,
+      "cicloS": 4500,
+      "horario": [0, 24],
+      "som": "navio"
+    },
+    {
+      "id": "marinha",
+      "nome": "Marinha do Brasil (Arsenal → mar → Arsenal)",
+      "categoria": "militar",
+      "rotas": [
+        "mercante-saida",
+        "mercante-entrada"
+      ],
+      "modelos": [
+        "ship-large"
+      ],
+      "quantidade": 1,
+      "cicloS": 1800,
+      "horario": [0, 24],
+      "tint": "#8c97a3",
+      "som": "navio",
+      "pausaS": 240
+    },
+    {
+      "id": "pesca",
+      "nome": "Barcos de pesca",
+      "categoria": "navio",
+      "rotas": [
+        "pesca-copacabana",
+        "pesca-baia"
+      ],
+      "modelos": [
+        "boat-fishing-small"
+      ],
+      "quantidade": 3,
+      "cicloS": 0,
+      "horario": [0, 24],
+      "som": "lancha"
+    },
+    {
+      "id": "passeio",
+      "nome": "Barcos de passeio",
+      "categoria": "navio",
+      "rotas": [
+        "passeio-botafogo",
+        "passeio-niteroi"
+      ],
+      "modelos": [
+        "boat-sail-a",
+        "boat-sail-b",
+        "ship-small"
+      ],
+      "quantidade": 4,
+      "cicloS": 0,
+      "horario": [8, 18],
+      "som": "lancha"
+    },
+    {
+      "id": "jetski",
+      "nome": "Jetskis e botes",
+      "categoria": "navio",
+      "rotas": [
+        "jetski-copacabana",
+        "jetski-ipanema"
+      ],
+      "modelos": [
+        "boat-speed-a",
+        "boat-speed-b",
+        "boat-speed-d"
+      ],
+      "quantidade": 6,
+      "cicloS": 0,
+      "horario": [9, 17],
+      "som": "lancha"
+    },
+    {
+      "id": "barcas",
+      "nome": "Barcas Rio–Niterói",
+      "categoria": "navio",
+      "rotas": [
+        "barca-ida",
+        "barca-volta"
+      ],
+      "pausaS": 80,
+      "modelos": [
+        "ship-ocean-liner-small"
+      ],
+      "quantidade": 2,
+      "cicloS": 0,
+      "horario": [5, 23],
+      "som": "navio"
+    },
+    {
+      "id": "reboque",
+      "nome": "Rebocadores",
+      "categoria": "navio",
+      "rotas": [
+        "passeio-niteroi"
+      ],
+      "modelos": [
+        "boat-tug-a"
+      ],
+      "quantidade": 1,
+      "cicloS": 0,
+      "horario": [0, 24],
+      "som": "lancha"
+    }
+  ],
+  "ocorrencias": {
+    "_nota": "Helicópteros que respondem às cenas de ocorrência (Fase 26): quem vem, de onde, a que altura rodeia e por quanto tempo.",
+    "helis": [
+      {
+        "id": "pm",
+        "nome": "Águia (PM)",
+        "modelo": "heli-escuro",
+        "tipos": [
+          "operacao",
+          "confronto"
+        ],
+        "gravidadeMin": 0.35,
+        "base": [-22.9706, -43.2118],
+        "altura": 150,
+        "raio": 130,
+        "velocidade": 48,
+        "holofote": true,
+        "som": "helicoptero"
+      },
+      {
+        "id": "bombeiros",
+        "nome": "Bombeiros (resgate aéreo)",
+        "modelo": "heli-militar",
+        "tipos": [
+          "incendio",
+          "resgate",
+          "enchente"
+        ],
+        "gravidadeMin": 0.45,
+        "base": [-22.9, -43.199],
+        "altura": 120,
+        "raio": 110,
+        "velocidade": 45,
+        "holofote": true,
+        "som": "helicoptero"
+      },
+      {
+        "id": "imprensa",
+        "nome": "Imprensa",
+        "modelo": "heli-grande",
+        "tipos": [
+          "confronto",
+          "operacao",
+          "incendio",
+          "enchente"
+        ],
+        "gravidadeMin": 0.5,
+        "base": [-22.9121, -43.2302],
+        "altura": 260,
+        "raio": 260,
+        "velocidade": 42,
+        "holofote": false,
+        "som": "helicoptero"
+      }
+    ]
+  },
+  "pistas": [
+    {
+      "id": "sdu-02r-20l",
+      "nome": "Santos Dumont 02R/20L",
+      "a": [-22.9164863, -43.1624422],
+      "b": [-22.9045972, -43.163205],
+      "largura": 42,
+      "fonte": "OpenStreetMap way 510811286 (ODbL), baixado em 28/10/2026"
+    },
+    {
+      "id": "sdu-02l-20r",
+      "nome": "Santos Dumont 02L/20R",
+      "a": [-22.9159835, -43.1632225],
+      "b": [-22.9046335, -43.163955],
+      "largura": 30,
+      "fonte": "OpenStreetMap way 12292143 (ODbL), baixado em 28/10/2026"
+    },
+    {
+      "id": "gig-10-28",
+      "nome": "Galeão 10/28 (fora do mapa)",
+      "a": [-22.8018403, -43.255189],
+      "b": [-22.7921764, -43.2176453],
+      "largura": 45,
+      "fonte": "OpenStreetMap way 12291112 (ODbL), baixado em 28/10/2026"
+    },
+    {
+      "id": "gig-15-33",
+      "nome": "Galeão 15/33 (fora do mapa)",
+      "a": [-22.8130971, -43.2626605],
+      "b": [-22.8284833, -43.2394575],
+      "largura": 47,
+      "fonte": "OpenStreetMap way 12291116 (ODbL), baixado em 28/10/2026"
+    }
+  ]
+}

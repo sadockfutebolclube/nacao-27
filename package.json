@@ -1,7 +1,7 @@
 {
   "name": "nacao-27",
   "private": true,
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "NAÇÃO 27 — city-builder e simulador de governo 100% brasileiro",
   "type": "module",
   "scripts": {
@@ -23,6 +23,7 @@
     "fetch-trilhos": "node node_modules/tsx/dist/cli.mjs scripts/fetch-trilhos.ts",
     "auditar-mapa": "node node_modules/tsx/dist/cli.mjs scripts/auditar-mapa.ts",
     "medir-simulacao": "node scripts/medir-simulacao.cjs",
+    "converter-modelos": "node scripts/converter-modelos.mjs",
     "exportar-cidade": "node node_modules/tsx/dist/cli.mjs scripts/exportar-cidade.ts"
   },
   "dependencies": {
@@ -43,6 +44,9 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/d3-geo": "^3.1.1",
     "@types/geojson": "^7946.0.16",

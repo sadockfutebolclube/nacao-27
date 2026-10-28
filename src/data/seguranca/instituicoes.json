@@ -1,69 +1,301 @@
 {
   "_leia-me": "Instituições do Estado (Fase 26). `bases` apontam para bairros do Censo/IPP pelo nome (o ponto é o centro do bairro): são posições de JOGO, não endereços reais — edite à vontade. Equipamentos que o jogador constrói (delegacia, batalhão, base comunitária, hospital, UPA) também viram bases: veja `equipamentos`. `velocidade` em m/s com sirene.",
-  "ordem": ["pm", "civil", "federal", "guarda", "exercito", "marinha", "aeronautica", "bombeiros", "samu"],
+  "ordem": [
+    "pm",
+    "civil",
+    "federal",
+    "guarda",
+    "exercito",
+    "marinha",
+    "aeronautica",
+    "bombeiros",
+    "samu"
+  ],
   "instituicoes": {
     "pm": {
-      "nome": "Polícia Militar", "sigla": "PM", "esfera": "estadual", "cor": "#1b3a73", "veiculo": "viatura", "velocidade": 19, "preparoMin": 2, "viaturasPorBase": 4,
+      "nome": "Polícia Militar",
+      "sigla": "PM",
+      "esfera": "estadual",
+      "cor": "#1b3a73",
+      "veiculo": "viatura",
+      "velocidade": 19,
+      "preparoMin": 2,
+      "viaturasPorBase": 4,
       "funcao": "Policiamento ostensivo, resposta a tiroteio e confronto; o BOPE entra em operações de alto risco.",
-      "especializacao": { "bope": { "nome": "BOPE (Batalhão de Operações Especiais)", "cor": "#101820", "veiculo": "blindado", "velocidade": 15, "preparoMin": 8, "viaturasPorBase": 2 } },
-      "bases": [{ "nome": "Batalhão — Centro", "bairro": "Centro" }, { "nome": "Batalhão — Botafogo", "bairro": "Botafogo" }, { "nome": "Batalhão — Copacabana", "bairro": "Copacabana" }, { "nome": "Batalhão — Tijuca", "bairro": "Tijuca" }, { "nome": "Batalhão — Vila Isabel", "bairro": "Vila Isabel" }, { "nome": "Batalhão — Méier", "bairro": "Méier" }, { "nome": "Batalhão — Lagoa", "bairro": "Lagoa" }]
+      "especializacao": {
+        "bope": {
+          "nome": "BOPE (Batalhão de Operações Especiais)",
+          "cor": "#101820",
+          "veiculo": "blindado",
+          "velocidade": 15,
+          "preparoMin": 8,
+          "viaturasPorBase": 2
+        }
+      },
+      "bases": [
+        {
+          "nome": "Batalhão — Centro",
+          "bairro": "Centro"
+        },
+        {
+          "nome": "Batalhão — Botafogo",
+          "bairro": "Botafogo"
+        },
+        {
+          "nome": "Batalhão — Copacabana",
+          "bairro": "Copacabana"
+        },
+        {
+          "nome": "Batalhão — Tijuca",
+          "bairro": "Tijuca"
+        },
+        {
+          "nome": "Batalhão — Vila Isabel",
+          "bairro": "Vila Isabel"
+        },
+        {
+          "nome": "Batalhão — Méier",
+          "bairro": "Méier"
+        },
+        {
+          "nome": "Batalhão — Lagoa",
+          "bairro": "Lagoa"
+        }
+      ]
     },
     "civil": {
-      "nome": "Polícia Civil", "sigla": "PC", "esfera": "estadual", "cor": "#2b2d30", "veiculo": "viatura", "velocidade": 17, "preparoMin": 6, "viaturasPorBase": 3,
+      "nome": "Polícia Civil",
+      "sigla": "PC",
+      "esfera": "estadual",
+      "cor": "#2b2d30",
+      "veiculo": "viatura",
+      "velocidade": 17,
+      "preparoMin": 6,
+      "viaturasPorBase": 3,
       "funcao": "Investigação e registro de crimes; atende roubos já consumados e leva presos às delegacias.",
-      "bases": [{ "nome": "Delegacia — Centro", "bairro": "Centro" }, { "nome": "Delegacia — Copacabana", "bairro": "Copacabana" }, { "nome": "Delegacia — Tijuca", "bairro": "Tijuca" }, { "nome": "Delegacia — Botafogo", "bairro": "Botafogo" }]
+      "bases": [
+        {
+          "nome": "Delegacia — Centro",
+          "bairro": "Centro"
+        },
+        {
+          "nome": "Delegacia — Copacabana",
+          "bairro": "Copacabana"
+        },
+        {
+          "nome": "Delegacia — Tijuca",
+          "bairro": "Tijuca"
+        },
+        {
+          "nome": "Delegacia — Botafogo",
+          "bairro": "Botafogo"
+        }
+      ]
     },
     "federal": {
-      "nome": "Polícia Federal", "sigla": "PF", "esfera": "federal", "cor": "#0e2a47", "veiculo": "suv", "velocidade": 17, "preparoMin": 25, "viaturasPorBase": 2,
+      "nome": "Polícia Federal",
+      "sigla": "PF",
+      "esfera": "federal",
+      "cor": "#0e2a47",
+      "veiculo": "suv",
+      "velocidade": 17,
+      "preparoMin": 25,
+      "viaturasPorBase": 2,
       "funcao": "Crimes federais: tráfico interestadual, portos e aeroporto. Só entra em ocorrências graves.",
-      "bases": [{ "nome": "Superintendência", "bairro": "Saúde" }]
+      "bases": [
+        {
+          "nome": "Superintendência",
+          "bairro": "Saúde"
+        }
+      ]
     },
     "guarda": {
-      "nome": "Guarda Municipal", "sigla": "GM", "esfera": "municipal", "cor": "#3a7ca5", "veiculo": "viatura", "velocidade": 15, "preparoMin": 4, "viaturasPorBase": 3,
+      "nome": "Guarda Municipal",
+      "sigla": "GM",
+      "esfera": "municipal",
+      "cor": "#3a7ca5",
+      "veiculo": "viatura",
+      "velocidade": 15,
+      "preparoMin": 4,
+      "viaturasPorBase": 3,
       "funcao": "Patrimônio e ordem pública municipal: acidentes, blitz de trânsito e apoio em enchentes.",
-      "bases": [{ "nome": "Base — Centro", "bairro": "Centro" }, { "nome": "Base — Copacabana", "bairro": "Copacabana" }, { "nome": "Base — Tijuca", "bairro": "Tijuca" }]
+      "bases": [
+        {
+          "nome": "Base — Centro",
+          "bairro": "Centro"
+        },
+        {
+          "nome": "Base — Copacabana",
+          "bairro": "Copacabana"
+        },
+        {
+          "nome": "Base — Tijuca",
+          "bairro": "Tijuca"
+        }
+      ]
     },
     "exercito": {
-      "nome": "Exército", "sigla": "EB", "esfera": "federal", "cor": "#4b5a3a", "veiculo": "caminhao", "velocidade": 13, "preparoMin": 90, "viaturasPorBase": 6,
+      "nome": "Exército",
+      "sigla": "EB",
+      "esfera": "federal",
+      "cor": "#4b5a3a",
+      "veiculo": "caminhao",
+      "velocidade": 13,
+      "preparoMin": 90,
+      "viaturasPorBase": 6,
       "funcao": "Garantia da Lei e da Ordem (GLO) só por decreto; apoio logístico em desastres.",
-      "bases": [{ "nome": "Quartel — Vila Militar", "bairro": "Benfica" }]
+      "bases": [
+        {
+          "nome": "Quartel — Vila Militar",
+          "bairro": "Benfica"
+        }
+      ]
     },
     "marinha": {
-      "nome": "Marinha", "sigla": "MB", "esfera": "federal", "cor": "#1c3d6e", "veiculo": "suv", "velocidade": 15, "preparoMin": 60, "viaturasPorBase": 2,
+      "nome": "Marinha",
+      "sigla": "MB",
+      "esfera": "federal",
+      "cor": "#1c3d6e",
+      "veiculo": "suv",
+      "velocidade": 15,
+      "preparoMin": 60,
+      "viaturasPorBase": 2,
       "funcao": "Resgate no mar e na baía; fuzileiros apoiam operações de GLO.",
-      "bases": [{ "nome": "Distrito Naval", "bairro": "Centro" }]
+      "bases": [
+        {
+          "nome": "Distrito Naval",
+          "bairro": "Centro"
+        }
+      ]
     },
     "aeronautica": {
-      "nome": "Aeronáutica", "sigla": "FAB", "esfera": "federal", "cor": "#5a8fd0", "veiculo": "suv", "velocidade": 15, "preparoMin": 60, "viaturasPorBase": 2,
+      "nome": "Aeronáutica",
+      "sigla": "FAB",
+      "esfera": "federal",
+      "cor": "#5a8fd0",
+      "veiculo": "suv",
+      "velocidade": 15,
+      "preparoMin": 60,
+      "viaturasPorBase": 2,
       "funcao": "Resgate aéreo (SAR) e segurança de aeródromos militares.",
-      "bases": [{ "nome": "Base Aérea", "bairro": "Gamboa" }]
+      "bases": [
+        {
+          "nome": "Base Aérea",
+          "bairro": "Gamboa"
+        }
+      ]
     },
     "bombeiros": {
-      "nome": "Corpo de Bombeiros", "sigla": "CBMERJ", "esfera": "estadual", "cor": "#c8302a", "veiculo": "bombeiro", "velocidade": 17, "preparoMin": 2, "viaturasPorBase": 3,
+      "nome": "Corpo de Bombeiros",
+      "sigla": "CBMERJ",
+      "esfera": "estadual",
+      "cor": "#c8302a",
+      "veiculo": "bombeiro",
+      "velocidade": 17,
+      "preparoMin": 2,
+      "viaturasPorBase": 3,
       "funcao": "Incêndio, resgate em desabamento, enchente e afogamento.",
-      "bases": [{ "nome": "Quartel — Centro", "bairro": "Centro" }, { "nome": "Quartel — Botafogo", "bairro": "Botafogo" }, { "nome": "Quartel — Tijuca", "bairro": "Tijuca" }, { "nome": "Quartel — Copacabana", "bairro": "Copacabana" }, { "nome": "Quartel — Méier", "bairro": "Méier" }]
+      "bases": [
+        {
+          "nome": "Quartel — Centro",
+          "bairro": "Centro"
+        },
+        {
+          "nome": "Quartel — Botafogo",
+          "bairro": "Botafogo"
+        },
+        {
+          "nome": "Quartel — Tijuca",
+          "bairro": "Tijuca"
+        },
+        {
+          "nome": "Quartel — Copacabana",
+          "bairro": "Copacabana"
+        },
+        {
+          "nome": "Quartel — Méier",
+          "bairro": "Méier"
+        }
+      ]
     },
     "samu": {
-      "nome": "SAMU", "sigla": "SAMU", "esfera": "municipal", "cor": "#e8e8e8", "veiculo": "ambulancia", "velocidade": 18, "preparoMin": 1, "viaturasPorBase": 3,
+      "nome": "SAMU",
+      "sigla": "SAMU",
+      "esfera": "municipal",
+      "cor": "#e8e8e8",
+      "veiculo": "ambulancia",
+      "velocidade": 18,
+      "preparoMin": 1,
+      "viaturasPorBase": 3,
       "funcao": "Atendimento pré-hospitalar: feridos, acidentes e resgates. Só chega em área dominada com escolta policial.",
-      "bases": [{ "nome": "Base — Centro", "bairro": "Centro" }, { "nome": "Base — Botafogo", "bairro": "Botafogo" }, { "nome": "Base — Tijuca", "bairro": "Tijuca" }, { "nome": "Base — Copacabana", "bairro": "Copacabana" }]
+      "bases": [
+        {
+          "nome": "Base — Centro",
+          "bairro": "Centro"
+        },
+        {
+          "nome": "Base — Botafogo",
+          "bairro": "Botafogo"
+        },
+        {
+          "nome": "Base — Tijuca",
+          "bairro": "Tijuca"
+        },
+        {
+          "nome": "Base — Copacabana",
+          "bairro": "Copacabana"
+        }
+      ]
     }
   },
   "equipamentos": {
     "_nota": "Equipamentos construídos pelo jogador viram bases: id do equipamento → instituição e viaturas extras",
-    "delegacia": { "instituicao": "civil", "viaturas": 2 },
-    "batalhao": { "instituicao": "pm", "viaturas": 4 },
-    "base": { "instituicao": "pm", "viaturas": 1 },
-    "hospital": { "instituicao": "samu", "viaturas": 2 },
-    "upa": { "instituicao": "samu", "viaturas": 1 }
+    "delegacia": {
+      "instituicao": "civil",
+      "viaturas": 2
+    },
+    "batalhao": {
+      "instituicao": "pm",
+      "viaturas": 4
+    },
+    "base": {
+      "instituicao": "pm",
+      "viaturas": 1
+    },
+    "hospital": {
+      "instituicao": "samu",
+      "viaturas": 2
+    },
+    "upa": {
+      "instituicao": "samu",
+      "viaturas": 1
+    }
   },
   "veiculos": {
-    "_nota": "Modelo 3D de cada veículo de resposta (reaproveita os modelos da frota) e a cor da lataria",
-    "viatura": { "modelo": "viatura", "cor": "#1b3a73" },
-    "blindado": { "modelo": "caminhao", "cor": "#1a1f24" },
-    "suv": { "modelo": "suv", "cor": "#2b2d30" },
-    "caminhao": { "modelo": "caminhao", "cor": "#4b5a3a" },
-    "bombeiro": { "modelo": "lixo", "cor": "#c8302a" },
-    "ambulancia": { "modelo": "van", "cor": "#f2f2ee" }
+    "_nota": "Modelo 3D real de cada veículo de resposta (id em src/data/veiculos/especiais.json → modelos) e a cor da lataria. Viatura, blindado e SUV recebem a cor da instituição; ambulância, caminhão de bombeiros e Humvee do Exército usam a pintura do modelo.",
+    "viatura": {
+      "modelo": "police",
+      "cor": "#1b3a73"
+    },
+    "blindado": {
+      "modelo": "truck",
+      "cor": "#1a1f24"
+    },
+    "suv": {
+      "modelo": "suv",
+      "cor": "#2b2d30"
+    },
+    "caminhao": {
+      "modelo": "humvee",
+      "cor": "#4b5a3a"
+    },
+    "bombeiro": {
+      "modelo": "firetruck",
+      "cor": "#c8302a"
+    },
+    "ambulancia": {
+      "modelo": "ambulance",
+      "cor": "#f2f2ee"
+    }
   }
 }

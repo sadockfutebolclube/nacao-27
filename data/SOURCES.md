@@ -28,3 +28,8 @@ Texturas, HDRI e modelos estão em `ASSETS_LICENSES.md`.
 
 ## Fase 26 — facções e instituições
 - Nenhuma fonte externa nova. `src/data/seguranca/*.json` são **parâmetros de jogo ilustrativos** (relações, rendas, armamento, tempos de resposta); a distribuição inicial é sorteada pela semente. Polígonos de bairro: os do Censo 2022/IPP já listados acima. Bases (batalhões, delegacias, quartéis) são posições de jogo ancoradas em bairros, não endereços oficiais.
+
+## Fase 27 — veículos especiais
+- **Pistas do Santos Dumont e do Galeão**: OpenStreetMap via Overpass API (https://overpass-api.de/api/interpreter), `aeroway=runway`, ways 510811286, 12292143 (SDU), 12291112, 12291116 (GIG), baixado em 28/10/2026; licença ODbL (© colaboradores do OpenStreetMap). Guardadas em `src/data/veiculos/especiais.json` → `pistas`.
+- **Modelos 3D**: Kenney Watercraft Kit 2.1 e Car Kit 3.1 (CC0, https://kenney.nl) e 10 modelos do Poly Pizza (CC-BY 3.0 / domínio público), 28/10/2026 — lista completa em `assets/CREDITS.md`.
+- **Rotas e horários**: parâmetros de jogo aproximados (não são procedimentos oficiais). Posições de bases (Lagoa, Arsenal, heliportos) são locais de jogo, não endereços oficiais.

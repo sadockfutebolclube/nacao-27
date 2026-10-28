@@ -7,7 +7,7 @@
  * `ocorrenciaEstado`. No máximo 4 cenas ao mesmo tempo: as demais ocorrências valem só nos números do Worker.
  */
 import { Html } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
@@ -17,7 +17,9 @@ import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { alvoCamera } from './Camera';
 import { novaCena, cenas, sirenes, type Cena } from './ocorrenciaEstado';
 import { amostrarPerfil, indiceDasVias, type AmostraVia, type Perfil } from './perfilVias';
-import { geoCaminhao, geoLixo, geoSuv, geoVan, geoViatura, materialVeiculo } from './Veiculos';
+import { ESPECIAIS } from '../../sim/especiais/dados';
+import { carregarModelo } from '../modelos/carregar';
+import { Conjunto } from '../modelos/conjunto';
 import { mergeGeos, perfisAtuais } from './Vias';
 
 /** textura de chama (gota amarela no centro, laranja, borda transparente), gerada em canvas */
@@ -38,11 +40,12 @@ function texturaChama(): THREE.CanvasTexture {
 const MAX_CENAS = 4;
 const RAIO_VISAO = 900;
 const MAX_VEIC = 40;
-const MODELOS = ['viatura', 'caminhao', 'suv', 'lixo', 'van'] as const;
-type Modelo = (typeof MODELOS)[number];
+/** modelos 3D reais que ganham a cor da instituição (os demais usam a pintura do modelo) */
+const COM_COR = new Set(['police', 'suv', 'truck']);
+const chaveConj = (modelo: string, tint?: string) => (tint ? `${modelo}|${tint}` : modelo);
 
 interface Caminho { x: Float32Array; y: Float32Array; z: Float32Array; cum: Float32Array; comp: number }
-interface Veic { cena: number; modelo: Modelo; cor: THREE.Color; v: number; caminho: Caminho; d: number; estado: 'espera' | 'chega' | 'parado' | 'sai'; inicioS: number; paradaD: number; fase: number; esquerda: boolean; inst: string }
+interface Veic { cena: number; modelo: string; tint?: string; v: number; caminho: Caminho; d: number; estado: 'espera' | 'chega' | 'parado' | 'sai'; inicioS: number; paradaD: number; fase: number; esquerda: boolean; inst: string }
 
 const COR_TIPO: Record<string, string> = { operacao: '#ff7a3c', confronto: '#ff3b3b', blitz: '#4aa3ff', roubo: '#ffd45e', incendio: '#ff8a1f', acidente: '#ffd45e', resgate: '#56d4a0', enchente: '#4aa3ff' };
 
@@ -99,19 +102,35 @@ function montarCaminho(x: number, z: number, comp: number, adj: Map<number, numb
 
 export function Ocorrencias({ hm }: { hm: Heightmap }) {
   const wv = useGame((s) => s.worldVersion);
-  const geos = useMemo(() => ({ viatura: geoViatura(), caminhao: geoCaminhao(), suv: geoSuv(), lixo: geoLixo(), van: geoVan(), sirene: new THREE.BoxGeometry(1.15, 0.24, 0.5), chama: mergeGeos([new THREE.PlaneGeometry(2.6, 4).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 2).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 4).translate(0, 2, 0)]), fumaca: new THREE.IcosahedronGeometry(1, 1), lampejo: new THREE.BoxGeometry(0.5, 0.5, 0.5), cone: new THREE.ConeGeometry(0.28, 0.7, 8).translate(0, 0.35, 0), disco: new THREE.CylinderGeometry(1, 1, 0.12, 40) }), []);
-  const uNoite = useMemo(() => ({ value: 0 }), []);
+  const camera = useThree((st) => st.camera);
+  const geos = useMemo(() => ({ sirene: new THREE.BoxGeometry(1.15, 0.24, 0.5), chama: mergeGeos([new THREE.PlaneGeometry(2.6, 4).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 2).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 4).translate(0, 2, 0)]), fumaca: new THREE.IcosahedronGeometry(1, 1), lampejo: new THREE.BoxGeometry(0.5, 0.5, 0.5), cone: new THREE.ConeGeometry(0.28, 0.7, 8).translate(0, 0.35, 0), disco: new THREE.CylinderGeometry(1, 1, 0.12, 40) }), []);
   const mats = useMemo(() => ({
-    corpo: materialVeiculo(uNoite),
     sirene: new THREE.MeshBasicMaterial({ toneMapped: false }),
     chama: new THREE.MeshBasicMaterial({ map: texturaChama(), toneMapped: false, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }),
     fumaca: new THREE.MeshBasicMaterial({ color: '#4a4a4e', transparent: true, opacity: 0.4, depthWrite: false }),
     lampejo: new THREE.MeshBasicMaterial({ color: '#ffe9a0', toneMapped: false }),
     cone: new THREE.MeshStandardMaterial({ color: '#ff7a1a', roughness: 0.6 }),
     disco: new THREE.MeshBasicMaterial({ color: '#4aa3ff', transparent: true, opacity: 0.35, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
-  }), [uNoite]);
+  }), []);
   useEffect(() => () => { Object.values(geos).forEach((g) => g.dispose()); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
 
+  // viaturas: modelos 3D reais (GLB) por modelo/cor, criados sob demanda e guardados
+  const [conjuntos, setConjuntos] = useState<Map<string, Conjunto>>(() => new Map());
+  const pedidos = useRef(new Set<string>());
+  const criados = useRef<Conjunto[]>([]);
+  const pedir = (modelo: string, tint?: string) => {
+    const k = chaveConj(modelo, tint);
+    if (pedidos.current.has(k)) return;
+    pedidos.current.add(k);
+    const def = ESPECIAIS.modelos[modelo];
+    if (!def) return;
+    carregarModelo(modelo, { arquivo: def.arquivo, comprimentoM: def.comprimentoM, frenteGraus: def.frenteGraus }).then((m) => {
+      const c = new Conjunto(m, { capacidade: MAX_VEIC, detalheM: def.detalheM, lod: def.lod, tint, sombra: true });
+      criados.current.push(c);
+      setConjuntos((antes) => new Map(antes).set(k, c));
+    }).catch((e) => console.error('[ocorrências] modelo', modelo, e));
+  };
+  useEffect(() => () => { criados.current.forEach((c) => c.dispose()); criados.current = []; }, []);
   const refs = useRef<Record<string, THREE.InstancedMesh | null>>({});
   const adj = useMemo(() => {
     const m = new Map<number, number[]>();
@@ -136,7 +155,9 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
       const def = r.esp && inst.especializacao?.[r.esp] ? inst.especializacao[r.esp] : inst;
       const ve = veiculos[def.veiculo];
       if (!ve || typeof ve === 'string') continue;
-      const modelo: Modelo = (ve.modelo === 'viatura' || ve.modelo === 'caminhao' || ve.modelo === 'suv' || ve.modelo === 'lixo' || ve.modelo === 'van' ? ve.modelo : 'viatura');
+      const modelo = ve.modelo;
+      const tint = COM_COR.has(modelo) ? `#${new THREE.Color(def.cor).lerp(new THREE.Color('#ffffff'), 0.5).getHexString()}` : undefined;
+      pedir(modelo, tint);
       const caminho = montarCaminho(oc.x, oc.z, 360 + rnd() * 160, adj, rnd);
       if (!caminho) continue;
       const v = Math.min(20, Math.max(13, def.velocidade));
@@ -144,7 +165,7 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
         // a chegada na cena acontece perto de eta × 2 s (compressão do tempo) — quem demora mais, chega depois
         const chegada = Math.min(32, Math.max(3, r.etaMin * 2.2)) + k * 1.4;
         const inicioS = Math.max(0, chegada - caminho.comp / v);
-        e.veic.push({ cena: oc.id, modelo, cor: new THREE.Color(ve.cor), v, caminho, d: 0, estado: 'espera', inicioS, paradaD: Math.max(8, caminho.comp - 11 - k * 6.5), fase: rnd() * 6, esquerda: k % 2 === 1, inst: r.inst });
+        e.veic.push({ cena: oc.id, modelo, tint, v, caminho, d: 0, estado: 'espera', inicioS, paradaD: Math.max(8, caminho.comp - 11 - k * 6.5), fase: rnd() * 6, esquerda: k % 2 === 1, inst: r.inst });
       }
     }
     const nomeTipo = DADOS.ocorrencias.tipos[oc.tipo].nome;
@@ -198,7 +219,9 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
     const cenaDe = (id: number): Cena | undefined => cenas.find((c) => c.id === id);
 
     const { m, q, v, s, e: eu, c, eixo, p } = tmp;
-    const cont: Record<string, number> = { viatura: 0, caminhao: 0, suv: 0, lixo: 0, van: 0, sirene: 0, chama: 0, fumaca: 0, lampejo: 0, cone: 0, disco: 0 };
+    for (const cj of conjuntos.values()) cj.inicio();
+    const cam = camera.position;
+    const cont: Record<string, number> = { sirene: 0, chama: 0, fumaca: 0, lampejo: 0, cone: 0, disco: 0 };
     const poe = (nome: string, pos: [number, number, number], esc: [number, number, number], yaw = 0, cor?: THREE.Color) => {
       const im = refs.current[nome];
       if (!im || cont[nome] >= (im.instanceMatrix.count)) return;
@@ -225,12 +248,14 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
       const lado = ve.estado === 'parado' ? (ve.esquerda ? -3.2 : 3) : 2.4;
       const x = p.x - p.hz * lado, z = p.z + p.hx * lado;
       const y = p.y;
-      poe(ve.modelo, [x, y, z], [1, 1, 1], yaw, ve.cor);
-      const alt = ve.modelo === 'lixo' || ve.modelo === 'caminhao' ? 3 : ve.modelo === 'van' ? 2.4 : 1.9;
+      const cj = conjuntos.get(chaveConj(ve.modelo, ve.tint));
+      if (cj) cj.poe(x, y, z, yaw, 0, 0, Math.hypot(x - cam.x, y - cam.y, z - cam.z));
+      const alt = cj ? cj.modelo.tam.y : 1.9;
+      const meia = cj ? cj.modelo.tam.x * 0.22 : 0.38;
       const fase = Math.sin((t * DADOS.ocorrencias.reacao.sirene.frequenciaHz + ve.fase) * Math.PI * 2) > 0;
       // barra de luz: vermelho/azul alternando (cada lado de um tom); a sirene só quando está em movimento ou no local de atendimento
-      c.set(fase ? '#ff2a2a' : '#1a0000'); poe('sirene', [x - Math.cos(yaw) * 0.38, y + alt, z + Math.sin(yaw) * 0.38], [1, 1, 1], yaw, c);
-      c.set(fase ? '#001a40' : '#2a7bff'); poe('sirene', [x + Math.cos(yaw) * 0.38, y + alt, z - Math.sin(yaw) * 0.38], [1, 1, 1], yaw, c);
+      c.set(fase ? '#ff2a2a' : '#1a0000'); poe('sirene', [x - Math.cos(yaw) * meia, y + alt, z + Math.sin(yaw) * meia], [1, 1, 1], yaw, c);
+      c.set(fase ? '#001a40' : '#2a7bff'); poe('sirene', [x + Math.cos(yaw) * meia, y + alt, z - Math.sin(yaw) * meia], [1, 1, 1], yaw, c);
       if (ve.estado !== 'parado') sirenes.push({ x, z, yaw });
     }
 
@@ -268,6 +293,7 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
       }
     }
     void eu;
+    for (const cj of conjuntos.values()) cj.fim();
     for (const nome of Object.keys(cont)) {
       const im = refs.current[nome];
       if (!im) continue;
@@ -280,7 +306,7 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
   const R = (nome: string) => (im: THREE.InstancedMesh | null) => { refs.current[nome] = im; };
   return (
     <group>
-      {MODELOS.map((n) => <instancedMesh key={n} ref={R(n)} args={[geos[n], mats.corpo, MAX_VEIC]} castShadow frustumCulled={false} />)}
+      {[...conjuntos.values()].map((cj, k) => <primitive key={k} object={cj.grupo} />)}
       <instancedMesh ref={R('sirene')} args={[geos.sirene, mats.sirene, MAX_VEIC * 3]} frustumCulled={false} />
       <instancedMesh ref={R('chama')} args={[geos.chama, mats.chama, 40]} frustumCulled={false} />
       <instancedMesh ref={R('fumaca')} args={[geos.fumaca, mats.fumaca, 80]} frustumCulled={false} renderOrder={4} />

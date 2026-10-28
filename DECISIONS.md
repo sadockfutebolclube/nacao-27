@@ -363,3 +363,21 @@ A renda já escala com a população controlada; custos e reposição passam a e
 
 ## D-118 · Reação dos NPCs por estado compartilhado
 `ocorrenciaEstado.ts` expõe cenas/sirenes a Pedestres, Veículos e fichas; nenhuma delas importa o desenho das cenas.
+
+## D-119 · Veículos especiais são desenho; rotas e frotas em JSON
+As frotas não entram na simulação do Worker nem no save: `src/data/veiculos/especiais.json` descreve modelos, rotas (waypoints lat/lon/altitude/velocidade), frotas e helicópteros de ocorrência; `src/sim/especiais/rotas.ts` é puro (testável sem Three); `VeiculosEspeciais.tsx` só desenha. O relógio dos veículos anda com o jogo (pausa para).
+
+## D-120 · Modelos reais em assets/models, importados por `?url`
+Os GLB ficam em `assets/models/<categoria>/` (regra de assets) e o Vite os serve por `import.meta.glob(..., { query: '?url' })`; `scripts/converter-modelos.mjs` aplica meshopt. Escala em metros e orientação (nariz em +Z; "proa" detecta o casco) vêm do catálogo.
+
+## D-121 · LOD por silhueta, uma InstancedMesh por peça
+Cada modelo vira um `Conjunto` (peças por material + silhueta simples). Acima de `detalheM` a instância vai para a silhueta: aeronaves e navios de longe custam poucos triângulos.
+
+## D-122 · Geometria das pistas do OpenStreetMap, rumo verdadeiro
+As pistas vêm do OSM (Overpass, ODbL, 28/10/2026), com rumo **verdadeiro** 356,6° (a pista "02" é 018° magnético, declinação ~21° W). Descoberta ao conferir: o chute inicial de 20° desalinhava a laje do terminal.
+
+## D-123 · Perfil de velocidade com v² linear
+Interpolar a velocidade linearmente na distância dava uma decolagem lenta demais (os primeiros 40 m levavam 12 s). Com v² linear, a aceleração é constante, como numa corrida de pista.
+
+## D-124 · Rotas de mar conferidas contra o relevo real
+Waypoints "de cabeça" caíam em terra (Urca, Ilha das Cobras, Botafogo). O ajuste usou o relevo do jogo (água ≥ 2,5 m de profundidade, 50 m de folga) e o teste `fase27` garante < 2% de amostras em terra.

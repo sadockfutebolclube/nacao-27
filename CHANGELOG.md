@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## 1.16.0 — Fase 27: veículos especiais (ar, mar e emergência) com modelos 3D reais (28/10/2026)
+
+Prints em `docs/auditoria-veiculos/`. Tudo é dado em `src/data/veiculos/especiais.json` (validado por zod).
+
+### O que é
+- **Ar**: jatos de linha nas pistas reais do **Santos Dumont** (duas pistas, geometria do OpenStreetMap, rumo verdadeiro 357°) com rampa de 3°, rolagem, corrida de decolagem com aceleração constante e curva sobre a Baía; voos de e para o **Galeão** (cruzam a Baía; o aeroporto fica fora do mapa); **helicópteros de turismo** (Lagoa → Cristo → Pão de Açúcar → Copacabana), de **imprensa**, e **PM / Bombeiros / imprensa respondendo às ocorrências** (voam da base, rodeiam a cena a 110–260 m e voltam; holofote à noite); **caças da Aeronáutica** e avião leve.
+- **Mar**: navios **mercantes** e de **cruzeiro** entrando pela barra até o Cais do Porto (atracam um tempo e saem), navio da **Marinha** (Arsenal → mar → Arsenal), barcos de **pesca** e de **passeio**, **jetskis e botes** na arrebentação de Copacabana e Ipanema, **barcas Rio–Niterói** (ida, pausa no cais, volta) e rebocador. Balanço leve das embarcações.
+- **Emergência**: viaturas PM / Civil / Federal / Guarda (modelo de viatura tingido com a cor da instituição), blindado do BOPE, **caminhão de bombeiros**, **ambulância do SAMU** e **Humvee do Exército** agora são modelos reais, no despacho da Fase 26 (sirene e barra de luz piscando, carros cedem passagem).
+- **Rotas por waypoints** `[lat, lon, altitude, velocidade]` suavizadas por spline Catmull-Rom (passa por todos os pontos); perfil de velocidade com v² linear; rolagem pela taxa de giro, caturra pela subida. Frotas = veículos defasados na mesma viagem; `horario`, `quantidade`, `cicloS`, `pausaS` balanceáveis.
+- **Renderização**: um `InstancedMesh` por peça de modelo + **LOD**: acima de `detalheM` entra uma silhueta simples (fuselagem/asas, corpo/cauda ou caixa). Discos de rotor translúcidos girando, luzes de navegação (vermelha/verde/pisca) ao entardecer e à noite.
+- **Som espacial** (Web Audio, sem arquivos): sirene, helicóptero, jato, hélice, navio (com buzina) e lancha, por `PannerNode` HRTF; só as 8 fontes mais perto soam, com corte suave no limite do alcance.
+
+### Assets (regra de assets 3D)
+32 modelos GLB com **meshopt** em `assets/models/` (0,96 MB no total, antes 3,7 MB): Kenney Watercraft Kit e Car Kit (CC0) e 10 modelos do Poly Pizza (CC-BY 3.0 / domínio público). Créditos e URLs em `assets/CREDITS.md`; conversão em `npm run converter-modelos`.
+
+### Medições
+- Custo do componente na CPU: **0,08 ms/quadro** (≈ 22–41 veículos ativos, quase todos em silhueta).
+- A/B na mesma sessão (grupos de modelos visíveis × ocultos, 4 rodadas de 4 s): mediana **12,6 / 12,5 ms** com e sem — dentro do ruído do navegador embutido (fps 61–81 contra 75–82).
+
+### Limites (honestos)
+- **Rotas e horários são aproximados**: seguem a geometria das pistas e o canal da Baía, não os procedimentos oficiais de aproximação nem as tabelas de voo. Santos Dumont opera 6–23 h no jogo; Galeão 24 h.
+- O **Galeão está fora do mapa** (16 km): os voos de/para lá só aparecem enquanto cruzam a Baía; a pista do Galeão não é desenhada (depende da ampliação do mapa para o noroeste, ainda pendente).
+- A pista do Santos Dumont é uma laje plana a 3,4 m (o aterro do aeroporto não está no relevo de satélite).
+- Os modelos de helicóptero têm pás **fundidas à malha**: o disco translúcido gira por cima, mas as pás originais ficam paradas por baixo. Ambulância/Humvee/caminhão usam a pintura do modelo; Marinha e viaturas são tingidas (multiplicam a textura).
+- Velocidades das embarcações aceleradas (~1,5–2× o real) para o movimento aparecer numa partida.
+- Sem ficha de clique para aviões e navios (o registro da Fase 25 só cobre pessoas, carros, ônibus e prédios).
+- Testes: `tests/fase27.test.ts` (16), incluindo as rotas de mar sobre o relevo real (< 2% de amostras em terra).
+
 ## 1.15.0 — Fase 26: facções, instituições, ocorrências e despacho (28/10/2026)
 
 Print em `docs/auditoria-faccoes/`. **Tudo é dado em `src/data/seguranca/*.json`** (validado por zod; erro de digitação vira mensagem com o campo).

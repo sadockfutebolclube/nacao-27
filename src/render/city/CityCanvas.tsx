@@ -31,6 +31,7 @@ import { Pedestres } from './Pedestres';
 import { MapaCalorPedestres } from './MapaCalorPedestres';
 import { Selecao } from './Selecao';
 import { Ocorrencias } from './Ocorrencias';
+import { VeiculosEspeciais } from './VeiculosEspeciais';
 import { TerritorioOverlay } from './TerritorioOverlay';
 import { TransporteRender } from './TransporteRender';
 import { Veiculos } from './Veiculos';
@@ -132,6 +133,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         <MapaCalorPedestres hm={hm} />
         <Selecao />
         <Ocorrencias hm={hm} />
+        {liga('VeiculosEspeciais') && <VeiculosEspeciais hm={hm} />}
         {liga('Pedestres') && <Pedestres hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}

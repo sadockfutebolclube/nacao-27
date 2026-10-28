@@ -33,3 +33,7 @@ Texturas, HDRI e modelos estão em `ASSETS_LICENSES.md`.
 - **Pistas do Santos Dumont e do Galeão**: OpenStreetMap via Overpass API (https://overpass-api.de/api/interpreter), `aeroway=runway`, ways 510811286, 12292143 (SDU), 12291112, 12291116 (GIG), baixado em 28/10/2026; licença ODbL (© colaboradores do OpenStreetMap). Guardadas em `src/data/veiculos/especiais.json` → `pistas`.
 - **Modelos 3D**: Kenney Watercraft Kit 2.1 e Car Kit 3.1 (CC0, https://kenney.nl) e 10 modelos do Poly Pizza (CC-BY 3.0 / domínio público), 28/10/2026 — lista completa em `assets/CREDITS.md`.
 - **Rotas e horários**: parâmetros de jogo aproximados (não são procedimentos oficiais). Posições de bases (Lagoa, Arsenal, heliportos) são locais de jogo, não endereços oficiais.
+
+## Fase 28 — São Januário
+- **Estádio de São Januário (Estádio Vasco da Gama)**: OpenStreetMap via Overpass API, `leisure=stadium` way 353439809 (contorno), `leisure=pitch` ways 353439806 e 353439812, tênis way 353439811, baixado em 28/10/2026; ODbL (© colaboradores do OpenStreetMap). Guardado em `src/data/marcos/sao-januario.json`. Capacidade e data de inauguração: Wikipédia/Wikidata Q721419 (conferir antes de publicar).
+- Expansão noroeste (planejada, não executada): o DEM Copernicus GLO-30 já em `data/cache/dem` (tile S23 W044) cobre Madureira (-22,87; -43,34), Penha e o Galeão; o OSM exigiria novo recorte do extrato do Sudeste (Geofabrik).

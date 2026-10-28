@@ -7,7 +7,7 @@ import { grafoReal, terrenoReal } from '../src/world/cidadeReal';
 import { HM_RES, HM_STEP, HM_VERTS } from '../src/world/constants';
 import { escavarVias } from '../src/world/escavar';
 import { limitarRampa } from '../src/world/relevo';
-import { Classe, GRADE_ALVO, GRADE_TETO, regradarVias, regradeDe } from '../src/world/regrade';
+import { Classe, GRADE_ALVO, GRADE_MORRO, GRADE_TETO, regradarVias, regradeDe } from '../src/world/regrade';
 import type { RoadGraph } from '../src/world/roads';
 
 /** Relevo plano a 20 m com um acidente ao longo do eixo x (cos², de 0 a `altura` m na largura `largura`), em torno de x = 0. */
@@ -20,9 +20,9 @@ function relevoCom(altura: number, largura: number): Float32Array {
   }
   return h;
 }
-const rua = (comp: number): RoadGraph => ({
+const rua = (comp: number, tipo: 'rua' | 'avenida' = 'rua'): RoadGraph => ({
   nodes: new Map([[1, { id: 1, x: -comp / 2, z: 0 }], [2, { id: 2, x: comp / 2, z: 0 }]]),
-  edges: new Map([[1, { id: 1, a: 1, b: 2, cx: 0, cz: 0, type: 'rua' as const, name: 'Rua Teste', faixas: 2 }]]),
+  edges: new Map([[1, { id: 1, a: 1, b: 2, cx: 0, cz: 0, type: tipo, name: 'Rua Teste', faixas: 2 }]]),
   nextNode: 3, nextEdge: 2,
 });
 
@@ -52,14 +52,27 @@ describe('Fase 20 — regrade da rede viária', () => {
     expect(baixo.classe.some((c) => c === Classe.Muro)).toBe(true);
   });
 
-  it('a rampa que o morro pede é mudada: nós com 80 m de desnível em 100 m sobem no máximo 25%', () => {
+  it('a rampa que o morro pede é mudada: numa avenida, nós com 80 m de desnível em 100 m sobem no máximo 25%', () => {
     const h = new Float32Array(HM_VERTS * HM_VERTS);
     const half = (HM_RES * HM_STEP) / 2;
     for (let j = 0; j < HM_VERTS; j++) for (let i = 0; i < HM_VERTS; i++) h[j * HM_VERTS + i] = 20 + Math.max(0, (-half + i * HM_STEP + 50)) * 0.8; // encosta de 80%
-    const g = rua(100);
+    const g = rua(100, 'avenida');
     const reg = regradarVias(h, g);
     expect(Math.abs(reg.nos.get(1)! - reg.nos.get(2)!)).toBeLessThanOrEqual(GRADE_ALVO * 100 + 0.1);
     expect(reg.resumo.acima30).toBe(0);
+    expect(reg.resumo.trechosDeMorro).toBe(0);
+  });
+
+  it('rua de morro (Fase 28): a mesma encosta de 80% numa RUA sobe até 40%, não 25% — menos viaduto e túnel', () => {
+    const h = new Float32Array(HM_VERTS * HM_VERTS);
+    const half = (HM_RES * HM_STEP) / 2;
+    for (let j = 0; j < HM_VERTS; j++) for (let i = 0; i < HM_VERTS; i++) h[j * HM_VERTS + i] = 20 + Math.max(0, (-half + i * HM_STEP + 50)) * 0.8;
+    const reg = regradarVias(h, rua(100));
+    const dz = Math.abs(reg.nos.get(1)! - reg.nos.get(2)!);
+    expect(dz).toBeGreaterThan(GRADE_ALVO * 100 + 1);
+    expect(dz).toBeLessThanOrEqual(GRADE_MORRO * 100 + 0.1);
+    expect(reg.resumo.trechosDeMorro).toBe(1);
+    expect(reg.trechos.get(1)!.alvo).toBe(GRADE_MORRO);
   });
 
   it('o túnel do regrade não escava o morro por cima e o regrade fica registrado', () => {
@@ -78,19 +91,21 @@ describe('Fase 20 — o Rio depois do regrade', () => {
   const rj = tracos.ufs.find((u) => u.sigla === 'RJ')!;
   const rio = existsSync(arq) ? CidadeReal.parse(JSON.parse(readFileSync(arq, 'utf8'))) : null;
 
-  it('nenhuma rua passa de 30% de rampa (alvo 25%) e há ponte, túnel e muro onde o morro pede', () => {
+  it('nenhuma rua passa de 40% (rua de morro) nem avenida de 30%, e há ponte, túnel e muro onde o morro pede', () => {
     if (!rio) return;
     const hm = terrenoReal(rio, rj.terreno, 'mata-atlantica', 1);
     const r = regradeDe(hm.h)!.resumo;
-    expect(r.gradeMax).toBeLessThanOrEqual(GRADE_TETO);
-    expect(r.acima30).toBe(0);
+    expect(r.gradeMax).toBeLessThanOrEqual(GRADE_MORRO + 0.01);
+    expect(r.acima30).toBeLessThanOrEqual(2);
+    expect(r.trechosDeMorro).toBeGreaterThan(0);
     expect(r.pontes).toBeGreaterThan(0);
     expect(r.tuneis).toBeGreaterThan(0);
     expect(r.trechosComMuro).toBeGreaterThan(0);
     const perfis = construirPerfis(grafoReal(rio, () => ''), hm);
     let maior = 0;
     for (const p of perfis.values()) if (!p.nivel || p.classe) for (let i = 1; i < p.n; i++) maior = Math.max(maior, Math.abs(p.y[i] - p.y[i - 1]) / Math.max(0.5, p.s[i] - p.s[i - 1]));
-    expect(maior).toBeLessThanOrEqual(GRADE_TETO);
+    expect(maior).toBeLessThanOrEqual(GRADE_MORRO + 0.01);
+    expect(GRADE_TETO).toBeLessThan(GRADE_MORRO);
   }, 120000);
 
   it('o relevo é de ~10,7 m e as escadarias e trilhas do OSM chegam ao jogo', () => {

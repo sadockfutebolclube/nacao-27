@@ -54,7 +54,8 @@ export function PainelDebugMapa() {
       <div style={{ marginBottom: 4, opacity: 0.9 }}>
         <span style={{ color: COR.solta }}>{c.solta} vias soltas removidas</span> · <span style={{ color: COR.predio }}>prédios sobre a pista: {c.predioDeslocado} deslocados, {c.predioRemovido} removidos</span> · {c.minirrotatoria} minirrotatórias
       </div>
-      <div style={{ marginBottom: 6, opacity: 0.7 }}>tratados: {c.muro} com muro de arrimo · {c.ponte} pontes · {c.tunel} túneis</div>
+      <div style={{ marginBottom: 4, opacity: 0.7 }}>tratados: {c.muro} com muro de arrimo (patamares ≤ 5 m) · {c.ponte} pontes · {c.tunel} túneis · {c.ruaDeMorro} ruas de morro (rampa até 40%) · {c.falesia} na falésia (cota do pé)</div>
+      <div style={{ marginBottom: 6, opacity: 0.7 }}>solução da lateral: {c.taludes} amostras de talude de grama 1:1,5 · {c.lateralVertical} de face vertical (ponte/viaduto) · alturas máximas: aterro {c.maiorAterro.toFixed(1)} m · corte {c.maiorCorte.toFixed(1)} m · muro {c.maiorMuro.toFixed(1)} m · queda do bordo {c.maiorQueda.toFixed(1)} m</div>
       <div style={{ overflowY: 'auto' }}>
         {d.problemas.length === 0 && <div style={{ opacity: 0.7 }}>Nenhum problema encontrado.</div>}
         {d.problemas.slice(0, 150).map((p, i) => (

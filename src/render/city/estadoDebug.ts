@@ -6,7 +6,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import { larguraVia } from '../../world/roads';
-import { GRADE_ALVO } from '../../world/regrade';
+import { GRADE_ALVO, regradeDe } from '../../world/regrade';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import type { Perfil } from './perfilVias';
 
@@ -21,10 +21,15 @@ export interface Problema {
   inclinacao: number;
   detalhe: string;
 }
+/** Fase 28: o que a lateral das vias virou na última construção (talude de grama × face vertical de ponte) e a maior queda do bordo ao chão (m) */
+export const estatLateral = { taludes: 0, vertical: 0, maxQueda: 0 };
 export interface Contagem {
   morro: number; vao: number; rampa: number; rotatoria: number; trechos: number; muro: number; ponte: number; tunel: number;
   /** Fase 21: vias soltas que o gerador tirou, prédios deslocados e removidos por invadir a pista, minirrotatórias */
   solta: number; predioDeslocado: number; predioRemovido: number; minirrotatoria: number;
+  /** Fase 28: trechos de rua de morro (rampa até 40%), trechos ajustados à falésia, amostras de talude de grama e de lateral vertical, e as maiores alturas (m) */
+  ruaDeMorro: number; falesia: number; taludes: number; lateralVertical: number;
+  maiorAterro: number; maiorCorte: number; maiorMuro: number; maiorQueda: number;
 }
 export interface EstadoDebug {
   /** 0 desligado · 1 wireframe + painel · 2 também as normais do terreno */
@@ -33,7 +38,7 @@ export interface EstadoDebug {
   contagem: Contagem;
 }
 
-const vazia = (): Contagem => ({ morro: 0, vao: 0, rampa: 0, rotatoria: 0, trechos: 0, muro: 0, ponte: 0, tunel: 0, solta: 0, predioDeslocado: 0, predioRemovido: 0, minirrotatoria: 0 });
+const vazia = (): Contagem => ({ morro: 0, vao: 0, rampa: 0, rotatoria: 0, trechos: 0, muro: 0, ponte: 0, tunel: 0, solta: 0, predioDeslocado: 0, predioRemovido: 0, minirrotatoria: 0, ruaDeMorro: 0, falesia: 0, taludes: 0, lateralVertical: 0, maiorAterro: 0, maiorCorte: 0, maiorMuro: 0, maiorQueda: 0 });
 let estado: EstadoDebug = { modo: 0, problemas: [], contagem: vazia() };
 const ouvintes = new Set<() => void>();
 const avisar = () => ouvintes.forEach((f) => f());
@@ -63,6 +68,9 @@ export function diagnosticarVias(perfis: Map<number, Perfil>, hm: Heightmap, des
   contagem.solta = removidos?.vias.length ?? 0;
   contagem.predioRemovido = removidos?.prediosSobreVias ?? 0;
   contagem.predioDeslocado = removidos?.prediosDeslocados ?? 0;
+  const reg = regradeDe(hm.h);
+  if (reg) { const r = reg.resumo; contagem.ruaDeMorro = r.trechosDeMorro; contagem.falesia = r.trechosComFalesia; contagem.maiorAterro = r.maxAterro; contagem.maiorCorte = r.maxCorte; contagem.maiorMuro = r.maxMuro; }
+  contagem.taludes = estatLateral.taludes; contagem.lateralVertical = estatLateral.vertical; contagem.maiorQueda = estatLateral.maxQueda;
   for (const p of perfis.values()) {
     if (p.nivel === 1) { contagem.ponte++; continue; }
     if (p.nivel === -1) { contagem.tunel++; continue; }
@@ -86,8 +94,9 @@ export function diagnosticarVias(perfis: Map<number, Perfil>, hm: Heightmap, des
     const incl = Math.round(Math.max(grade, p.gradeMax ?? 0) * 100);
     const nome = p.edge.name || `trecho ${p.edge.id}`;
     if (pMo > LIMITE.morro) { contagem.morro++; achados.push({ tipo: 'morro', nome, x: p.x[iMo], z: p.z[iMo], valor: pMo, inclinacao: incl, detalhe: `morro ${pMo.toFixed(1)} m acima do asfalto` }); }
-    if (pVa > LIMITE.vao) { contagem.vao++; achados.push({ tipo: 'vao', nome, x: p.x[iVa], z: p.z[iVa], valor: pVa, inclinacao: incl, detalhe: `${pVa.toFixed(1)} m de vão sob a rua${pVa <= 14 ? " (lateral fecha até o chão)" : " — acima do que a lateral cobre"}` }); }
-    if (grade > LIMITE.rampa) { contagem.rampa++; achados.push({ tipo: 'rampa', nome, x: p.x[iGr], z: p.z[iGr], valor: grade * 100, inclinacao: incl, detalhe: `rampa de ${(grade * 100).toFixed(0)}%` }); }
+    if (pVa > LIMITE.vao) { contagem.vao++; achados.push({ tipo: 'vao', nome, x: p.x[iVa], z: p.z[iVa], valor: pVa, inclinacao: incl, detalhe: `${pVa.toFixed(1)} m de vão sob a rua${pVa <= 14 ? " (talude de grama 1:1,5 até o chão)" : " — acima do que o talude cobre (40 m)"}` }); }
+    const alvoT = reg?.trechos.get(p.edge.id)?.alvo ?? GRADE_ALVO;
+    if (grade > alvoT + 0.005) { contagem.rampa++; achados.push({ tipo: 'rampa', nome, x: p.x[iGr], z: p.z[iGr], valor: grade * 100, inclinacao: incl, detalhe: `rampa de ${(grade * 100).toFixed(0)}%${alvoT > GRADE_ALVO ? ' (rua de morro, até 40%)' : ''}` }); }
   }
   const roundabouts: Problema[] = descartadas.map((d) => ({ tipo: 'rotatoria' as const, nome: d.nome || 'sem nome', x: d.x, z: d.z, valor: 0, inclinacao: 0, detalhe: d.motivo }));
   // o que é defeito de verdade primeiro: morro sobre o asfalto, depois rampa, depois vão (que a lateral até o chão já fecha até 14 m)

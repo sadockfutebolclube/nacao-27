@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 1.17.0 — Fase 28: São Januário / Vasco da Gama e continuação da 1B (28/10/2026)
+
+Prints em `docs/auditoria-sao-januario/` e `docs/auditoria-encostas/fase28-*`.
+
+### Estádio de São Januário (Estádio Vasco da Gama)
+- **Geometria real**: contorno de 61 vértices, campo de treino, campo auxiliar e quadra do OpenStreetMap (Overpass, ODbL, 28/10/2026; ways 353439809, 353439806, 353439812, 353439811) em `src/data/marcos/sao-januario.json`. A menor caixa orientada do contorno dá ~100 × 195 m.
+- **Modelo** (`src/render/city/SaoJanuario.tsx`): arquibancada em anel com degraus (preta embaixo, branca em cima, faixa vermelha), muro externo com arcadas, cobertura, quatro torres de refletor acesas à noite, gramado listrado de 105 × 68 m com marcações e traves, campos de treino e quadra, e o pórtico de entrada com a torre e a **Cruz de Malta** do Vasco. Os prédios do OSM sob o estádio deixam de ser desenhados.
+- **Ficha**: ponto turístico "Estádio de São Januário" (inaugurado em 21/4/1927; ~21,9 mil lugares) no clique da Fase 25.
+- **Assets**: procurei modelos gratuitos antes (Poly Pizza: "Football stadium", "Stadium Seats", "Ballpark"…); são genéricos e não acompanham o contorno real, então o estádio é procedural a partir da geometria do OSM.
+
+### 1B (continuação)
+- **Talude de grama**: onde a rua está acima do chão e **não** é ponte/viaduto, a lateral deixou de ser parede vertical e virou talude 1 V : 1,5 H que desce até encontrar o terreno (≤ 40 m). Ponte e viaduto mantêm a face vertical. Construção das vias: 1,64–1,79 s com talude × 1,64–1,82 s sem (4 cargas, mesma máquina): sem custo mensurável. Antes/depois: `fase28-antes-lateral-vertical.jpg` × `fase28-depois-talude-de-grama.jpg`.
+- **Rua de morro**: numa RUA (não avenida) em que o relevo entre os dois nós passa de 30%, o trecho aceita rampa de até **40%** (as ladeiras do Vidigal e de Santa Teresa), em vez de um viaduto e um túnel para segurar 25%. **420 trechos**.
+- **Falésia**: a cota de referência passa a ser a do pé quando, a 32 m do eixo, o relevo de satélite é ≥ 45 m mais baixo (erro horizontal de 30 m na borda do paredão).
+- **Medido** (`npm run auditar-mapa`, antes → depois): pontes 118 → 56 trechos; túneis 6 → 4; trechos com muro 181 → 92; amostras de muro 1.251 → 624; **maior corte 124,7 → 98,2 m**; maior aterro 49,2 → 46,1 m; maior muro 40 → 32,6 m; rampa máxima 25,7% → 40,6% (só nas ruas de morro).
+- **F3**: mostra ruas de morro, trechos na falésia, amostras de talude × face vertical, e as alturas máximas (aterro, corte, muro, queda do bordo).
+- O viaduto só com ≥ 15 m contínuos e o muro em patamares de ≤ 5 m já valiam desde a Fase 21.
+
+### Limites (honestos)
+- **Ainda existe um corte de ~98 m** (rua 5569, Vidigal/Dois Irmãos, 87 m de comprimento): é uma rua do OSM que cruza o cume de um espigão de 30 m de resolução; vira trecho de túnel + muro, não terraço de 20 patamares. Resolver de verdade pede a rota real da pista, que o relevo de satélite não tem.
+- A rampa de 40% vale só para ruas; o limite de avenida continua 25–30%.
+- Dimensões do estádio (arquibancada, cobertura, torre do pórtico) são aproximadas; só o contorno e os campos vêm do OSM. A fachada real de São Januário não foi modelada.
+- **A expansão do mapa para o noroeste NÃO foi feita** (ver DECISIONS D-129).
+- Testes: `tests/fase28.test.ts` (7) e `tests/fase20.test.ts` atualizado (rua de morro).
+
 ## 1.16.0 — Fase 27: veículos especiais (ar, mar e emergência) com modelos 3D reais (28/10/2026)
 
 Prints em `docs/auditoria-veiculos/`. Tudo é dado em `src/data/veiculos/especiais.json` (validado por zod).

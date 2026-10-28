@@ -32,6 +32,7 @@ import { MapaCalorPedestres } from './MapaCalorPedestres';
 import { Selecao } from './Selecao';
 import { Ocorrencias } from './Ocorrencias';
 import { VeiculosEspeciais } from './VeiculosEspeciais';
+import { SaoJanuario } from './SaoJanuario';
 import { TerritorioOverlay } from './TerritorioOverlay';
 import { TransporteRender } from './TransporteRender';
 import { Veiculos } from './Veiculos';
@@ -119,6 +120,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Edificios') && <Edificios hm={hm} />}
         {liga('PrediosReais') && <PrediosReais />}
         {liga('Marcos') && <Marcos hm={hm} />}
+        {liga('SaoJanuario') && <SaoJanuario hm={hm} />}
         {liga('Praia') && <Praia hm={hm} />}
         {liga('Bairros') && <Bairros hm={hm} />}
         {liga('Equipamentos') && <Equipamentos hm={hm} />}

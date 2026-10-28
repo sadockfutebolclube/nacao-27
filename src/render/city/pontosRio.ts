@@ -5,6 +5,7 @@
  */
 import { CAMPOS_PREDIO, predio, type CidadeReal } from '../../data/cidadeReal';
 import { projetar } from '../../world/cidadeReal';
+import { dentroDoPoligono, geometriaSaoJanuario } from '../../world/saoJanuario';
 
 export const IBGE_RIO = '3304557';
 
@@ -31,6 +32,7 @@ function indice(c: CidadeReal) {
   const ancoras = new Map<string, { x: number; z: number; angle: number; w: number; d: number; andares: number }>();
   if (c.ibge === IBGE_RIO) {
     const [mx, mz] = projetar(c, ...LATLON.maracana);
+    const sj = geometriaSaoJanuario((la, lo) => projetar(c, la, lo));
     for (let i = 0; i < c.predios.length / CAMPOS_PREDIO; i++) {
       const o = i * CAMPOS_PREDIO;
       const nomeIdx = c.predios[o + 8];
@@ -43,6 +45,8 @@ function indice(c: CidadeReal) {
         if (!antes || p.w * p.d > antes.w * antes.d) ancoras.set(nome, { x: p.x, z: p.z, angle: p.angle, w: p.w, d: p.d, andares: p.andares });
       }
       if (Math.hypot(c.predios[o] - mx, c.predios[o + 1] - mz) < RAIO_MARACANA) ocultos.add(i);
+      // São Januário (Fase 28): o estádio é desenhado por SaoJanuario.tsx a partir do contorno do OSM
+      if (dentroDoPoligono(c.predios[o], c.predios[o + 1], sj.contorno)) ocultos.add(i);
     }
   }
   r = { ocultos, ancoras };

@@ -381,3 +381,18 @@ Interpolar a velocidade linearmente na distância dava uma decolagem lenta demai
 
 ## D-124 · Rotas de mar conferidas contra o relevo real
 Waypoints "de cabeça" caíam em terra (Urca, Ilha das Cobras, Botafogo). O ajuste usou o relevo do jogo (água ≥ 2,5 m de profundidade, 50 m de folga) e o teste `fase27` garante < 2% de amostras em terra.
+
+## D-125 · São Januário é procedural, guiado pelo contorno do OSM
+Os estádios gratuitos do Poly Pizza são genéricos (e o Maracanã já era procedural). O contorno real de 61 vértices dá o anel; o gramado é de 105 × 68 m; `src/world/saoJanuario.ts` é puro e é usado pelo desenho, pela ficha e pelo filtro dos prédios do OSM.
+
+## D-126 · Talude de grama em vez de lateral vertical fora de ponte
+A face vertical continua só no tabuleiro de ponte/viaduto. Em aterro e vão a lateral é um plano 1 V : 1,5 H até o terreno (≤ 40 m): mais crível e sem custo medido.
+
+## D-127 · Rua de morro: rampa de até 40% só em RUA
+O teto de 25–30% obrigava viaduto de 48 m e túnel de 125 m nas ladeiras do Vidigal. Ruas (não avenidas) com relevo > 30% entre os nós aceitam 40%, como as ladeiras reais. O F3 não conta isso como defeito de rampa.
+
+## D-128 · Cota de referência de falésia
+O relevo de satélite (30 m) erra a posição horizontal na borda de um paredão e "enterrava" a rua 100 m. Quando a 32 m do eixo o terreno é ≥ 45 m mais baixo, vale a cota do pé.
+
+## D-129 · Expansão para o noroeste adiada para uma fase própria
+Cobrir Madureira, Méier, Penha, Ilha do Governador e o Galeão pede um domínio de ~22 × 22 km (hoje 12,3 × 12,3 km edificáveis): ~3,2× a área, ~500 mil prédios e uma grade de raster de 5.500², com as constantes de mapa (MAP_SIZE, BUILD_HALF, HM_RES…) usadas em 27 arquivos e números fixos (8192, 3072, 1536) espalhados. Sem streaming por chunks na simulação e no desenho, o heap (já ~1 GB) e o tempo de geração (22 s) não fecham. Fica como fase própria com ordem: (1) mapa configurável em um só lugar; (2) extrator parametrizado; (3) streaming de prédios e vias; (4) medir tempo, memória e fps.

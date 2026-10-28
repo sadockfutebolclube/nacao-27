@@ -84,6 +84,8 @@
       "historia": "O primeiro bondinho do Brasil, inaugurado em 27 de outubro de 1912, liga a Praia Vermelha ao Morro da Urca (220 m) e ao Pão de Açúcar (396 m). Um dos cartões-postais do Rio." },
     { "nome": "Maracanã", "chave": "maracana", "lat": -22.9121, "lon": -43.2302, "base": 2600, "nota": 4.6, "w": 200, "d": 200, "h": 40, "y": 0,
       "historia": "Inaugurado em 16 de junho de 1950 para a Copa do Mundo, palco do \"Maracanazo\" (Uruguai 2×1 Brasil, em 16 de julho). Reformado para a Copa de 2014 e a abertura das Olimpíadas de 2016." },
+    { "nome": "Estádio de São Januário", "chave": "sao-januario", "lat": -22.8914, "lon": -43.2284, "base": 1900, "nota": 4.7, "w": 120, "d": 195, "h": 24, "y": 0,
+      "historia": "Estádio Vasco da Gama, o São Januário, inaugurado em 21 de abril de 1927 com dinheiro de uma campanha de sócios do Clube de Regatas Vasco da Gama; na época era o maior estádio do Brasil. Fica no bairro Vasco da Gama (Zona Norte) e hoje comporta cerca de 21 mil pessoas. Em 1º de maio de 1940, Getúlio Vargas anunciou ali o salário mínimo. Dimensões e arquibancadas do jogo são aproximadas do contorno do OpenStreetMap." },
     { "nome": "Arcos da Lapa", "chave": "Arcos da Lapa", "base": 2100, "nota": 4.5, "h": 18,
       "historia": "Antigo Aqueduto da Carioca, obra do século XVIII (concluída por volta de 1750) que levava água do Rio Carioca ao Centro. Desde 1896 serve de viaduto ao bonde de Santa Teresa." },
     { "nome": "Museu do Amanhã", "chave": "Museu do Amanhã", "base": 2400, "nota": 4.6, "h": 22,

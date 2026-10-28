@@ -63,6 +63,9 @@ Atribuição CC-BY 3.0: modelos de "Poly by Google", Vojtěch Balák, jeremy, Zs
 escala/cor no jogo. O jato executivo "Jet" (Poly by Google, bgUY8zN2Bq9) foi baixado mas **não** usado (textura de 2048 px, acima do limite de 1024).
 Sketchfab não foi usado (sem `SKETCHFAB_TOKEN`).
 
+### Estádio de São Januário (Fase 28)
+Procurei estádios gratuitos no Poly Pizza ("Football stadium" e "Ballpark", Poly by Google; "Stadium Seats" e "Stadium", Zsky — CC-BY 3.0): são genéricos e não seguem o contorno real de 100 × 195 m, então o estádio é modelado no código a partir do contorno do OpenStreetMap (ODbL). Nenhum modelo externo foi usado.
+
 ## Texturas procedurais (sem download)
 
 Asfalto, calçada, calçadão de pedra portuguesa, concreto de muro com barbacãs, brita e dormentes da via férrea, grama de banqueta, degraus das

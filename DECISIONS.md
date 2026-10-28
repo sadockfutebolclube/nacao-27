@@ -331,3 +331,17 @@ O desenho só amostra a vizinhança da câmera; a contagem da cidade (Σ densida
 
 ## D-108 · Travessia só com faixa
 Zebras existem nos nós com semáforo e nas `faixasPed` do OSM. Sem semáforo, trecho que cruza a boca da rua vira meia-volta. Esquina com calçada contínua continua passando.
+
+# Parte XXIII — Seleção e fichas (Fase 25)
+
+## D-109 · Registro de entidades desacoplado do desenho
+O painel lê o registro; o desenho publica caixas e fontes vivas. Dinâmicas em SoA por grupo (reescritas por quadro), estáticas num índice em grade. Assim o painel não conhece Three.js e o desenho não conhece a ficha.
+
+## D-110 · Picking analítico em vez de GPU/instâncias
+Caixas orientadas + DDA na grade: funciona igual para 1.500 pessoas instanciadas e 122 mil prédios fundidos em blocos (que o `Raycaster` do Three não consegue testar por ID), sem passada de cores.
+
+## D-111 · Fichas determinísticas pela semente, com dados em JSON
+Mesma semente, mesma pessoa; renda, humor, profissões, modelos de carro, tipos de estabelecimento e pontos turísticos vêm de `src/data/entidades.json`. Honestidade: o que é estimativa de jogo está dito na ficha.
+
+## D-112 · Flag de criminoso oculta
+Gerada com a ficha (maior em área dominada e com mais crime), só aparece depois de Investigar. A afiliação a facção/milícia é visível, como pedido.

@@ -1,0 +1,103 @@
+{
+  "_leia-me": "Dados das fichas de entidades (Fase 25): tudo que o painel gera a partir do ID — profissões e rendas, humor, modelos de carro, tipos de estabelecimento, regiões do Rio e pontos turísticos. Valores de renda e faturamento são ESTIMATIVAS de jogo (faixas plausíveis, não estatística oficial); a nota e os visitantes dos pontos turísticos são simulados.",
+  "salarioMinimo": { "valor": 1621, "referencia": "2026" },
+  "classes": [
+    { "id": "E", "nome": "Classe E", "ateSM": 2 },
+    { "id": "D", "nome": "Classe D", "ateSM": 4 },
+    { "id": "C", "nome": "Classe C", "ateSM": 10 },
+    { "id": "B", "nome": "Classe B", "ateSM": 20 },
+    { "id": "A", "nome": "Classe A", "ateSM": 1e9 }
+  ],
+  "profissoes": {
+    "trabalhador": [
+      { "nome": "Auxiliar administrativo", "renda": [1800, 3200] }, { "nome": "Vendedor(a)", "renda": [1700, 3600] }, { "nome": "Motorista de aplicativo", "renda": [2200, 4500] },
+      { "nome": "Enfermeiro(a)", "renda": [3200, 6500] }, { "nome": "Professor(a)", "renda": [3000, 6000] }, { "nome": "Bancário(a)", "renda": [5500, 11000] },
+      { "nome": "Engenheiro(a)", "renda": [8000, 18000] }, { "nome": "Advogado(a)", "renda": [6000, 22000] }, { "nome": "Médico(a)", "renda": [12000, 32000] },
+      { "nome": "Segurança", "renda": [1900, 3000] }, { "nome": "Pedreiro", "renda": [2200, 4200] }, { "nome": "Garçom/garçonete", "renda": [1700, 3200] },
+      { "nome": "Analista de sistemas", "renda": [6000, 14000] }, { "nome": "Contador(a)", "renda": [4500, 11000] }, { "nome": "Operário(a) de fábrica", "renda": [2000, 3600] },
+      { "nome": "Policial militar", "renda": [4200, 8500] }, { "nome": "Cozinheiro(a)", "renda": [1900, 3600] }, { "nome": "Entregador(a)", "renda": [1800, 3400] }
+    ],
+    "estudante": [
+      { "nome": "Estudante do ensino médio", "renda": [0, 0] }, { "nome": "Estudante universitário(a)", "renda": [0, 1800] }, { "nome": "Estudante e estagiário(a)", "renda": [900, 2200] }
+    ],
+    "aposentado": [
+      { "nome": "Aposentado(a)", "renda": [1621, 3800] }, { "nome": "Aposentado(a) — ex-professor(a)", "renda": [2800, 6000] }, { "nome": "Pensionista", "renda": [1621, 3200] }
+    ],
+    "turista": [
+      { "nome": "Turista", "renda": [4000, 18000] }, { "nome": "Turista (a trabalho)", "renda": [5000, 16000] }
+    ],
+    "esportista": [
+      { "nome": "Personal trainer", "renda": [3000, 9000] }, { "nome": "Corredor(a) amador(a)", "renda": [2500, 12000] }, { "nome": "Professor(a) de educação física", "renda": [2800, 6000] }
+    ],
+    "ambulante": [
+      { "nome": "Vendedor(a) ambulante", "renda": [1300, 3000] }, { "nome": "Vendedor(a) de mate e biscoito", "renda": [1400, 3200] }, { "nome": "Camelô", "renda": [1500, 3400] }
+    ]
+  },
+  "humor": [
+    { "id": "animado", "rotulo": "Animado(a)", "emoji": "😄" }, { "id": "tranquilo", "rotulo": "Tranquilo(a)", "emoji": "🙂" },
+    { "id": "cansado", "rotulo": "Cansado(a)", "emoji": "😮‍💨" }, { "id": "estressado", "rotulo": "Estressado(a)", "emoji": "😤" },
+    { "id": "preocupado", "rotulo": "Preocupado(a)", "emoji": "😟" }, { "id": "irritado", "rotulo": "Irritado(a)", "emoji": "😠" },
+    { "id": "com_medo", "rotulo": "Com medo", "emoji": "😨" }
+  ],
+  "modelos": {
+    "0": ["Toyota Corolla", "Honda Civic", "Chevrolet Onix Plus", "Hyundai HB20S", "Volkswagen Virtus"],
+    "1": ["Ônibus urbano — Mercedes-Benz OF 1519", "Ônibus urbano — Volkswagen 17.230", "Ônibus urbano — Marcopolo Torino"],
+    "2": ["Honda CG 160", "Yamaha Factor 150", "Honda Biz 125", "Honda PCX"],
+    "3": ["Volkswagen Gol", "Fiat Argo", "Chevrolet Onix", "Hyundai HB20", "Renault Kwid"],
+    "4": ["Táxi — Toyota Corolla", "Táxi — Chevrolet Spin", "Táxi — Hyundai HB20S"],
+    "5": ["VUC — Hyundai HR", "VUC — Iveco Daily", "VUC — Volkswagen Delivery"],
+    "6": ["Jeep Compass", "Hyundai Creta", "Toyota Corolla Cross", "Honda HR-V"],
+    "7": ["Fiat Toro", "Toyota Hilux", "Chevrolet S10", "Fiat Strada"],
+    "8": ["Fiat Ducato", "Renault Master", "Mercedes-Benz Sprinter"],
+    "9": ["BRT articulado — Volvo B340M", "BRT articulado — Mercedes-Benz O500UDA"],
+    "10": ["Viatura PM — Mitsubishi L200", "Viatura PM — Chevrolet S10", "Viatura PM — Renault Duster"],
+    "11": ["Caminhão de coleta — Volkswagen Constellation", "Caminhão de coleta — Mercedes-Benz Atego"]
+  },
+  "tiposVeiculo": {
+    "0": "civil", "1": "ônibus", "2": "civil", "3": "civil", "4": "civil (táxi)", "5": "serviço (carga)", "6": "civil", "7": "civil", "8": "civil (van)", "9": "ônibus (BRT)", "10": "viatura", "11": "serviço (coleta de lixo)"
+  },
+  "estabelecimentos": [
+    { "re": "padaria|panificadora|confeitaria", "tipo": "Padaria", "porM2": 420, "func": 0.06, "abre": [5.5, 21], "clientes": "refeicoes" },
+    { "re": "mercado|supermercado|mercadinho|hortifruti|atacad", "tipo": "Mercado", "porM2": 520, "func": 0.05, "abre": [7, 22], "clientes": "compras" },
+    { "re": "farmácia|farmacia|drogaria|drogasil|pacheco", "tipo": "Farmácia", "porM2": 600, "func": 0.04, "abre": [7, 22], "clientes": "compras" },
+    { "re": "restaurante|bar |boteco|lanchonete|pizzaria|churrasc|café|cafe|sorveteria|buffet", "tipo": "Bar/Restaurante", "porM2": 480, "func": 0.08, "abre": [11, 23.5], "clientes": "refeicoes" },
+    { "re": "hotel|pousada|hostel", "tipo": "Hotel", "porM2": 300, "func": 0.03, "abre": [0, 24], "clientes": "hospedes" },
+    { "re": "banco|bradesco|itaú|itau|santander|caixa econ", "tipo": "Banco", "porM2": 700, "func": 0.03, "abre": [10, 16], "clientes": "compras" },
+    { "re": "igreja|capela|paróquia|paroquia|templo|catedral", "tipo": "Templo religioso", "porM2": 0, "func": 0.005, "abre": [7, 21], "clientes": "culto" },
+    { "re": "escola|colégio|colegio|creche|faculdade|universidade|instituto", "tipo": "Escola", "porM2": 90, "func": 0.04, "abre": [7, 18], "clientes": "aulas" },
+    { "re": "hospital|clínica|clinica|upa |posto de saúde", "tipo": "Saúde", "porM2": 350, "func": 0.06, "abre": [0, 24], "clientes": "consultas" },
+    { "re": "academia|fitness|crossfit", "tipo": "Academia", "porM2": 260, "func": 0.02, "abre": [6, 22], "clientes": "treino" },
+    { "re": "loja|magazine|boutique|shopping|store|livraria|sapataria|joalheria|ótica|otica", "tipo": "Loja", "porM2": 450, "func": 0.04, "abre": [9, 19], "clientes": "compras" }
+  ],
+  "estabelecimentoPadrao": { "tipo": "Comércio", "porM2": 380, "func": 0.04, "abre": [9, 19], "clientes": "compras" },
+  "regioes": {
+    "Zona Sul": ["Botafogo", "Catete", "Copacabana", "Cosme Velho", "Flamengo", "Glória", "Gávea", "Humaitá", "Ipanema", "Jardim Botânico", "Lagoa", "Laranjeiras", "Leblon", "Leme", "Urca", "Vidigal", "Rocinha", "Arpoador", "Horto", "Bairro Peixoto", "Santa Marta", "Cocheira", "Primeira Mina", "Segunda mina", "Pico", "Vila Rica", "Estradinha", "Mangueirinha", "Barro", "Figueira"],
+    "Centro": ["Centro", "Saúde", "Gamboa", "Santo Cristo", "Lapa", "Castelo", "Saara", "Santa Teresa", "Catumbi", "Cidade Nova", "Estácio", "Rio Comprido", "Bairro de Fátima", "Silvestre"],
+    "Zona Norte": ["Tijuca", "Vila Isabel", "Maracanã", "Andaraí", "Grajaú", "São Cristóvão", "Benfica", "Mangueira", "Vasco da Gama", "São Francisco Xavier", "Rocha", "Praça da Bandeira", "Alto da Boa Vista", "Muda", "Usina", "Aldeia Campista", "Triagem", "Largo da Cancela"],
+    "Zona Oeste": ["Barra da Tijuca", "Recreio", "Jacarepaguá", "Campo Grande", "Santa Cruz", "Bangu"],
+    "Niterói (outro município)": ["Gragoatá"]
+  },
+  "marcos": [
+    { "nome": "Cristo Redentor", "chave": "cristo", "lat": -22.9519, "lon": -43.2105, "base": 5200, "nota": 4.8, "w": 20, "d": 20, "h": 38, "y": 0,
+      "historia": "Inaugurado em 12 de outubro de 1931 no topo do Corcovado, a ~710 m de altitude. A estátua Art Déco tem cerca de 30 m sobre um pedestal de 8 m; projeto do engenheiro Heitor da Silva Costa, com escultura de Paul Landowski. Uma das Novas Sete Maravilhas do Mundo (2007)." },
+    { "nome": "Bondinho do Pão de Açúcar", "chave": "bondinho", "lat": -22.9528, "lon": -43.1632, "base": 3800, "nota": 4.7, "w": 30, "d": 30, "h": 18, "y": 0,
+      "historia": "O primeiro bondinho do Brasil, inaugurado em 27 de outubro de 1912, liga a Praia Vermelha ao Morro da Urca (220 m) e ao Pão de Açúcar (396 m). Um dos cartões-postais do Rio." },
+    { "nome": "Maracanã", "chave": "maracana", "lat": -22.9121, "lon": -43.2302, "base": 2600, "nota": 4.6, "w": 200, "d": 200, "h": 40, "y": 0,
+      "historia": "Inaugurado em 16 de junho de 1950 para a Copa do Mundo, palco do \"Maracanazo\" (Uruguai 2×1 Brasil, em 16 de julho). Reformado para a Copa de 2014 e a abertura das Olimpíadas de 2016." },
+    { "nome": "Arcos da Lapa", "chave": "Arcos da Lapa", "base": 2100, "nota": 4.5, "h": 18,
+      "historia": "Antigo Aqueduto da Carioca, obra do século XVIII (concluída por volta de 1750) que levava água do Rio Carioca ao Centro. Desde 1896 serve de viaduto ao bonde de Santa Teresa." },
+    { "nome": "Museu do Amanhã", "chave": "Museu do Amanhã", "base": 2400, "nota": 4.6, "h": 22,
+      "historia": "Projeto do arquiteto espanhol Santiago Calatrava, inaugurado em dezembro de 2015 no Píer da Praça Mauá, durante a revitalização da região portuária. Museu de ciências com foco em sustentabilidade." },
+    { "nome": "Catedral Metropolitana de São Sebastião", "chave": "Catedral de São Sebastião", "base": 1300, "nota": 4.4, "h": 96,
+      "historia": "Catedral de formato cônico, com cerca de 96 m de altura, projetada por Edgar Fonseca e inaugurada em 1979. Os vitrais de 64 m sobem pelas quatro faces." }
+  ],
+  "regiaoFallback": { "oeste": -3500, "norte": -2500 },
+  "historico": {
+    "trabalhador": ["saiu de casa para o trabalho", "almoçou perto do trabalho", "ficou preso no trânsito na volta", "passou no mercado depois do expediente", "pegou o ônibus lotado", "fez hora extra", "tomou um café com colegas"],
+    "estudante": ["foi à aula", "estudou para a prova", "voltou da escola a pé", "encontrou os amigos na praça", "jogou bola depois da aula"],
+    "aposentado": ["caminhou pela manhã", "foi à padaria", "esperou atendimento no posto de saúde", "jogou dominó na praça", "foi buscar o remédio na farmácia"],
+    "turista": ["tirou fotos no ponto turístico", "almoçou frente ao mar", "pegou um táxi", "visitou um museu", "comprou lembrancinhas"],
+    "esportista": ["correu 8 km na orla", "treinou na academia", "alongou na praça", "bebeu água de coco depois do treino"],
+    "ambulante": ["montou a barraca cedo", "vendeu bem ao meio-dia", "fugiu da fiscalização", "reabasteceu o isopor", "ajudou um turista com o caminho"]
+  }
+}

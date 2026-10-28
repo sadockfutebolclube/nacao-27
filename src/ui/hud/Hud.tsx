@@ -11,6 +11,7 @@ import { LOT_STRIDE } from '../../world/lots';
 import { ROAD_SPECS } from '../../world/roads';
 import { ambiente } from '../../render/city/ambiente';
 import { Icone } from '../Icone';
+import { PainelEntidade } from '../entidades/PainelEntidade';
 import { PainelGoverno } from '../governo/Governo';
 import { BannerFesta, PainelDecisoes, TempoAgora } from './EventosUI';
 import { TelaLegado } from '../eleicao/Legado';
@@ -682,6 +683,7 @@ export function Hud() {
     <div className="absolute inset-0 pointer-events-none origin-top-left" style={{ transform: `scale(${escalaUI})`, width: `${100 / escalaUI}%`, height: `${100 / escalaUI}%` }}>
       <BarraSuperior st={st} onMenu={() => setPausa(true)} />
       <InfoLote />
+      <PainelEntidade />
       <FavelaInfo />
       <BarraLinha />
       {/* canto inferior esquerdo: legenda da camada e o assessor (Fase 10) */}

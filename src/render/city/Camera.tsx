@@ -8,6 +8,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { MapControls as MapControlsImpl } from 'three-stdlib';
 import { enviarFoco, useGame } from '../../sim/bridge';
+import { registro } from '../../entidades/registro';
+import { selecao } from '../../entidades/selecao';
 import { BUILD_HALF } from '../../world/constants';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 
@@ -27,7 +29,7 @@ export const alvoCamera = () => (controlsRef ? controlsRef.target : alvoPadrao);
 
 export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, number] }) {
   const ref = useRef<MapControlsImpl>(null);
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const teclas = useRef(new Set<string>());
   const ferramenta = useGame((s) => s.ferramenta.tipo);
   const tmp = useMemo(() => ({ f: new THREE.Vector3(), r: new THREE.Vector3(), off: new THREE.Vector3() }), []);
@@ -75,6 +77,17 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
     };
   }, [ferramenta]);
 
+  // Fase 25: arrastar a câmera (esquerdo/meio) cancela o "seguir"; o botão direito só gira e não cancela
+  useEffect(() => {
+    const el = gl.domElement;
+    let ini: { x: number; y: number; b: number } | null = null;
+    const down = (e: PointerEvent) => { ini = { x: e.clientX, y: e.clientY, b: e.button }; };
+    const move = (e: PointerEvent) => { if (ini && ini.b !== 2 && e.buttons && Math.hypot(e.clientX - ini.x, e.clientY - ini.y) > 6 && selecao.ler().modo === 'seguindo') selecao.modo('livre'); };
+    const up = () => { ini = null; };
+    el.addEventListener('pointerdown', down); el.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+    return () => { el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+  }, [gl]);
+
   const foco = useRef({ x: 1e9, z: 1e9, raio: 0, t: 0 });
   useFrame((_, dt) => {
     // Fase 23: avisa o worker onde a câmera olha (a cada 0,5 s, se andou > 150 m ou o zoom mudou o raio) — LOD da simulação
@@ -103,6 +116,7 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
       off.normalize().multiplyScalar(vel);
       c.target.add(off);
       camera.position.add(off);
+      if (selecao.ler().modo === 'seguindo') selecao.modo('livre'); // andou com o teclado: a câmera volta a ser do jogador
     }
     const giro = (k.has('q') ? 1 : 0) - (k.has('e') ? 1 : 0);
     if (giro) {
@@ -113,6 +127,22 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
     if (zoom) {
       const v = camera.position.clone().sub(c.target).multiplyScalar(1 + zoom * dt * 1.5);
       if (v.length() > c.minDistance && v.length() < c.maxDistance) camera.position.copy(c.target).add(v);
+    }
+    // Fase 25: acompanha a entidade selecionada (seguindo/travado); travado também não deixa arrastar
+    const sel = selecao.ler();
+    c.enablePan = sel.modo !== 'travado';
+    if (sel.id !== null && sel.modo !== 'livre') {
+      const cx = registro.caixaDe(sel.id);
+      if (cx) {
+        const kf = 1 - Math.exp(-dt * 7);
+        const ddx = (cx.x - c.target.x) * kf, ddz = (cx.z - c.target.z) * kf;
+        c.target.x += ddx; c.target.z += ddz; camera.position.x += ddx; camera.position.z += ddz;
+        if (sel.aproximar) {
+          // pessoas e carros são pequenos: aproxima uma vez até ~35 m
+          const dd = camera.position.distanceTo(c.target), alvoD = cx.w * cx.d > 40 ? 90 : 35;
+          if (dd > alvoD * 1.08) { const v = camera.position.clone().sub(c.target).multiplyScalar(1 - (1 - alvoD / dd) * (1 - Math.exp(-dt * 4))); camera.position.copy(c.target).add(v); } else selecao.aproximado();
+        }
+      }
     }
     // mantém o alvo no chão e dentro do mapa
     const lim = BUILD_HALF + 500;

@@ -18,6 +18,7 @@ import { onibusEstado } from './onibusEstado';
 import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
 import { alvoCamera } from './Camera';
 import { mergeGeos } from './Vias';
+import { registro } from '../../entidades/registro';
 
 const MAX = 700;
 
@@ -77,7 +78,9 @@ export function sortearTipo(r: number, avenida: boolean, faixas: number, semOnib
   return 0;
 }
 
-interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean }
+/** largura × altura × comprimento (m) de cada tipo, para a caixa do clique */
+const DIM: Record<number, [number, number, number]> = { 0: [1.8, 1.5, 4.5], 1: [2.5, 3.1, 12.2], 2: [0.8, 1.5, 1.9], 3: [1.7, 1.5, 4], 4: [1.8, 1.5, 4.5], 5: [2, 2.6, 6.6], 6: [1.9, 1.7, 4.6], 7: [1.9, 1.8, 5], 8: [2, 2.3, 5], 9: [2.55, 3.1, 18.2], 10: [1.9, 1.8, 5], 11: [2.5, 3.2, 7.5] };
+interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean; id: number; semente: number; vel: number; rumo: number }
 
 // ── geometria ────────────────────────────────────────────────────────────────
 
@@ -462,7 +465,14 @@ export function Veiculos() {
 
   const tmp = useMemo(() => ({ p: { x: 0, y: 0, z: 0, tx: 0, tz: 0 }, m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), off: new THREE.Vector3(), eixo: new THREE.Vector3(0, 1, 0), n: new Int32Array(TIPOS) }), []);
 
+  // dados vivos para a ficha do carro clicado
+  useEffect(() => registro.fonte('carro', (id) => {
+    for (const c of carros.current) if (c.ativo && c.id === id) return { semente: c.semente, tipoVeiculo: c.tipo, velocidade: c.vel, rumo: c.rumo, linha: null, lotacao: Math.round(8 + ((c.semente % 100) / 100) * 40) };
+    return null;
+  }), []);
+
   useFrame((_, dtReal) => {
+    registro.iniciarQuadro('carro');
     const g = useGame.getState();
     const dt = Math.min(0.05, dtReal) * (g.velocidade > 0 ? Math.min(2, 0.6 + g.velocidade * 0.4) : 0);
     const st = g.stats;
@@ -478,7 +488,7 @@ export function Veiculos() {
     const alvo = edges.length ? Math.min(MAX, Math.round(porModelo || 6 + (st ? st.populacao / 90 + st.empregos / 160 : 0)), edges.length * 8) : 0;
     const lista = carros.current;
     // nasce/morre gradualmente
-    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false });
+    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false, id: 0, semente: 0, vel: 0, rumo: 0 });
     if (lista.length > alvo) lista.length = alvo;
 
     const { p, m, q, v, s, off, eixo, n } = tmp;
@@ -514,6 +524,7 @@ export function Veiculos() {
         c.v = c.tipo === 1 ? 9 : c.tipo === 9 ? rng.range(10, 13) : c.tipo === 10 ? rng.range(12, 17) : GRANDES.has(c.tipo) ? rng.range(8, 12) : rng.range(9, 15);
         c.faixa = GRANDES.has(c.tipo) ? 1 : rng.int(0, 1);
         c.cor = rng.int(0, 9999);
+        c.id = registro.novoId(); c.semente = rng.int(1, 1_000_000_000);
         c.ativo = true;
       }
       const pf = perfisAtuais.get(c.edge);
@@ -533,7 +544,8 @@ export function Veiculos() {
           if (faseSemaforo(eixoSemaforo(tx, tz), ambiente.tempo) !== 0) passa = 0;
         }
       }
-      c.s += c.dir * Math.min(c.v, lim) * lento * dt * passa;
+      c.vel = Math.min(c.v, lim) * lento * passa;
+      c.s += c.dir * c.vel * dt;
       if (c.s < 0 || c.s > pf.comprimento) {
         // chegou ao nó: escolhe o próximo trecho (evita retorno se houver opção)
         const no = c.s < 0 ? pf.edge.a : pf.edge.b;
@@ -557,8 +569,10 @@ export function Veiculos() {
       // mão direita
       const nx = -p.tz * c.dir, nz = p.tx * c.dir;
       v.set(p.x + nx * faixaOff, p.y + 0.02, p.z + nz * faixaOff);
-      q.setFromAxisAngle(eixo, Math.atan2(p.tx * c.dir, p.tz * c.dir));
+      c.rumo = Math.atan2(p.tx * c.dir, p.tz * c.dir);
+      q.setFromAxisAngle(eixo, c.rumo);
       m.compose(v, q, s);
+      { const dm = DIM[c.tipo]; registro.publicar('carro', c.id, c.tipo === 1 || c.tipo === 9 ? 'onibus' : 'carro', v.x, v.y, v.z, c.rumo, dm[0], dm[1], dm[2]); }
       const pal = CORES[c.tipo];
       const im = corpos[c.tipo]!;
       im.setMatrixAt(n[c.tipo], m); im.setColorAt(n[c.tipo], pal[c.cor % pal.length]);

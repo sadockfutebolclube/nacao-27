@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## 1.14.0 — Fase 25: seleção por clique e fichas das entidades (28/10/2026)
+
+Prints em `docs/auditoria-entidades/`.
+
+### O que é
+- **Clique** em pessoa, carro, ônibus, casa, prédio, estabelecimento ou ponto turístico abre um painel lateral. Duplo clique: a câmera passa a seguir a entidade (e se aproxima, se for pequena). Botões **Seguir** e **Travar câmera** (travada: acompanha e não deixa arrastar); arrastar a câmera ou usar WASD cancela o "seguir". Esc fecha.
+- **Contorno**: as arestas da caixa da entidade em amarelo (por cima de tudo), anel no chão e, nas pequenas, um marcador flutuante que cresce com a distância.
+- **Minimapa** na ficha: o mapa de 12 km (relevo, mar, ruas) com o **polígono do bairro do Censo/IPP destacado** e um alfinete na posição.
+
+### Arquitetura
+- **Registro de entidades (ECS leve)** em `src/entidades/registro.ts`: IDs numéricos, componentes por nome, "fontes" vivas e o picking. Quem desenha (`Pedestres`, `Veiculos`, `Onibus`) só **publica a caixa** de cada entidade a cada quadro e registra uma fonte de dados vivos; o painel pergunta ao registro, não ao Three.js. Dinâmicas (pessoas, carros, ônibus) em typed arrays por grupo; estáticas (122 mil prédios + marcos) num índice em grade (CSR) montado por mundo.
+- **Picking por raio**: raio contra caixas orientadas (método das placas); prédios por varredura da grade (DDA). Pessoas e carros ganham margem que cresce com a distância. O que está atrás do relevo não é clicável.
+- **Fichas** (`src/entidades/geracao.ts`, funções puras, dados em `src/data/entidades.json`): a mesma semente dá sempre a mesma pessoa. `contexto.ts` levanta os fatos do mundo (lotes, ruas, bairros do Censo, território, hora, chuva).
+
+### Fichas
+- **Pessoa**: nome, idade, profissão, renda aproximada e classe (A–E por múltiplos do salário mínimo), humor com o motivo, onde mora (rua, número, bairro, região), onde trabalha, o que está fazendo agora, afiliação a facção/milícia se houver, **flag de criminoso oculta**, revelada pelo botão **Investigar** (3 s; 60% de chance, senão "inconclusivo" e dá para tentar de novo) e histórico recente.
+- **Casa/prédio**: endereço, bairro, região (Zona Sul/Norte/Centro/Oeste pela AP/RA do Censo), tipo, andares, moradores e idades, classe predominante, nível de segurança, quem domina o território, valor estimado do imóvel.
+- **Estabelecimento**: tipo (pelo nome do OSM), dono, funcionários, clientes agora, horário, faturamento, taxa a facção/milícia.
+- **Carro/ônibus**: modelo, tipo (civil, táxi, ônibus, viatura, serviço), motorista, velocidade real, destino estimado, passageiros; ônibus reais mostram a linha do GTFS ("455 — Méier - Copacabana").
+- **Ponto turístico** (Cristo Redentor, Bondinho, Maracanã, Arcos da Lapa, Museu do Amanhã, Catedral): visitantes agora, nota e história curta.
+
+### Limites (honestos)
+- Renda, faturamento, dono, funcionários, nota e visitantes são **estimativas do jogo**, não dados oficiais; a ficha diz isso.
+- O destino do carro é **estimado**: o tráfego visual não calcula a rota inteira.
+- A frota não tem ambulância (só viatura da PM, ônibus, táxi, coleta…): o tipo "ambulância" não aparece.
+- Prédios sem estrutura no OSM caem em "Comércio (sem nome no mapa)"; casas/prédios construídos pelo jogador aparecem a cada ~20 s no índice.
+- A pessoa selecionada não some enquanto o jogador a olha; se mesmo assim sair de cena, o painel mostra a última ficha e avisa.
+- Testes: `tests/fase25.test.ts` (20).
+
 ## 1.13.0 — Fase 24: pedestres dirigidos por dados (28/10/2026)
 
 Prints antes/depois em `docs/auditoria-pedestres/`.

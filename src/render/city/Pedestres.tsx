@@ -23,7 +23,9 @@ import { clima } from './climaVisual';
 import { amostrarPerfil, type Perfil } from './perfilVias';
 import { mergeGeos, perfisAtuais } from './Vias';
 import { CLASSES, CONFIG, celulaDe, construirGrade, Densidade, diaDaSemana, fimDeSemana, somarVias, sortearPersonaAtividade, type Atividade, type Persona } from './densidade';
-import { pedDebug } from './estadoPedestres';
+import { pedDebug, NOMES_ESTADO } from './estadoPedestres';
+import { registro } from '../../entidades/registro';
+import { selecao } from '../../entidades/selecao';
 
 const MAX = 1500;
 /** altura do topo da calçada sobre o perfil do leito (igual à malha das vias) */
@@ -199,6 +201,8 @@ interface Pedestre {
   edge: number; s: number; dir: 1 | -1; lado: 1 | -1; frac: number; v: number;
   /** 0 andando · 1 esperando ônibus · 2 sentado · 3 comprando · 4 trabalhando (parados: `dwell` s e `rumo` fixos) */
   estado: number; dwell: number; rumo: number;
+  /** Fase 25: identidade para o clique (ID do registro, semente da ficha, persona e atividade da rotina) */
+  id: number; semente: number; persona: Persona; atividade: Atividade;
   /** travessia em linha reta (esquina ou faixa do semáforo) até o próximo trecho */
   cruzando: boolean; t: number; dist: number;
   x0: number; y0: number; z0: number; x1: number; y1: number; z1: number;
@@ -208,7 +212,7 @@ interface Pedestre {
 }
 
 const novoPedestre = (): Pedestre => ({
-  ativo: false, edge: 0, s: 0, dir: 1, lado: 1, frac: 0.5, v: 1.3, estado: 0, dwell: 0, rumo: 0,
+  ativo: false, edge: 0, s: 0, dir: 1, lado: 1, frac: 0.5, v: 1.3, estado: 0, dwell: 0, rumo: 0, id: 0, semente: 0, persona: 'trabalhador', atividade: 'desloca',
   cruzando: false, t: 0, dist: 0, x0: 0, y0: 0, z0: 0, x1: 0, y1: 0, z1: 0, pe: 0, ps: 0, pdir: 1, plado: 1,
   fase: 0, pele: 0, escala: 1, camisa: 0, calca: 0, limiarChuva: 1,
 });
@@ -287,6 +291,12 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
     a: ponto(), b1: ponto(), b2: ponto(), c3: ponto(),
   }), []);
 
+  // fonte dos dados vivos para a ficha da pessoa clicada
+  useEffect(() => registro.fonte('pessoa', (id) => {
+    for (const p of E.lista) if (p.ativo && p.id === id) return { semente: p.semente, persona: p.persona, atividade: p.atividade, estado: NOMES_ESTADO[p.estado] };
+    return null;
+  }), [E]);
+
   useEffect(() => {
     // trechos mudaram: quem estava num trecho que sumiu renasce
     for (const p of E.lista) if (!mundo.roads.edges.has(p.edge) || (p.cruzando && !mundo.roads.edges.has(p.pe))) p.ativo = false;
@@ -294,12 +304,14 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
 
   useFrame((_, dtReal) => {
     const { mesh, uniforms } = rec;
+    registro.iniciarQuadro('pessoa');
     const g = useGame.getState();
     const dt = Math.min(0.05, dtReal) * (g.velocidade > 0 ? 1 : 0);
     uniforms.uTempo.value += dt;
     uniforms.uAmp.value = acessibilidade.reduzirMovimento ? 0.35 : 1;
     E.relogio += dtReal;
 
+    const selId = selecao.ler().id; // a pessoa selecionada não some enquanto o jogador a olha
     const alvoCam = alvoCamera();
     const dist = camera.position.distanceTo(alvoCam);
     if (!dens || dist > DIST_MAX || perfisAtuais.size === 0) { mesh.count = 0; return; }
@@ -410,6 +422,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
         const { persona, atividade } = sortearPersonaAtividade(dens.g.peso.subarray(k * nc, k * nc + nc), hora, fds, rng.next(), rng.next());
         p.dir = rng.chance(0.5) ? 1 : -1;
         comportamento(p, pf, tr, k, persona, atividade);
+        p.id = registro.novoId(); p.semente = Math.floor(rng.next() * 1_000_000_000) + 1; p.persona = persona; p.atividade = atividade;
         p.fase = rng.range(0, 100);
         p.pele = rng.next();
         p.camisa = p.v > 2.4 ? [3, 6, 9, 12, 13, 2, 8][rng.int(0, 6)] : rng.int(0, CAMISAS.length - 1);
@@ -476,7 +489,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
       if (!mundo.roads.nodes.get(no)?.semaforo && sobreAsfalto(no, a.x, a.z, b.x, b.z)) { p.dir = p.dir === 1 ? -1 : 1; return; }
       // a densidade manda: ao entrar numa zona mais vazia, parte do povo entra num prédio (não há gente demais em rua vazia)
       const dAntes = dens.em(a.x, a.z), dDepois = dens.em(b.x, b.z);
-      if (dDepois < dAntes && rng.next() > dDepois / Math.max(1e-6, dAntes)) { p.ativo = false; return; }
+      if (p.id !== selId && dDepois < dAntes && rng.next() > dDepois / Math.max(1e-6, dAntes)) { p.ativo = false; return; }
       travessia(p, b, prox, s2, dir2, lado2);
     };
 
@@ -500,7 +513,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
         const pf = perfisAtuais.get(p.edge);
         if (!pf) { p.ativo = false; continue; }
         if (p.dwell <= 0) {
-          if (p.estado === E_ESPERANDO || rng.chance(0.4)) { p.ativo = false; continue; }
+          if (p.id !== selId && (p.estado === E_ESPERANDO || rng.chance(0.4))) { p.ativo = false; continue; }
           p.estado = E_ANDANDO; p.v = rng.range(0.9, 1.3); p.frac = rng.range(0.25, 0.8);
         } else {
           pontoCalcada(pf, p.s, p.lado, p.frac, a);
@@ -518,6 +531,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
           // w: 0/1 guarda-chuva · +2 sentado
           an[n * 4 + 3] = (p.limiarChuva < chuva * 1.3 - 0.05 ? 1 : 0) + (p.estado === E_SENTADO ? 2 : 0);
           porEstado[p.estado]++;
+          registro.publicar('pessoa', p.id, 'pessoa', x, y, z, rumo, 0.6 * k, 1.8 * k, 0.5 * k);
           n++;
           continue;
         }
@@ -567,6 +581,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
       an[n * 4] = p.fase; an[n * 4 + 1] = (p.v * 4.2) / k; an[n * 4 + 2] = p.pele;
       an[n * 4 + 3] = p.limiarChuva < chuva * 1.3 - 0.05 ? 1 : 0;
       porEstado[E_ANDANDO]++;
+      registro.publicar('pessoa', p.id, 'pessoa', x, y, z, rumo, 0.6 * k, 1.8 * k, 0.5 * k);
       n++;
     }
 

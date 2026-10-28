@@ -15,6 +15,9 @@ import { BUILD_HALF } from '../../world/constants';
 import { LOT_STRIDE } from '../../world/lots';
 import { edgeEnds, findEdgeNear, planRoad, resolveEndpoint, ROAD_SPECS, sampleCurve, type RoadRequest, type V2 } from '../../world/roads';
 import { insideFootprint, serviceFootprint } from '../../world/services';
+import { garantirEstaticos } from '../../entidades/contexto';
+import { registro } from '../../entidades/registro';
+import { selecao } from '../../entidades/selecao';
 import { raycastTerrain, roadBaseY, sampleHeight, sampleWaterDist, type Heightmap } from '../../world/terrain';
 
 /** Favela (id) cuja casa contém o ponto, pelos dados de renderização. */
@@ -92,6 +95,20 @@ export function Ferramentas({ hm }: { hm: Heightmap }) {
     const o = ray.ray.origin, d = ray.ray.direction;
     const hit = raycastTerrain(hm, o.x, o.y, o.z, d.x, d.y, d.z);
     return hit ? new THREE.Vector3(hit[0], hit[1], hit[2]) : null;
+  };
+
+  /** Picking de entidades (pessoa, carro, ônibus, casa, prédio, estabelecimento, marco): raio da câmera contra as caixas do registro. */
+  const picarEntidade = (cx: number, cy: number): number | null => {
+    const r = gl.domElement.getBoundingClientRect();
+    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const o = ray.ray.origin, d = ray.ray.direction;
+    garantirEstaticos();
+    const hit = raycastTerrain(hm, o.x, o.y, o.z, d.x, d.y, d.z);
+    // o que fica atrás do relevo não é clicável
+    const maxT = hit ? Math.hypot(hit[0] - o.x, hit[1] - o.y, hit[2] - o.z) + 30 : 6000;
+    const a = registro.picar(o.x, o.y, o.z, d.x, d.y, d.z, maxT);
+    return a ? a.id : null;
   };
 
   // pré-visualização de via
@@ -206,6 +223,11 @@ export function Ferramentas({ hm }: { hm: Heightmap }) {
         return;
       }
       if (e.button !== 0) return;
+      if (f.tipo === 'nenhuma') {
+        const id = picarEntidade(e.clientX, e.clientY);
+        if (id !== null) { g().set({ loteSelecionado: -1, favelaSelecionada: -1 }); selecao.selecionar(id); return; }
+        if (selecao.ler().id !== null) selecao.selecionar(null);
+      }
       const p = picar(e.clientX, e.clientY);
       if (!p) return;
       if (Math.abs(p.x) > BUILD_HALF || Math.abs(p.z) > BUILD_HALF) {
@@ -267,6 +289,7 @@ export function Ferramentas({ hm }: { hm: Heightmap }) {
       if (e.key !== 'Escape') return;
       // Esc consumido aqui não abre o menu de pausa (a HUD checa defaultPrevented)
       if (lp.length) { useGame.setState({ linhaParadas: [] }); e.preventDefault(); }
+      else if (selecao.ler().id !== null) { selecao.selecionar(null); e.preventDefault(); }
       else if (g().favelaSelecionada >= 0) { g().set({ favelaSelecionada: -1 }); e.preventDefault(); }
       else if (pontos.length) { setPontos([]); e.preventDefault(); }
       else if (g().ferramenta.tipo !== 'nenhuma') { g().set({ ferramenta: { tipo: 'nenhuma' } }); e.preventDefault(); }
@@ -274,7 +297,13 @@ export function Ferramentas({ hm }: { hm: Heightmap }) {
     };
     const ctx = (e: Event) => e.preventDefault();
     // duplo clique conclui a linha (descarta a parada duplicada do segundo clique)
-    const onDbl = () => {
+    const onDbl = (ev: MouseEvent) => {
+      if (g().ferramenta.tipo === 'nenhuma') {
+        // duplo clique em uma entidade: a câmera passa a segui-la
+        const id = picarEntidade(ev.clientX, ev.clientY);
+        if (id !== null) { g().set({ loteSelecionado: -1, favelaSelecionada: -1 }); selecao.selecionar(id, 'seguindo'); }
+        return;
+      }
       if (g().ferramenta.tipo !== 'linha') return;
       const lp = useGame.getState().linhaParadas;
       const n = lp.length;

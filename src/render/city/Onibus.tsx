@@ -15,6 +15,7 @@ import { alvoCamera } from './Camera';
 import { indiceDasVias, type AmostraVia } from './perfilVias';
 import { geoBrt, geoOnibus, materialVeiculo } from './Veiculos';
 import { onibusEstado } from './onibusEstado';
+import { registro } from '../../entidades/registro';
 import { perfisAtuais } from './Vias';
 
 interface LinhaDados { id: string; nome: string; longo: string; cor: string; tipo: number; porHora: number[]; trechos: number[][] }
@@ -22,7 +23,7 @@ interface DadosOnibus { linhas: LinhaDados[]; nomesParadas: string[]; paradas: n
 
 /** trecho de itinerário pronto para andar: pontos, distâncias acumuladas e caixa */
 interface Trecho { linha: number; tipo: number; cor: THREE.Color; xs: Float32Array; zs: Float32Array; cum: Float32Array; comp: number; minx: number; maxx: number; minz: number; maxz: number }
-interface Onibus { ativo: boolean; trecho: number; s: number; v: number; cor: THREE.Color; tipo: number }
+interface Onibus { ativo: boolean; trecho: number; s: number; v: number; cor: THREE.Color; tipo: number; id: number; semente: number }
 
 const MAX = 160;
 const RAIO = 1500;
@@ -105,7 +106,17 @@ export function Onibus({ hm }: { hm: Heightmap }) {
   }, [dados, camada, hm]);
   useEffect(() => () => linhasGeo?.dispose(), [linhasGeo]);
 
+  // dados vivos para a ficha do ônibus clicado: linha real do GTFS (número e nome "origem - destino")
+  useEffect(() => registro.fonte('onibus', (id) => {
+    for (const b of E.current.pool) if (b.ativo && b.id === id) {
+      const l = dados?.linhas[trechos[b.trecho]?.linha ?? -1];
+      return { semente: b.semente, tipoVeiculo: b.tipo === 1 ? 9 : 1, velocidade: b.v, rumo: 0, linha: l ? { nome: l.nome, longo: l.longo } : null, lotacao: Math.round(10 + ((b.semente % 100) / 100) * 45) };
+    }
+    return null;
+  }), [dados, trechos]);
+
   useFrame((_, dtReal) => {
+    registro.iniciarQuadro('onibus');
     const e = E.current;
     const [oni, brt, abr] = [refs.onibus.current, refs.brt.current, refs.abrigo.current];
     if (!dados || !oni || !brt || !abr || !trechos.length || !perfisAtuais.size) return;
@@ -148,7 +159,7 @@ export function Onibus({ hm }: { hm: Heightmap }) {
 
     // quantos ônibus: a frequência da hora nas linhas por perto (cada viagem leva ~1 h) × fração do trajeto no raio
     const alvo = Math.max(8, Math.min(MAX, Math.round(e.pesoTotal * 0.3)));
-    while (e.pool.length < alvo) e.pool.push({ ativo: false, trecho: 0, s: 0, v: 8, cor: new THREE.Color(), tipo: 0 });
+    while (e.pool.length < alvo) e.pool.push({ ativo: false, trecho: 0, s: 0, v: 8, cor: new THREE.Color(), tipo: 0, id: 0, semente: 0 });
     if (e.pool.length > alvo) e.pool.length = alvo;
 
     const sorteia = (b: Onibus) => {
@@ -162,6 +173,7 @@ export function Onibus({ hm }: { hm: Heightmap }) {
         if (Math.hypot(t.xs[vi] - a.x, t.zs[vi] - a.z) < RAIO) {
           b.trecho = ti; b.s = Math.max(0, t.cum[vi] - rand() * 20); b.tipo = t.tipo; b.cor.copy(t.cor);
           b.v = t.tipo === 1 ? 7 + rand() * 4 : 5 + rand() * 4; b.ativo = true;
+          b.id = registro.novoId(); b.semente = 1 + Math.floor(rand() * 1_000_000_000);
           return;
         }
       }
@@ -193,6 +205,7 @@ export function Onibus({ hm }: { hm: Heightmap }) {
       const k = b.tipo === 1 ? nB++ : nO++;
       im.setMatrixAt(k, m);
       im.setColorAt(k, b.cor);
+      registro.publicar('onibus', b.id, 'onibus', x, y, z, Math.atan2(p.hx, p.hz), 2.5, 3.1, b.tipo === 1 ? 18.2 : 12.2);
     }
     oni.count = nO; brt.count = nB;
     for (const im of [oni, brt]) { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; }

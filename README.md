@@ -160,3 +160,5 @@ Documentação: [RESEARCH.md](RESEARCH.md) · [DECISIONS.md](DECISIONS.md) · [S
 Personagens, grupos e logradouros são fictícios ou genéricos. Tom: sátira aos vícios da política em geral, sem partidarismo.
 
 **Depuração:** F3 mapa (vias, relevo; slider de densidade de pedestres, dia da semana e mapa de calor); F4 desempenho (passo da simulação, orçamento, fila e custo por fase). `npm run medir-simulacao` mede a simulação.
+
+**Seleção:** clique em pessoa, carro, ônibus, casa, prédio, estabelecimento ou ponto turístico abre a ficha; duplo clique segue; "Travar câmera" prende a câmera; Esc fecha.

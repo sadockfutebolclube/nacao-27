@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 1.11.1 — Correção: tela cinza ao dar zoom (28/10/2026)
+
+### Causa raiz
+- O modo de qualidade automático (`PerformanceMonitor`) troca o nível quando o FPS cai — o que acontece ao dar zoom, com mais detalhe na tela. A troca remontava o CSM da Fase 21, e `csm.dispose()` faz `delete material.onBeforeCompile` em cada material que passou por `setupMaterial`: apagava o **shader próprio do terreno (splat, normais, estação do ano) e dos prédios**. O chão voltava a ser a cor do vértice (branco), a água e as ruas ficavam sobre um mundo branco-acinzentado, e, como a chave do programa continuava a mesma, em outros casos o programa em cache rodava sem os uniformes (manchas vermelhas e pretas).
+- Reproduzido nas mesmas câmeras em 3 alturas (900, 150 e 30 m) depois de trocar de nível: `docs/auditoria-zoom/antes-*`.
+
+### Correção
+- `desligarCSM(csm, scene)` (`CeuLuz.tsx`): antes do `dispose()`, devolve a cada material o `onBeforeCompile` e a chave de programa originais, tira os defines e **esvazia `csm.shaders`** para o `dispose()` não apagar nada. Verificado trocando alta → média → baixa → média → alta: o terreno mantém o gancho próprio (`hasOwnProperty`) e a chave certa em todas as voltas; prints `depois-*`.
+- 4 testes de regressão (`tests/fase22.test.ts`), incluindo o que mostra a causa (o `dispose()` apaga o gancho) e o encadeamento sem duplicar o shader em 4 trocas seguidas.
+
+### O que a investigação descartou (medido)
+- **near/far**: near 3 m e far 30 km; resolução de profundidade de 24 bits em 30 m / 150 m / 900 m / 3 km = 0,0004 / 0,01 / 0,016 / 0,18 m — sem corte de geometria e o z-fighting é contido por `polygonOffset`; `logarithmicDepthBuffer` e near dinâmico não foram necessários (mexer neles não mudaria o cinza).
+- **névoa**: `FogExp2` de 0,00022: 0,00% a 30 m, 0,11% a 150 m, 3,8% a 900 m, 35% a 3 km — não cobre a tela de perto. Com a névoa desligada o cinza continuava.
+- **globo/nuvens**: não há Globe.GL nem camada de nuvens/atmosfera na cena (as "nuvens" do código são os saves na nuvem). O céu é o `<Sky>`.
+- **culling/LOD**: o terreno tem 144 blocos, todos construídos na carga e todos visíveis; nenhum é descarregado, então a cor de limpeza não aparece.
+- **controles**: `minDistance` 25 m e a câmera nunca desce a menos de 8 m do chão (`Camera.tsx`).
+
 ## 1.11.0 — Fase 21: o chão, os trilhos, os muros e a luz (28/10/2026)
 
 Cada problema foi reproduzido com print antes de mexer; os 7 pontos de câmera estão em `docs/auditoria-visual/` (antes-N / depois-N), com as medições e o log de geração.

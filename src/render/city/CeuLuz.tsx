@@ -20,13 +20,38 @@ import { CSM } from 'three/examples/jsm/csm/CSM.js';
  * de poucos centímetros. As luzes e o shader (`lights_fragment_begin`) são do CSM; cada material do mundo recebe os
  * uniformes dele por `ligarCSM`, encadeado ao `onBeforeCompile` que o material já tinha (terreno, prédios…).
  */
+/**
+ * Desfaz `ligarCSM` em todo material da cena: devolve o `onBeforeCompile` e a chave de programa que ele tinha antes e tira os
+ * defines. O `csm.dispose()` do three faria `delete material.onBeforeCompile` — e com isso o terreno perdia o splat e os
+ * prédios, a fachada (a tela inteira ficava branco-acinzentada) toda vez que o nível de qualidade mudava, o que o modo
+ * automático faz ao dar zoom (o FPS cai). Por isso a lista de materiais do CSM é esvaziada antes do `dispose()`.
+ */
+export function desligarCSM(csm: CSM, scene: THREE.Object3D) {
+  scene.traverse((o) => {
+    const m = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
+    if (!m || !(o as THREE.Mesh).isMesh) return;
+    for (const mat of Array.isArray(m) ? m : [m]) {
+      const u = (mat as MatCSM).userData;
+      if (u.csmId === undefined) continue;
+      mat.onBeforeCompile = (u.csmOriginal ?? THREE.Material.prototype.onBeforeCompile) as THREE.Material['onBeforeCompile'];
+      mat.customProgramCacheKey = (u.csmChave ?? THREE.Material.prototype.customProgramCacheKey) as () => string;
+      if (mat.defines) { delete mat.defines.USE_CSM; delete mat.defines.CSM_CASCADES; delete mat.defines.CSM_FADE; }
+      delete u.csmId; delete u.csmOriginal; delete u.csmChave;
+      mat.needsUpdate = true;
+    }
+  });
+  csm.shaders.clear(); // sem isto o dispose() apaga o onBeforeCompile próprio de cada material
+  csm.remove();
+  csm.dispose();
+}
+
 const SEM_CSM = import.meta.env.DEV && (() => { try { return (localStorage.getItem("n27:desligar") ?? "").split(",").includes("CSM"); } catch { return false; } })();
 const CASCATAS: Record<string, number> = { alta: 2, media: 2 };
 const MAPA_CASCATA: Record<string, number> = { alta: 2048, media: 1024 };
 
 type MatCSM = THREE.Material & { userData: { csmId?: number; csmOriginal?: THREE.Material['onBeforeCompile']; csmChave?: () => string } };
 let proximoId = 1;
-function ligarCSM(csm: CSM, id: number, material: MatCSM) {
+export function ligarCSM(csm: CSM, id: number, material: MatCSM) {
   if (material.userData.csmId === id) return;
   const original = 'csmOriginal' in material.userData ? material.userData.csmOriginal : material.onBeforeCompile;
   const chaveOriginal = material.userData.csmChave ?? material.customProgramCacheKey;
@@ -70,7 +95,7 @@ export function CeuLuz({ latitude }: { latitude: number }) {
     for (const l of csm.lights) l.shadow.normalBias = 0.6;
     csmRef.current = { csm, id: proximoId++ };
     ultimoVarre.current = 0;
-    return () => { csmRef.current = null; csm.remove(); csm.dispose(); };
+    return () => { csmRef.current = null; desligarCSM(csm, scene); };
   }, [usaCSM, nivel, camera, scene]);
   useEffect(() => { csmRef.current?.csm.updateFrustums(); }, [tamanho]);
 

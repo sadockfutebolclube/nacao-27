@@ -300,3 +300,6 @@ O CSM do three só precisa de defines e uniformes por material (o chunk de luz �
 
 ## D-099 · Normais dos muros pelo enrolamento
 Em material DoubleSide o three inverte a normal das faces "de trás"; com o enrolamento do triângulo contrário à normal pretendida metade dos muros saía escura, com aparência de vidro. O índice agora é escolhido pelo sinal de (normal pretendida · frente do triângulo).
+
+## D-100 · Desmontar o CSM devolve o shader de cada material
+`CSM.dispose()` do three apaga o `onBeforeCompile` de todo material que passou por `setupMaterial`; como o terreno e os prédios têm `onBeforeCompile` próprio, qualquer troca de qualidade os deixava sem shader. `ligarCSM` guarda o gancho e a chave de programa originais em `material.userData`; `desligarCSM` os restaura e esvazia `csm.shaders` antes do `dispose()`. Hipóteses de near/far, névoa, globo, culling e distância mínima foram medidas antes e não eram a causa.

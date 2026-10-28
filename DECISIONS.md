@@ -243,3 +243,9 @@ Os marcos são formas feitas no código (extrusões, cones, anéis), sem baixar 
 
 ## D-080 · Picos por gaussiana em vez de outro relevo
 Trocar a fonte de altitude por uma de maior resolução (LiDAR da prefeitura) exigiria baixar e processar gigabytes. Uma gaussiana por pico, com a altitude real e um raio por morro, resolve o que aparece no jogo (silhueta do Pão de Açúcar, do Corcovado) e só vale onde o satélite é mais baixo.
+
+## D-081 · Gente da praia fora da simulação de moradores
+Os banhistas são uma camada visual com lotação calculada por hora, temperatura, chuva e dia da semana, em posições fixas por hash da grade. Ligar cada um a um morador simulado exigiria agendas por pessoa para 6 milhões de cariocas; a camada visual dá o efeito (praia que enche e esvazia) sem custo na simulação. Os candidatos são fixos para a praia encher e esvaziar sem as pessoas trocarem de lugar.
+
+## D-082 · Ônibus sem GTFS por enquanto
+O GTFS oficial da prefeitura é a fonte certa para linhas, itinerários e paradas, mas o download não é scriptável aqui (páginas dinâmicas, sem link direto). Em vez de inventar linhas, os ônibus e o BRT nascem nas avenidas, que são onde o OSM os põe. Quando o arquivo estiver em `data/cache/gtfs/`, um script lê `shapes.txt` e liga cada linha às arestas.

@@ -44,6 +44,8 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
   const natureza = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
   /** Fase 14: semáforos (s) e faixas de pedestre (c) dentro da área construível de cada cidade */
   const sinais = new Map<string, { lat: number; lon: number; t: 's' | 'c' }[]>(alvos.map((a) => [a.ibge, []]));
+  /** Fase 16: bairros (place=suburb/neighbourhood/quarter) dentro do mapa de cada cidade */
+  const bairros = new Map<string, { nome: string; lat: number; lon: number; t: number }[]>(alvos.map((a) => [a.ibge, []]));
   /** vias sem etiqueta dentro de algum mapa (podem ser contornos de lagos em relações) */
   const contornos = new Map<number, number[]>();
   let lidos = 0;
@@ -73,6 +75,9 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             if (n * 2 + 2 > coords.length) { const c2 = new Float64Array(coords.length * 2); c2.set(coords); coords = c2; }
             idx.set(it.id, n); coords[n * 2] = lat; coords[n * 2 + 1] = lon; n++;
             const nt = it.tags;
+            if (nt?.name && /^(suburb|neighbourhood|quarter)$/.test(nt.place ?? '')) {
+              for (const a of alvos) if (dentroBB(a.mapa, lat, lon)) bairros.get(a.ibge)!.push({ nome: nt.name, lat, lon, t: nt.place === 'suburb' ? 0 : 1 });
+            }
             if (nt && (nt.highway === 'traffic_signals' || nt.highway === 'crossing' || nt.crossing)) {
               for (const a of alvos) if (dentroBB(a.construivel, lat, lon)) sinais.get(a.ibge)!.push({ lat, lon, t: nt.highway === 'traffic_signals' ? 's' : 'c' });
             }
@@ -115,5 +120,6 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
     await writeFile(join(saida, `${a.ibge}-vias-predios.json`), JSON.stringify(viasPredios.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-natureza.json`), JSON.stringify(natureza.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-sinais.json`), JSON.stringify(sinais.get(a.ibge)));
+    await writeFile(join(saida, `${a.ibge}-bairros.json`), JSON.stringify(bairros.get(a.ibge)));
   }
 }

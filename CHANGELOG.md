@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 1.6.0 — Fase 16: frota carioca, gente e bairros (27/10/2026)
+
+### Frota
+- Seis veículos novos: SUV, picape, van, **BRT articulado** (18 m, dois corpos e fole), **viatura da PM** (azul com faixa branca e barra de luz vermelha e azul) e **caminhão da Comlurb** (laranja, compactador). O táxi ganhou a faixa azul nas portas.
+- A mistura muda com a via: avenida tem mais ônibus e táxis, e BRT só onde há 4 faixas ou mais; rua tem mais motos, vans e picapes. Viatura e caminhão de lixo são raros.
+
+### Gente
+- **Praia**: banhistas deitados em toalhas coloridas, gente de pé, guarda-sóis e ambulantes com caixa de isopor, só na areia perto da câmera. A lotação segue o horário, o calor, a chuva e o fim de semana — cheia num sábado de sol, vazia na chuva e à noite.
+- **Corredores** na orla (a menos de 260 m do mar), mais de manhã cedo e no fim da tarde, de regata colorida e passada de 3 m/s.
+
+### Bairros
+- 89 nomes de bairro e comunidade do OpenStreetMap flutuam sobre o mapa: os bairros aparecem de longe, as comunidades de perto. A ficha de um prédio mostra o bairro.
+
+### Verificado
+- 103 testes (3 novos); typecheck estrito; build ok. No navegador: táxi, ônibus, semáforos e multidão numa avenida da Zona Sul, praia lotada, nomes de bairro.
+
+### Limitações
+- **Ônibus reais (GTFS)**: o feed oficial da prefeitura existe (Data.Rio / Mobility Database), mas não consegui um link de download direto neste ambiente; os ônibus circulam pelas avenidas sem seguir as linhas reais.
+- **Censo 2022 por bairro** não entrou: os bairros têm nome e posição, não população nem renda.
+- Metrô e VLT ainda não existem como veículos; os carros não trocam de faixa; a barra de luz da viatura é fixa (não pisca).
+- Banhistas e corredores não são do mesmo modelo dos moradores simulados: a rotina é por horário, não por morador.
+
 ## 1.5.0 — Fase 15: relevo, mar e marcos (27/10/2026)
 
 ### Relevo

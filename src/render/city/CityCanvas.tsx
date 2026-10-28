@@ -17,6 +17,8 @@ import { ClimaFx } from './ClimaFx';
 import { Edificios } from './Edificios';
 import { PrediosReais } from './PrediosReais';
 import { Marcos } from './Marcos';
+import { Praia } from './Praia';
+import { Bairros } from './Bairros';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -107,13 +109,15 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Edificios') && <Edificios hm={hm} />}
         {liga('PrediosReais') && <PrediosReais />}
         {liga('Marcos') && <Marcos hm={hm} />}
+        {liga('Praia') && <Praia hm={hm} />}
+        {liga('Bairros') && <Bairros hm={hm} />}
         {liga('Equipamentos') && <Equipamentos hm={hm} />}
         {liga('Arvores') && <Arvores hm={hm} />}
         {liga('Favelas') && <Favelas hm={hm} />}
         {liga('TerritorioOverlay') && <TerritorioOverlay hm={hm} />}
         {liga('TransporteRender') && <TransporteRender hm={hm} />}
         {liga('Veiculos') && <Veiculos />}
-        {liga('Pedestres') && <Pedestres />}
+        {liga('Pedestres') && <Pedestres hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}
         <CameraRig hm={hm} inicio={inicio} />

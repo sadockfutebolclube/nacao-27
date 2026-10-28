@@ -17,7 +17,7 @@ import { TelaLegado } from '../eleicao/Legado';
 import { TrilhaSonora } from './Trilha';
 import { OpcoesGerais } from '../Opcoes';
 import { Assessor } from '../assessor/Assessor';
-import { predio as predioReal, TIPO_PREDIO } from '../../data/cidadeReal';
+import { bairroMaisPerto, predio as predioReal, TIPO_PREDIO } from '../../data/cidadeReal';
 import { useConquistas } from '../conquistas/Conquistas';
 import { ASSESSOR_CIDADE, DICAS_CIDADE, PASSOS_CIDADE } from '../assessor/roteiros';
 import { nuvemConfigurada, salvarNuvem } from '../../cloud/nuvem';
@@ -391,7 +391,7 @@ function InfoLote() {
           <div className="text-[11px] text-suave">{rua}, {numero} — {bairro}</div>
           <div className="titulo text-xl font-semibold mt-0.5">{nomeReal ?? (a ? (abandonado ? `${a.nome} (abandonado)` : a.nome) : 'Lote vazio')}</div>
           <div className="text-xs text-suave">{ZONES[zona]?.nome ?? 'Sem zona'}{a ? ` · nível ${a.level} · ${andares} andar${andares > 1 ? 'es' : ''}` : ''}</div>
-          {pReal && <div className="text-[10px] text-acento-2 mt-0.5">Prédio real · {TIPO_PREDIO[pReal.tipo]} · {Math.round(pReal.w)}×{Math.round(pReal.d)} m · © OpenStreetMap</div>}
+          {pReal && <div className="text-[10px] text-acento-2 mt-0.5">{bairroMaisPerto(mundo.real!, pReal.x, pReal.z) ? `${bairroMaisPerto(mundo.real!, pReal.x, pReal.z)} · ` : ''}Prédio real · {TIPO_PREDIO[pReal.tipo]} · {Math.round(pReal.w)}×{Math.round(pReal.d)} m · © OpenStreetMap</div>}
         </div>
         <button onClick={() => set({ loteSelecionado: -1 })} className="text-suave hover:text-white"><Icone nome="x" tamanho={18} /></button>
       </div>

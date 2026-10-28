@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { Rng } from '../../sim/core/rng';
 import { mundo, useGame } from '../../sim/bridge';
 import { calcadaVia, larguraVia } from '../../world/roads';
+import { sampleWaterDist, type Heightmap } from '../../world/terrain';
 import { acessibilidade } from '../acessibilidade';
 import { ambiente } from './ambiente';
 import { alvoCamera } from './Camera';
@@ -202,7 +203,7 @@ const novoPedestre = (): Pedestre => ({
 type Ponto = { x: number; y: number; z: number; tx: number; tz: number };
 const ponto = (): Ponto => ({ x: 0, y: 0, z: 0, tx: 0, tz: 1 });
 
-export function Pedestres() {
+export function Pedestres({ hm }: { hm: Heightmap }) {
   const wv = useGame((s) => s.worldVersion);
   const camera = useThree((s) => s.camera);
 
@@ -307,9 +308,17 @@ export function Pedestres() {
         const crianca = rng.chance(0.08);
         p.escala = crianca ? rng.range(0.62, 0.75) : rng.range(0.92, 1.08);
         p.v = rng.range(1.0, 1.6) * (crianca ? 0.9 : 1);
+        // Fase 16: na orla (a menos de 260 m do mar) há corredores — mais de manhã cedo e no fim da tarde —
+        // de regata colorida, em passada de 3 m/s
+        const hora = ambiente.hora;
+        const horaDeCorrer = (hora >= 5.5 && hora <= 9) || (hora >= 16.5 && hora <= 20);
+        if (!crianca && sampleWaterDist(hm, a.x, a.z) < 260 && rng.chance(horaDeCorrer ? 0.34 : 0.1)) {
+          p.v = rng.range(2.6, 3.6);
+          p.escala = rng.range(0.98, 1.06);
+        }
         p.fase = rng.range(0, 100);
         p.pele = rng.next();
-        p.camisa = rng.int(0, CAMISAS.length - 1);
+        p.camisa = p.v > 2.4 ? [3, 6, 9, 12, 13, 2, 8][rng.int(0, 6)] : rng.int(0, CAMISAS.length - 1);
         p.calca = rng.int(0, CALCAS.length - 1);
         p.limiarChuva = rng.next();
         p.cruzando = false;

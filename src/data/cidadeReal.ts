@@ -51,12 +51,28 @@ export const CidadeReal = z.object({
    * n = 0 quando a planta é o próprio retângulo (casas de quadra dividida, por exemplo).
    */
   contornos: z.string().optional(),
+  /** Fase 16: nomes de bairro do OSM — [x, z, tipo (0 bairro, 1 sub-bairro/comunidade), índice do nome] cada */
+  bairros: z.array(z.number()).optional(),
+  nomesBairros: z.array(z.string()).optional(),
   estat: z.object({ predios: z.number(), comAndares: z.number(), vias: z.number(), km: z.number() }),
 });
 export type CidadeReal = z.infer<typeof CidadeReal>;
 
 export const CAMPOS_PREDIO = 9;
 export const CAMPOS_ARESTA = 6;
+
+/** Bairro (tipo 0) mais perto de (x, z), ou null — para a ficha do lote. */
+export function bairroMaisPerto(c: CidadeReal, x: number, z: number): string | null {
+  const b = c.bairros, nomes = c.nomesBairros;
+  if (!b || !nomes) return null;
+  let melhor = -1, dm = Infinity;
+  for (let i = 0; i < b.length; i += 4) {
+    if (b[i + 2] !== 0) continue;
+    const d = (b[i] - x) ** 2 + (b[i + 1] - z) ** 2;
+    if (d < dm) { dm = d; melhor = b[i + 3]; }
+  }
+  return melhor >= 0 && dm < 2500 * 2500 ? nomes[melhor] : null;
+}
 export const FLAG_VIA = { MAO_UNICA: 1, PONTE: 2, TUNEL: 4 } as const;
 
 export interface PredioReal { x: number; z: number; angle: number; w: number; d: number; andares: number; tipo: number; aresta: number; nome: string | null }

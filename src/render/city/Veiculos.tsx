@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Rng } from '../../sim/core/rng';
 import { mundo, useGame } from '../../sim/bridge';
-import { larguraVia, ROAD_SPECS } from '../../world/roads';
+import { faixasVia, larguraVia, ROAD_SPECS } from '../../world/roads';
 import { ambiente } from './ambiente';
 import { amostrarPerfil } from './perfilVias';
 import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
@@ -20,9 +20,14 @@ import { mergeGeos } from './Vias';
 
 const MAX = 700;
 
-/** 0 sedã · 1 ônibus · 2 moto · 3 hatch · 4 táxi · 5 utilitário/caminhão leve */
-type Tipo = 0 | 1 | 2 | 3 | 4 | 5;
-const TIPOS = 6;
+/**
+ * 0 sedã · 1 ônibus · 2 moto · 3 hatch · 4 táxi · 5 utilitário/caminhão leve
+ * Fase 16: 6 SUV · 7 picape · 8 van · 9 BRT articulado · 10 viatura da PM · 11 caminhão da Comlurb
+ */
+type Tipo = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+const TIPOS = 12;
+/** veículos grandes: andam na faixa da direita e não dividem a pista como um carro */
+const GRANDES = new Set<number>([1, 5, 8, 9, 11]);
 
 const paleta = (cs: string[]) => cs.map((c) => new THREE.Color(c));
 const CORES: Record<Tipo, THREE.Color[]> = {
@@ -32,6 +37,12 @@ const CORES: Record<Tipo, THREE.Color[]> = {
   3: paleta(['#f2f2ee', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#e8e8e8', '#1d3f73', '#5a5f63', '#7a2030']),
   4: paleta(['#f2c418', '#f4f4f0', '#f2c418']),
   5: paleta(['#f2f2ee', '#c8302a', '#1d3f73', '#5a5f63', '#e8e8e8', '#2f6db5']),
+  6: paleta(['#2b2d30', '#e8e8e8', '#8f969c', '#1d3f73', '#5a5f63', '#b0262b', '#f2f2ee', '#3a3d40']),
+  7: paleta(['#f2f2ee', '#c9ccd1', '#2b2d30', '#b0262b', '#5a5f63', '#e8e8e8', '#3a5f3a']),
+  8: paleta(['#f2f2ee', '#e8e8e8', '#c9ccd1', '#2f6db5', '#f2f2ee']),
+  9: paleta(['#c42b2b']),
+  10: paleta(['#1b3a73']),
+  11: paleta(['#f08a24']),
 };
 
 /** Posição das luzes por tipo: frente (z), traseira (z), altura, largura relativa da barra. */
@@ -42,7 +53,26 @@ const LUZES: Record<Tipo, { f: number; t: number; y: number; l: number }> = {
   3: { f: 1.98, t: -1.98, y: 0.7, l: 0.98 },
   4: { f: 2.24, t: -2.24, y: 0.66, l: 1 },
   5: { f: 3.36, t: -3.2, y: 0.85, l: 1.4 },
+  6: { f: 2.3, t: -2.32, y: 0.78, l: 1.05 },
+  7: { f: 2.46, t: -2.55, y: 0.78, l: 1.05 },
+  8: { f: 2.52, t: -2.52, y: 0.8, l: 1.1 },
+  9: { f: 9.08, t: -9.08, y: 0.8, l: 1.6 },
+  10: { f: 2.24, t: -2.24, y: 0.66, l: 1 },
+  11: { f: 3.36, t: -3.3, y: 0.85, l: 1.4 },
 };
+
+/**
+ * Frota do Rio (Fase 16): numa avenida há mais ônibus e táxis e, com 4 faixas ou mais, o BRT; nas ruas, mais
+ * motos, vans e picapes. `r` é um sorteio de 0 a 1.
+ */
+export function sortearTipo(r: number, avenida: boolean, faixas: number): Tipo {
+  const tabela: [Tipo, number][] = avenida
+    ? [[1, 0.14], [9, faixas >= 4 ? 0.05 : 0], [4, 0.1], [2, 0.14], [5, 0.04], [8, 0.03], [7, 0.05], [10, 0.012], [11, 0.01], [6, 0.12], [3, 0.14]]
+    : [[1, 0.04], [4, 0.06], [2, 0.2], [5, 0.05], [8, 0.05], [7, 0.07], [10, 0.012], [11, 0.015], [6, 0.12], [3, 0.2]];
+  let acum = 0;
+  for (const [t, p] of tabela) { acum += p; if (r < acum) return t; }
+  return 0;
+}
 
 interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean }
 
@@ -141,8 +171,124 @@ function geoSedan(taxi: boolean) {
     roda(0.33, 0.24, 0.8, 0.33, 1.38), roda(0.33, 0.24, -0.8, 0.33, 1.38),
     roda(0.33, 0.24, 0.8, 0.33, -1.35), roda(0.33, 0.24, -0.8, 0.33, -1.35),
   ];
-  if (taxi) partes.push({ g: caixa(0.62, 0.18, 0.26, 0, 1.57, -0.5), cor: [1, 0.97, 0.85], brilho: 2 });
+  if (taxi) {
+    partes.push({ g: caixa(0.62, 0.18, 0.26, 0, 1.57, -0.5), cor: [1, 0.97, 0.85], brilho: 2 });
+    // faixa azul nas portas (o táxi comum do Rio é amarelo com faixa azul)
+    for (const lado of [-1, 1]) partes.push({ g: caixa(0.02, 0.17, 2.7, lado * 0.9, 0.72, 0), cor: [0.04, 0.17, 0.62] });
+  }
   return montar(partes);
+}
+
+/** Viatura da PM (Fase 16): sedã azul com a faixa branca nas portas e a barra de luz vermelha e azul no teto. */
+function geoViatura() {
+  const partes: Parte[] = [
+    { g: perfil([[-2.2, 0.32], [2.2, 0.32], [2.26, 0.6], [2.1, 0.8], [0.85, 0.96], [-1.55, 0.99], [-2.15, 0.93], [-2.27, 0.62]], 1.78), cor: BRANCO, pinta: true },
+    { g: perfil([[0.9, 0.95], [-1.5, 0.97], [-1.2, 1.4], [0.22, 1.42]], 1.6), cor: VIDRO },
+    { g: perfil([[-1.26, 1.38], [0.28, 1.38], [0.2, 1.48], [-1.18, 1.48]], 1.64), cor: BRANCO, pinta: true },
+    { g: caixa(1.84, 0.2, 0.14, 0, 0.42, 2.24), cor: PLASTICO },
+    { g: caixa(1.84, 0.2, 0.14, 0, 0.42, -2.25), cor: PLASTICO },
+    { g: caixa(0.38, 0.12, 0.08, 0.58, 0.68, 2.19), cor: FAROL },
+    { g: caixa(0.38, 0.12, 0.08, -0.58, 0.68, 2.19), cor: FAROL },
+    { g: caixa(0.36, 0.13, 0.08, 0.6, 0.75, -2.21), cor: LANTERNA },
+    { g: caixa(0.36, 0.13, 0.08, -0.6, 0.75, -2.21), cor: LANTERNA },
+    roda(0.33, 0.24, 0.8, 0.33, 1.38), roda(0.33, 0.24, -0.8, 0.33, 1.38),
+    roda(0.33, 0.24, 0.8, 0.33, -1.35), roda(0.33, 0.24, -0.8, 0.33, -1.35),
+    { g: caixa(0.5, 0.13, 0.3, 0.25, 1.6, -0.45), cor: [0.05, 0.2, 1], brilho: 2 },
+    { g: caixa(0.5, 0.13, 0.3, -0.25, 1.6, -0.45), cor: [1, 0.05, 0.05], brilho: 2 },
+  ];
+  for (const lado of [-1, 1]) partes.push({ g: caixa(0.02, 0.32, 2.4, lado * 0.9, 0.7, 0), cor: [0.93, 0.93, 0.92] });
+  return montar(partes);
+}
+
+/** SUV (Fase 16): mais alto e mais comprido que o sedã. */
+function geoSuv() {
+  return montar([
+    { g: perfil([[-2.25, 0.38], [2.25, 0.38], [2.3, 0.72], [2.15, 0.96], [0.9, 1.1], [-2.2, 1.12], [-2.3, 0.75]], 1.9), cor: BRANCO, pinta: true },
+    { g: perfil([[0.95, 1.05], [-2.15, 1.08], [-2.0, 1.62], [0.35, 1.64]], 1.74), cor: VIDRO },
+    { g: perfil([[-2.05, 1.58], [0.4, 1.58], [0.32, 1.72], [-2.0, 1.72]], 1.78), cor: BRANCO, pinta: true },
+    { g: caixa(1.94, 0.24, 0.14, 0, 0.48, 2.3), cor: PLASTICO },
+    { g: caixa(1.94, 0.24, 0.14, 0, 0.48, -2.33), cor: PLASTICO },
+    { g: caixa(0.4, 0.13, 0.08, 0.62, 0.78, 2.25), cor: FAROL },
+    { g: caixa(0.4, 0.13, 0.08, -0.62, 0.78, 2.25), cor: FAROL },
+    { g: caixa(0.2, 0.34, 0.08, 0.75, 0.9, -2.3), cor: LANTERNA },
+    { g: caixa(0.2, 0.34, 0.08, -0.75, 0.9, -2.3), cor: LANTERNA },
+    roda(0.38, 0.27, 0.86, 0.38, 1.42), roda(0.38, 0.27, -0.86, 0.38, 1.42),
+    roda(0.38, 0.27, 0.86, 0.38, -1.4), roda(0.38, 0.27, -0.86, 0.38, -1.4),
+  ]);
+}
+
+/** Picape (Fase 16): cabine na frente e caçamba aberta atrás. */
+function geoPicape() {
+  return montar([
+    { g: perfil([[-0.3, 0.4], [2.4, 0.4], [2.45, 0.74], [2.25, 0.96], [0.8, 1.04], [0.35, 1.5], [-0.3, 1.52]], 1.9), cor: BRANCO, pinta: true },
+    { g: perfil([[0.75, 1.02], [-0.25, 1.04], [-0.25, 1.48], [0.38, 1.48]], 1.76), cor: VIDRO },
+    { g: caixa(1.9, 0.55, 2.4, 0, 0.78, -1.5), cor: BRANCO, pinta: true },
+    { g: caixa(1.68, 0.06, 2.2, 0, 1.06, -1.5), cor: PLASTICO },
+    { g: caixa(1.94, 0.22, 0.14, 0, 0.46, 2.45), cor: PLASTICO },
+    { g: caixa(1.94, 0.22, 0.14, 0, 0.46, -2.7), cor: PLASTICO },
+    { g: caixa(0.4, 0.13, 0.08, 0.62, 0.76, 2.4), cor: FAROL },
+    { g: caixa(0.4, 0.13, 0.08, -0.62, 0.76, 2.4), cor: FAROL },
+    { g: caixa(0.2, 0.3, 0.08, 0.82, 0.9, -2.66), cor: LANTERNA },
+    { g: caixa(0.2, 0.3, 0.08, -0.82, 0.9, -2.66), cor: LANTERNA },
+    roda(0.37, 0.26, 0.86, 0.37, 1.55), roda(0.37, 0.26, -0.86, 0.37, 1.55),
+    roda(0.37, 0.26, 0.86, 0.37, -1.6), roda(0.37, 0.26, -0.86, 0.37, -1.6),
+  ]);
+}
+
+/** Van de passageiros/carga (Fase 16). */
+function geoVan() {
+  return montar([
+    { g: caixa(2.0, 1.55, 5.0, 0, 1.2, 0), cor: BRANCO, pinta: true },
+    { g: perfil([[2.5, 0.42], [2.5, 0.8], [2.35, 1.25], [2.2, 1.3], [2.2, 0.42]], 1.98), cor: BRANCO, pinta: true },
+    { g: caixa(1.78, 0.62, 0.06, 0, 1.55, 2.52), cor: VIDRO },
+    { g: caixa(2.02, 0.5, 3.2, 0, 1.75, -0.4), cor: VIDRO, brilho: 1 },
+    { g: caixa(2.04, 0.22, 0.14, 0, 0.48, 2.55), cor: PLASTICO },
+    { g: caixa(2.04, 0.22, 0.14, 0, 0.48, -2.55), cor: PLASTICO },
+    { g: caixa(0.36, 0.14, 0.08, 0.7, 0.84, 2.53), cor: FAROL },
+    { g: caixa(0.36, 0.14, 0.08, -0.7, 0.84, 2.53), cor: FAROL },
+    { g: caixa(0.2, 0.4, 0.08, 0.9, 1.0, -2.52), cor: LANTERNA },
+    { g: caixa(0.2, 0.4, 0.08, -0.9, 1.0, -2.52), cor: LANTERNA },
+    roda(0.37, 0.25, 0.9, 0.37, 1.6), roda(0.37, 0.25, -0.9, 0.37, 1.6),
+    roda(0.37, 0.25, 0.9, 0.37, -1.5), roda(0.37, 0.25, -0.9, 0.37, -1.5),
+  ]);
+}
+
+/** BRT articulado (Fase 16): dois corpos de 8,3 m ligados por um fole, janelas contínuas e luz de letreiro. */
+function geoBrt() {
+  const partes: Parte[] = [];
+  for (const [z, c] of [[4.6, 1], [-4.6, 0]] as const) {
+    partes.push({ g: caixa(2.5, 2.7, 8.3, 0, 1.75, z), cor: BRANCO, pinta: true });
+    partes.push({ g: caixa(2.54, 1.0, 8.1, 0, 2.15, z), cor: VIDRO, brilho: 1 });
+    partes.push({ g: caixa(2.52, 0.4, 8.2, 0, 0.7, z), cor: [0.3, 0.3, 0.3], pinta: true });
+    partes.push({ g: caixa(1.5, 0.3, 3.4, 0, 3.25, z), cor: [0.82, 0.83, 0.84] });
+    partes.push(roda(0.52, 0.4, 1.05, 0.52, z + (c ? 2.4 : 2.2)), roda(0.52, 0.4, -1.05, 0.52, z + (c ? 2.4 : 2.2)));
+    partes.push(roda(0.52, 0.4, 1.05, 0.52, z - (c ? 2.4 : 2.2)), roda(0.52, 0.4, -1.05, 0.52, z - (c ? 2.4 : 2.2)));
+  }
+  partes.push({ g: caixa(2.3, 2.4, 1.1, 0, 1.6, 0), cor: [0.08, 0.08, 0.09] });
+  partes.push({ g: caixa(1.8, 0.28, 0.06, 0, 2.65, 9.0), cor: [1, 0.62, 0.1], brilho: 2 });
+  partes.push({ g: caixa(2.54, 0.3, 0.14, 0, 0.5, 9.05), cor: PLASTICO }, { g: caixa(2.54, 0.3, 0.14, 0, 0.5, -9.05), cor: PLASTICO });
+  partes.push({ g: caixa(0.3, 0.2, 0.06, 0.95, 0.78, -9.07), cor: LANTERNA }, { g: caixa(0.3, 0.2, 0.06, -0.95, 0.78, -9.07), cor: LANTERNA });
+  return montar(partes);
+}
+
+/** Caminhão de lixo da Comlurb (Fase 16): cabine e compactador laranja, caçamba traseira escura. */
+function geoLixo() {
+  return montar([
+    { g: perfil([[1.9, 0.5], [3.3, 0.5], [3.3, 2.25], [3.12, 2.42], [1.9, 2.42]], 2.1), cor: BRANCO, pinta: true },
+    { g: caixa(2.12, 0.68, 0.92, 0, 1.82, 2.86), cor: VIDRO },
+    { g: caixa(2.3, 2.3, 5.2, 0, 1.75, -0.7), cor: BRANCO, pinta: true },
+    { g: new THREE.CylinderGeometry(1.0, 1.0, 5.0, 10).rotateX(Math.PI / 2).translate(0, 3.0, -0.7), cor: BRANCO, pinta: true },
+    { g: caixa(2.1, 0.7, 0.8, 0, 0.95, -3.4), cor: PLASTICO },
+    { g: caixa(1.5, 0.3, 6.3, 0, 0.62, 0.1), cor: PLASTICO },
+    { g: caixa(2.14, 0.25, 0.15, 0, 0.6, 3.33), cor: PLASTICO },
+    { g: caixa(0.32, 0.16, 0.06, 0.78, 0.85, 3.31), cor: FAROL },
+    { g: caixa(0.32, 0.16, 0.06, -0.78, 0.85, 3.31), cor: FAROL },
+    { g: caixa(0.3, 0.14, 0.06, 0.95, 0.8, -3.32), cor: LANTERNA },
+    { g: caixa(0.3, 0.14, 0.06, -0.95, 0.8, -3.32), cor: LANTERNA },
+    { g: caixa(0.5, 0.12, 0.22, 0, 2.55, 3.0), cor: [1, 0.6, 0.05], brilho: 2 },
+    roda(0.45, 0.3, 0.92, 0.45, 2.55), roda(0.45, 0.3, -0.92, 0.45, 2.55),
+    roda(0.45, 0.5, 0.85, 0.45, -1.9), roda(0.45, 0.5, -0.85, 0.45, -1.9),
+  ]);
 }
 
 /** Hatch compacto (~250 tri): traseira quase vertical. */
@@ -261,11 +407,11 @@ export function Veiculos() {
   const wv = useGame((s) => s.worldVersion);
   const tv = useGame((s) => s.transitoVersion);
   const refs = {
-    corpos: [useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null), useRef<THREE.InstancedMesh>(null)],
+    corpos: useRef<(THREE.InstancedMesh | null)[]>([]),
     luzF: useRef<THREE.InstancedMesh>(null), luzT: useRef<THREE.InstancedMesh>(null),
   };
   const geos = useMemo(() => ({
-    corpos: [geoSedan(false), geoOnibus(), geoMoto(), geoHatch(), geoSedan(true), geoCaminhao()],
+    corpos: [geoSedan(false), geoOnibus(), geoMoto(), geoHatch(), geoSedan(true), geoCaminhao(), geoSuv(), geoPicape(), geoVan(), geoBrt(), geoViatura(), geoLixo()],
     luz: new THREE.BoxGeometry(1.5, 0.18, 0.12),
   }), []);
   const uNoite = useMemo(() => ({ value: 0 }), []);
@@ -333,7 +479,7 @@ export function Veiculos() {
     if (lista.length > alvo) lista.length = alvo;
 
     const { p, m, q, v, s, off, eixo, n } = tmp;
-    const corpos = refs.corpos.map((r) => r.current);
+    const corpos = Array.from({ length: TIPOS }, (_, t) => refs.corpos.current[t] ?? null);
     const lf = refs.luzF.current, lt = refs.luzT.current;
     if (corpos.some((c) => !c) || !lf || !lt) return;
     n.fill(0);
@@ -361,9 +507,9 @@ export function Veiculos() {
         c.s = rng.range(0, pf.comprimento);
         c.dir = pf.edge.maoUnica ? 1 : rng.chance(0.5) ? 1 : -1;
         const r = rng.next();
-        c.tipo = r < 0.07 ? 1 : r < 0.27 ? 2 : r < 0.34 ? 5 : r < 0.4 ? 4 : r < 0.68 ? 3 : 0;
-        c.v = c.tipo === 1 ? 9 : c.tipo === 5 ? rng.range(8, 12) : rng.range(9, 15);
-        c.faixa = c.tipo === 1 || c.tipo === 5 ? 1 : rng.int(0, 1);
+        c.tipo = sortearTipo(r, pf.edge.type === 'avenida', faixasVia(pf.edge));
+        c.v = c.tipo === 1 ? 9 : c.tipo === 9 ? rng.range(10, 13) : c.tipo === 10 ? rng.range(12, 17) : GRANDES.has(c.tipo) ? rng.range(8, 12) : rng.range(9, 15);
+        c.faixa = GRANDES.has(c.tipo) ? 1 : rng.int(0, 1);
         c.cor = rng.int(0, 9999);
         c.ativo = true;
       }
@@ -441,7 +587,7 @@ export function Veiculos() {
   return (
     <group>
       {geos.corpos.map((geo, t) => (
-        <instancedMesh key={t} ref={refs.corpos[t]} args={[geo, mats.corpo, MAX]} castShadow frustumCulled={false} />
+        <instancedMesh key={t} ref={(m) => { refs.corpos.current[t] = m; }} args={[geo, mats.corpo, MAX]} castShadow frustumCulled={false} />
       ))}
       <instancedMesh ref={refs.luzF} args={[geos.luz, mats.luzF, MAX]} frustumCulled={false} />
       <instancedMesh ref={refs.luzT} args={[geos.luz, mats.luzT, MAX]} frustumCulled={false} />

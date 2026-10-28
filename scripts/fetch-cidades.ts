@@ -373,6 +373,12 @@ async function gerar(m: Mun, terr: Terrarium) {
     const el = await overpass(`${m.ibge}-sinais`, `[out:json][timeout:240];(node["highway"="traffic_signals"](${bbB});node["highway"="crossing"](${bbB});node["crossing"](${bbB}););out;`).catch(() => []);
     sinais = (el as unknown as { lat?: number; lon?: number; tags?: Record<string, string> }[]).filter((n) => n.lat !== undefined).map((n) => ({ lat: n.lat!, lon: n.lon!, t: n.tags?.highway === 'traffic_signals' ? 's' as const : 'c' as const }));
   }
+  // Fase 16: nomes de bairro (nós place=suburb/neighbourhood/quarter)
+  let bairrosOsm: { nome: string; lat: number; lon: number; t: number }[] = [];
+  try { bairrosOsm = JSON.parse(await readFile(join(CACHE_OSM, `${m.ibge}-bairros.json`), 'utf8')); } catch {
+    const el = await overpass(`${m.ibge}-bairros`, `[out:json][timeout:240];node["place"~"^(suburb|neighbourhood|quarter)$"]["name"](${bbM});out;`).catch(() => []);
+    bairrosOsm = (el as unknown as { lat?: number; lon?: number; tags?: Record<string, string> }[]).filter((n) => n.lat !== undefined && n.tags?.name).map((n) => ({ nome: n.tags!.name, lat: n.lat!, lon: n.lon!, t: n.tags!.place === 'suburb' ? 0 : 1 }));
+  }
   await sleep(1000);
   const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub|coastline)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
 
@@ -613,6 +619,17 @@ async function gerar(m: Mun, terr: Terrarium) {
     versao: 1, ibge: m.ibge, nome: m.nome, uf: m.uf, lat: m.lat, lon: m.lon, geradoEm: new Date().toISOString(), base: Math.round(base * 10) / 10, litoral,
     passo: PASSO, res: RES, alturas: toB64(new Uint8Array(alturas.buffer)), verde: toB64(verde),
     vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed }, predios, nomesPredios,
+    ...(() => {
+      // bairros únicos pelo nome (mantém o 'suburb' se houver os dois), com a posição no mapa
+      const porNome = new Map<string, { nome: string; x: number; z: number; t: number }>();
+      for (const b of bairrosOsm) {
+        const [x, z] = xz(b.lat, b.lon);
+        const antes = porNome.get(b.nome);
+        if (!antes || b.t < antes.t) porNome.set(b.nome, { nome: b.nome, x: r1(x), z: r1(z), t: b.t });
+      }
+      const lista = [...porNome.values()];
+      return { nomesBairros: lista.map((b) => b.nome), bairros: lista.flatMap((b, i) => [b.x, b.z, b.t, i]) };
+    })(),
     contornos: toB64(new Uint8Array(Int16Array.from(contornos).buffer)),
     estat: { predios: predios.length / CAMPOS_PREDIO, comAndares, vias: g.arestas.length / 8, km: Math.round(g.km * 10) / 10 },
   });
@@ -638,7 +655,7 @@ async function main() {
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).
   const porRegiao = new Map<string, Mun[]>();
   for (const m of alvo) {
-    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`))) continue;
+    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`))) continue;
     const r = REGIAO_UF[m.uf];
     porRegiao.set(r, [...(porRegiao.get(r) ?? []), m]);
   }

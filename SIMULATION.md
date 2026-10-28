@@ -657,3 +657,12 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Rocha**: sombreador do terreno mistura três projeções (zy, xz, xy) pelos pesos |n|⁴.
 - **Ondas**: faixas de espuma em `sin(prof × 3,2 − t × 1,1)`, onde `prof` cresce com a distância da costa; avançam para a praia.
 - **Testes** (`tests/fase15.test.ts`).
+
+# Parte XV — Frota, gente e bairros (Fase 16)
+
+- **Frota** (`render/city/Veiculos.tsx`): 12 tipos; `sortearTipo(r, avenida, faixas)` define a mistura; `GRANDES` (ônibus, caminhões, van, BRT) andam na faixa da direita. Táxi tem faixa azul por parte fixa; viatura tem barra de luz emissiva.
+- **Praia** (`Praia.tsx`): candidatos numa grade de 3,2 m em 380 m da câmera onde a cota está entre 0,55 e 4,2 m e a água a menos de 70 m, com densidade 0,42·exp(−distância/38 m); cada candidato tem um limiar estável (`quem`) e aparece quando `lotacaoPraia` o passa. Quatro formas: grupo (guarda-sol + toalha + corpo), deitado, de pé, ambulante.
+- **Corredores** (`Pedestres.tsx`): 34% (horário de correr) ou 10% dos pedestres a menos de 260 m da água, com `v` de 2,6 a 3,6 m/s.
+- **Bairros** (`Bairros.tsx`): sprites de tamanho fixo na tela, até 36 por vez, escolhidos por distância (bairros até 5,2 km, comunidades até 1,5 km); `bairroMaisPerto` alimenta a ficha do prédio. Dados: `place=suburb|neighbourhood|quarter` do OSM em `bairros`/`nomesBairros` do arquivo.
+- **Dev**: `localStorage['n27:praia'] = '0.9'` força a lotação da praia.
+- **Testes** (`tests/fase16.test.ts`).

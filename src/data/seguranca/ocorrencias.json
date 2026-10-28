@@ -1,0 +1,78 @@
+{
+  "_leia-me": "Ocorrências e despacho (Fase 26). `taxaDia` = quantas por dia na cidade inteira no cenário-base; os `fatores` multiplicam. `despacho.primaria` = quem vai sempre; `apoio` = quem vai se a gravidade passar de `apoioA` ou se houver feridos. `cena` descreve o que o jogador VÊ perto da câmera (duração em segundos reais, raio de reação em metros). O tom é de simulação crítica: as consequências humanas aparecem nos números e nas manchetes.",
+  "tipos": {
+    "operacao": {
+      "nome": "Operação policial", "taxaDia": 0.25, "local": "dominio", "fatores": { "crime": 1.6, "doutrinaConfronto": 1.5 },
+      "despacho": { "primaria": ["pm"], "especial": "bope", "apoio": ["samu", "civil"], "apoioA": 0.25 },
+      "cena": { "duracaoS": [70, 130], "raioReacao": 420, "comercioFecha": 0.9, "transito": 0.35, "pedestres": "escondem", "fx": "tiros" },
+      "resolucao": { "mortos": 0.9, "feridos": 2.2, "presos": 5, "tomaTerritorio": 0.3 },
+      "manchete": "Operação da PM no {local}: {mortos} mortos, {feridos} feridos e {presos} presos. Escolas e postos fecham durante o tiroteio."
+    },
+    "confronto": {
+      "nome": "Confronto entre grupos armados", "taxaDia": 0.7, "local": "disputado", "fatores": { "crime": 1.2, "guerra": 2.0 },
+      "despacho": { "primaria": ["pm"], "apoio": ["samu", "civil", "bope"], "apoioA": 0.3 },
+      "cena": { "duracaoS": [50, 100], "raioReacao": 380, "comercioFecha": 1, "transito": 0.2, "pedestres": "fogem", "fx": "tiros" },
+      "resolucao": { "mortos": 1.1, "feridos": 2.8, "presos": 1.2, "tomaTerritorio": 0 },
+      "manchete": "Tiroteio entre {grupoA} e {grupoB} no {local} deixa {mortos} mortos e {feridos} feridos; moradores ficam sem sair de casa."
+    },
+    "blitz": {
+      "nome": "Blitz", "taxaDia": 0.9, "local": "via", "fatores": { "noite": 1.4 },
+      "despacho": { "primaria": ["pm", "guarda"], "apoio": [], "apoioA": 9 },
+      "cena": { "duracaoS": [60, 110], "raioReacao": 140, "comercioFecha": 0, "transito": 0.55, "pedestres": "curiosos", "fx": "bloqueio" },
+      "resolucao": { "mortos": 0, "feridos": 0, "presos": 0.4, "tomaTerritorio": 0 },
+      "manchete": "Blitz da {inst} no {local}: trânsito lento e {presos} detidos."
+    },
+    "roubo": {
+      "nome": "Roubo", "taxaDia": 6, "local": "crime", "fatores": { "crime": 2.0, "noite": 1.3, "semEstado": 1.5 },
+      "despacho": { "primaria": ["pm"], "apoio": ["civil", "samu"], "apoioA": 0.5 },
+      "cena": { "duracaoS": [35, 70], "raioReacao": 120, "comercioFecha": 0.3, "transito": 0.8, "pedestres": "fogem", "fx": "alarme" },
+      "resolucao": { "mortos": 0.04, "feridos": 0.25, "presos": 0.3, "tomaTerritorio": 0 },
+      "manchete": "Roubo no {local}: vítima {desfecho}."
+    },
+    "incendio": {
+      "nome": "Incêndio", "taxaDia": 1.2, "local": "populacao", "fatores": { "calor": 1.6, "favela": 2.4 },
+      "despacho": { "primaria": ["bombeiros"], "apoio": ["samu", "pm", "guarda"], "apoioA": 0.4 },
+      "cena": { "duracaoS": [70, 140], "raioReacao": 220, "comercioFecha": 0.6, "transito": 0.5, "pedestres": "curiosos", "fx": "fogo" },
+      "resolucao": { "mortos": 0.08, "feridos": 0.6, "presos": 0, "tomaTerritorio": 0 },
+      "manchete": "Incêndio no {local}: bombeiros levam {eta} min para chegar; {feridos} feridos."
+    },
+    "acidente": {
+      "nome": "Acidente de trânsito", "taxaDia": 4, "local": "via", "fatores": { "chuva": 1.8, "noite": 1.3, "congestionamento": 1.4 },
+      "despacho": { "primaria": ["guarda", "samu"], "apoio": ["bombeiros", "pm"], "apoioA": 0.5 },
+      "cena": { "duracaoS": [45, 90], "raioReacao": 130, "comercioFecha": 0, "transito": 0.25, "pedestres": "curiosos", "fx": "colisao" },
+      "resolucao": { "mortos": 0.05, "feridos": 0.9, "presos": 0, "tomaTerritorio": 0 },
+      "manchete": "Acidente na {local} deixa {feridos} feridos e interdita a via."
+    },
+    "resgate": {
+      "nome": "Resgate", "taxaDia": 1, "local": "populacao", "fatores": { "chuva": 2.0, "encosta": 2.2 },
+      "despacho": { "primaria": ["bombeiros", "samu"], "apoio": ["marinha", "aeronautica", "guarda"], "apoioA": 0.7 },
+      "cena": { "duracaoS": [60, 120], "raioReacao": 160, "comercioFecha": 0, "transito": 0.6, "pedestres": "curiosos", "fx": "resgate" },
+      "resolucao": { "mortos": 0.1, "feridos": 0.8, "presos": 0, "tomaTerritorio": 0 },
+      "manchete": "Resgate no {local}: equipes procuram {feridos} vítimas."
+    },
+    "enchente": {
+      "nome": "Enchente", "taxaDia": 0.03, "local": "agua", "fatores": { "chuva": 9.0 },
+      "despacho": { "primaria": ["bombeiros", "guarda"], "apoio": ["exercito", "samu", "marinha"], "apoioA": 0.7 },
+      "cena": { "duracaoS": [90, 150], "raioReacao": 300, "comercioFecha": 0.8, "transito": 0.15, "pedestres": "fogem", "fx": "agua" },
+      "resolucao": { "mortos": 0.15, "feridos": 1.4, "presos": 0, "tomaTerritorio": 0 },
+      "manchete": "Enchente no {local}: ruas alagadas, {feridos} feridos e comércio fechado."
+    }
+  },
+  "gravidade": { "_nota": "0–1: sorteada por ocorrência; define quem é chamado em apoio e quantos mortos/feridos", "media": 0.35, "variacao": 0.3 },
+  "despacho": {
+    "_nota": "ETA = preparo da base + distância ÷ velocidade. Área dominada: SAMU e bombeiros esperam escolta (atraso extra). Cobertura do Estado: fração de presença na área.",
+    "atrasoEscoltaMin": 12,
+    "atrasoAreaDominadaMin": 6,
+    "limiteChegadaBomMin": 8,
+    "limiteChegadaRuimMin": 20,
+    "mortosPorMinutoAtraso": 0.012,
+    "maximoOcorrenciasGuardadas": 60
+  },
+  "reacao": {
+    "_nota": "O que os NPCs fazem perto de uma ocorrência (valores em metros e fatores). 'fogem' = correm para longe; 'escondem' = entram nos prédios; 'curiosos' = param e olham.",
+    "velocidadeFuga": 2.8,
+    "fracaoQueEscondeNoRaio": 0.8,
+    "viaturaCedePassagemM": 28,
+    "sirene": { "frequenciaHz": 2.2 }
+  }
+}

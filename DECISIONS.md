@@ -345,3 +345,21 @@ Mesma semente, mesma pessoa; renda, humor, profissões, modelos de carro, tipos 
 
 ## D-112 · Flag de criminoso oculta
 Gerada com a ficha (maior em área dominada e com mais crime), só aparece depois de Investigar. A afiliação a facção/milícia é visível, como pedido.
+
+## D-113 · Facções como camada sobre a grade de 64 m, com parcelas por polígono de bairro
+A grade F/M (intensidade) continua mandando no efeito local; `Faccoes` guarda quem domina cada unidade (63 bairros do Censo) em parcelas que somam 1. Conflito, economia e acordos rodam por unidade, uma vez por dia, na fase "facções" do orçamento do worker.
+
+## D-114 · Tudo em JSON validado
+`faccoes.json`, `instituicoes.json`, `ocorrencias.json` + zod em `src/sim/faccoes/dados.ts`. Referências cruzadas (rival inexistente, instituição inexistente no despacho, veículo desconhecido) são erros de carga, não NaN.
+
+## D-115 · Relações e distribuição são ilustrativas, sem afirmar fatos
+Nomes reais, mas o início é sorteado e tudo é editável; o painel e o CHANGELOG dizem isso. Tom crítico: a manchete traz a conta humana (mortos/feridos) e só ≥ 4 mortos viram choque político.
+
+## D-116 · Despacho por base mais próxima, com atraso de escolta
+ETA = preparo + 1,35 × distância / velocidade; Bombeiros e SAMU esperam escolta em área dominada. A mortalidade sobe com o atraso além do limite "bom". Equipamentos do jogador viram bases (mapa em `instituicoes.json`).
+
+## D-117 · Custos das facções escalam com o tamanho da cidade
+A renda já escala com a população controlada; custos e reposição passam a escalar por `populacaoReferencia` (6 mi). Medido: sem isso, a cidade de teste zerava armas e caixa em ~180 dias.
+
+## D-118 · Reação dos NPCs por estado compartilhado
+`ocorrenciaEstado.ts` expõe cenas/sirenes a Pedestres, Veículos e fichas; nenhuma delas importa o desenho das cenas.

@@ -1,0 +1,79 @@
+{
+  "_leia-me": "Facções (Fase 26). TUDO aqui é parâmetro de jogo para você balancear: nada é afirmação factual sobre território, aliança ou finanças reais de nenhuma organização. A distribuição inicial é sorteada pela semente do jogo (veja `semeadura`), as relações abaixo são ILUSTRATIVAS e podem ser editadas. Escalas: armamento/influência 0–100; dinheiro em milhões de R$; rendas em R$ por pessoa na área controlada por dia.",
+  "ordem": ["milicia", "cv", "ada", "tcp"],
+  "faccoes": {
+    "milicia": {
+      "nome": "Milícia", "sigla": "MIL", "tipo": "milícia", "cor": "#9b5de5",
+      "descricao": "Grupo de ex-agentes e policiais que domina bairros pela venda de \"proteção\": taxas obrigatórias, sinal de TV/internet clandestino, vans e gás.",
+      "inicial": { "poder": 0.55, "armamento": 62, "dinheiro": 38, "influencia": 70 },
+      "fontes": { "trafico": 0.2, "taxas": 2.875, "gatonet": 1.375, "transporteAlternativo": 1.5 },
+      "agressividade": 0.45, "expansao": 0.5, "sensibilidadePolicia": 0.35,
+      "rivais": ["cv"], "aliados": [], "neutros": ["ada", "tcp"]
+    },
+    "cv": {
+      "nome": "CV", "sigla": "CV", "tipo": "facção", "cor": "#e5484d",
+      "descricao": "Facção do tráfico de drogas varejista com grande presença em favelas; disputa pontos de venda e rotas.",
+      "inicial": { "poder": 0.6, "armamento": 70, "dinheiro": 45, "influencia": 40 },
+      "fontes": { "trafico": 3, "taxas": 0.5, "gatonet": 0.3, "transporteAlternativo": 0.125 },
+      "agressividade": 0.7, "expansao": 0.65, "sensibilidadePolicia": 0.5,
+      "rivais": ["ada", "tcp", "milicia"], "aliados": [], "neutros": []
+    },
+    "ada": {
+      "nome": "ADA", "sigla": "ADA", "tipo": "facção", "cor": "#2f80ed",
+      "descricao": "Facção do tráfico de drogas; mantém alianças instáveis com grupos vizinhos e disputa território com o CV.",
+      "inicial": { "poder": 0.4, "armamento": 52, "dinheiro": 28, "influencia": 30 },
+      "fontes": { "trafico": 2.5, "taxas": 0.375, "gatonet": 0.25, "transporteAlternativo": 0.125 },
+      "agressividade": 0.55, "expansao": 0.45, "sensibilidadePolicia": 0.55,
+      "rivais": ["cv", "milicia"], "aliados": ["tcp"], "neutros": []
+    },
+    "tcp": {
+      "nome": "TCP", "sigla": "TCP", "tipo": "facção", "cor": "#2fbf71",
+      "descricao": "Facção do tráfico de drogas, de menor porte, que sobrevive por alianças e por controlar poucos pontos.",
+      "inicial": { "poder": 0.3, "armamento": 44, "dinheiro": 20, "influencia": 22 },
+      "fontes": { "trafico": 2.375, "taxas": 0.35, "gatonet": 0.25, "transporteAlternativo": 0.125 },
+      "agressividade": 0.5, "expansao": 0.35, "sensibilidadePolicia": 0.6,
+      "rivais": ["cv"], "aliados": ["ada"], "neutros": ["milicia"]
+    }
+  },
+  "semeadura": {
+    "_nota": "Como o domínio criminoso que o modelo de grade já gera (pobreza, falta de Estado) é repartido entre as facções no começo: peso de sorteio por facção não-miliciana (a milícia vem da parte M da grade).",
+    "pesos": { "cv": 0.45, "ada": 0.3, "tcp": 0.25 },
+    "forcaMinimaParaTerDono": 0.12,
+    "pesoMilicia": 0.28,
+    "_presencaInicial": "Bairros que começam com domínio criminoso (grandes comunidades). Só a PRESENÇA é dado de partida do jogo; QUAL facção domina cada um é sorteado pela semente — não é afirmação sobre quem controla de fato. Bairros que não existirem no mapa são ignorados. Apague a lista para começar sem território.",
+    "presencaInicial": [
+      { "bairro": "Rocinha", "forca": 0.8 }, { "bairro": "Vidigal", "forca": 0.7 }, { "bairro": "Mangueira", "forca": 0.7 }, { "bairro": "Jacarezinho", "forca": 0.75 },
+      { "bairro": "Maré", "forca": 0.8 }, { "bairro": "Complexo do Alemão", "forca": 0.8 }, { "bairro": "Rio Comprido", "forca": 0.35 }, { "bairro": "Catumbi", "forca": 0.4 },
+      { "bairro": "Santa Teresa", "forca": 0.25 }, { "bairro": "Benfica", "forca": 0.35 }, { "bairro": "Vasco da Gama", "forca": 0.3 }
+    ]
+  },
+  "economia": {
+    "_nota": "Custos e caixa-alvo valem para uma cidade do tamanho de `populacaoReferencia` e escalam proporcionalmente abaixo disso; renda = população controlada × taxa por fonte.",
+    "populacaoReferencia": 6000000,
+    "custoArmamentoPorPontoDia": 0.0009,
+    "propinaPorInfluenciaDia": 0.0005,
+    "pessoalPorTerritorioDia": 0.003,
+    "capDinheiro": 400,
+    "reposicaoArmamentoPorMilhao": 0.45,
+    "apreensaoPorOperacao": { "armamento": 4.5, "dinheiro": 1.2 }
+  },
+  "conflito": {
+    "_nota": "Por dia, em cada território com duas facções presentes: pressão = rivalidade × diferença de poder + ruído. Quem ganha leva uma fatia do controle do outro.",
+    "limiarPresenca": 0.12,
+    "taxaMaxima": 0.09,
+    "ruido": 0.25,
+    "baixaPorConflito": { "armamento": 0.15, "dinheiro": 0.04 },
+    "contagioVizinho": 0.35,
+    "expansaoPorVizinho": 0.025,
+    "recuoSobOperacao": 0.55
+  },
+  "acordos": {
+    "_nota": "Trégua entre rivais cansados: chance diária cresce com o desgaste. Aliados quebram a aliança com chance pequena quando um deles fica muito mais forte.",
+    "chanceTreguaPorDia": 0.012,
+    "desgasteParaTregua": 0.35,
+    "duracaoTreguaDias": [30, 120],
+    "chanceRuptura": 0.004,
+    "relacaoTregua": -0.1,
+    "relacaoGuerra": -0.9
+  }
+}

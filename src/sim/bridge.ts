@@ -23,6 +23,10 @@ export const mundo = {
   pollution: new Float32Array(0) as Float32Array<ArrayBufferLike>,
   lotCount: 0,
   // ── Fase 4 (atualizados só quando a versão muda) ──
+  /** Fase 26: dono de cada célula de 64 m (0 = ninguém, 1.. = facção) e as ocorrências recentes */
+  faccoesDono: new Uint8Array(0) as Uint8Array<ArrayBufferLike>,
+  ocorrencias: [] as import('./faccoes/tipos').Ocorrencia[],
+  ultimaOcorrencia: 0,
   territorioF: new Float32Array(0) as Float32Array<ArrayBufferLike>,
   territorioM: new Float32Array(0) as Float32Array<ArrayBufferLike>,
   favelasCasas: new Float32Array(0) as Float32Array<ArrayBufferLike>,
@@ -61,6 +65,7 @@ interface GameState {
   /** paradas da linha sendo traçada (ferramenta de transporte) */
   linhaParadas: { x: number; z: number }[];
   territorioVersion: number;
+  faccoesVersion: number;
   favelasVersion: number;
   linhasVersion: number;
   transitoVersion: number;
@@ -93,6 +98,7 @@ export const useGame = create<GameState>((set) => ({
   favelaSelecionada: -1,
   linhaParadas: [],
   territorioVersion: 0,
+  faccoesVersion: 0,
   favelasVersion: 0,
   linhasVersion: 0,
   transitoVersion: 0,
@@ -142,6 +148,7 @@ function tratar(ev: MessageEvent<FromWorker>) {
       mundo.pollution = m.pollution;
       const r = m.render;
       const versoes: Partial<GameState> = {};
+      if (r.faccoes) { mundo.faccoesDono = r.faccoes.dono; mundo.ocorrencias = r.faccoes.ocorrencias; mundo.ultimaOcorrencia = r.faccoes.ultimoId; versoes.faccoesVersion = r.faccoes.versao; }
       if (r.territorio) { mundo.territorioF = r.territorio.F; mundo.territorioM = r.territorio.M; versoes.territorioVersion = r.territorio.versao; }
       if (r.favelas) { mundo.favelasCasas = r.favelas.casas; mundo.favelasMeta = r.favelas.meta; versoes.favelasVersion = r.favelas.versao; }
       if (r.linhas) { mundo.linhas = r.linhas.linhas; versoes.linhasVersion = r.linhas.versao; }

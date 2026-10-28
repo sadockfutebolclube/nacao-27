@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 1.15.0 — Fase 26: facções, instituições, ocorrências e despacho (28/10/2026)
+
+Print em `docs/auditoria-faccoes/`. **Tudo é dado em `src/data/seguranca/*.json`** (validado por zod; erro de digitação vira mensagem com o campo).
+
+### O que é
+- **Facções** (Milícia, CV, ADA, TCP): poder, armamento, dinheiro, influência política, rivais/aliados/neutros e quatro fontes de renda (tráfico, "taxas", gatonet, transporte alternativo). A renda é população controlada × taxa por fonte; o custo é armamento + propina + pessoal; parte do caixa repõe armas.
+- **Territórios por polígono**: as 63 unidades do Censo/IPP (bairros) guardam a parcela de cada facção (sem Censo, setores de 1 km). Mudam por **conflito** (pressão = rivalidade × diferença de poder + ruído, com baixas), **expansão** para vizinhas, **operações policiais** (apreendem armas/dinheiro e derrubam o domínio) e **acordos** (trégua entre rivais cansados, ruptura de aliança). Tecla **T**: overlay colorido + painel com 4 abas (Facções, Territórios, Instituições, Ocorrências).
+- **Estado**: PM (com BOPE), Polícia Civil, PF, Guarda Municipal, Exército, Marinha, Aeronáutica, Bombeiros, SAMU. Delegacias, batalhões, bases, hospitais e UPAs que o jogador constrói viram bases de despacho.
+- **Ocorrências** (operação, confronto, blitz, roubo, incêndio, acidente, resgate, enchente): sorteadas por dia (Poisson × condições do local), despachadas (incêndio → Bombeiros; ferido → SAMU; tiroteio → PM/BOPE; crime → Civil) com ETA = preparo + distância/velocidade + escolta em área dominada. Quanto mais demora a chegada, mais mortes.
+- **No mapa**: cenas com efeitos (tiros, fogo, alarme, água), faixa de sirene e rótulo com 1ª viatura/ETA; **viaturas** (modelos reaproveitados, cor por instituição) percorrem as ruas; carros **cedem passagem**; **pedestres fogem, se escondem ou ficam curiosos**; o **comércio fecha** e o **trânsito afunila** no raio da cena.
+
+### Limites (honestos)
+- Os nomes das facções são reais, mas **distribuição inicial, alianças, rivalidades, rendas e armamento são parâmetros ilustrativos do jogo**, não dados sobre organizações reais; a distribuição é sorteada pela semente. Nenhuma fonte externa nova (ver `data/SOURCES.md`).
+- "Comunidade" = polígono de **bairro** do Censo; favelas não têm polígono próprio.
+- Ambulância e caminhão de bombeiros reutilizam os modelos de van e de caminhão; no máximo 4 cenas desenhadas (a menos de 900 m da câmera), as demais só contam nos números.
+- O fechamento do comércio aparece na ficha do estabelecimento e no desenho; não há efeito econômico separado.
+- Economia: custos escalam com a população da cidade (`populacaoReferencia`), senão cidades pequenas quebram as facções; o perdedor de uma guerra pode colapsar (CV na cidade de teste) — balanceie em `faccoes.json`.
+- Testes: `tests/fase26.test.ts` (16).
+
+
 ## 1.14.0 — Fase 25: seleção por clique e fichas das entidades (28/10/2026)
 
 Prints em `docs/auditoria-entidades/`.

@@ -118,6 +118,8 @@ export interface FavelaResumo {
 export interface CidadeStats {
   servicos: ResumoServicos;
   territorio: ResumoTerritorio;
+  /** Fase 26: facções (poder, armas, dinheiro, rendas), unidades territoriais e ocorrências recentes */
+  faccoes: import('./faccoes/tipos').ResumoFaccoes;
   mobilidade: Omit<ResumoMobilidade, 'vias'>;
   transporte: { tarifa: number; vans: PoliticaVans; linhas: LinhaResumo[]; receitaMes: number; custoMes: number };
   favelas: { lista: FavelaResumo[]; deficit: number; demandaPopular: number };
@@ -126,6 +128,7 @@ export interface CidadeStats {
 /** Dados de renderização que mudam pouco (enviados só quando a versão muda). */
 export interface CidadeRender {
   territorio?: { versao: number; F: Float32Array; M: Float32Array };
+  faccoes?: import('./faccoes/tipos').RenderFaccoes;
   favelas?: { versao: number; casas: Float32Array; meta: { id: number; status: StatusFavela; grupo: 1 | 2; regularizada: boolean }[] };
   linhas?: { versao: number; linhas: { id: number; tipo: TipoLinha; cor: string; status: 'operando' | 'em_obra'; caminho: number[]; paradas: { x: number; z: number }[]; frota: number; headwayMin: number }[] };
   transito?: { versao: number; vias: Float32Array };
@@ -182,7 +185,7 @@ export interface SaveData {
   cooldown: [string, number][];
   pollution: number[];
   lotPol: number[];
-  cidade?: { territorio: unknown; favelas: unknown; transporte: unknown; contencao: boolean; crime?: number[]; clima?: unknown; eventos?: unknown; visuais?: unknown; real?: unknown };
+  cidade?: { faccoes?: unknown; territorio: unknown; favelas: unknown; transporte: unknown; contencao: boolean; crime?: number[]; clima?: unknown; eventos?: unknown; visuais?: unknown; real?: unknown };
   tick: number;
   rng: [number, number, number, number];
   caixa: number;

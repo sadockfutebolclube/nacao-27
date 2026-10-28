@@ -724,3 +724,6 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 
 ## Fase 24 — pedestres (desenho, não altera a simulação)
 Densidade por célula de 64 m = Σ classes (peso × pico × Σ personas mistura × fração visível na hora/dia) + POIs. Ver `src/data/pedestres.json` e `src/render/city/densidade.ts`. O modelo agregado (F3) é Σ densidade × metros de via ÷ 100.
+
+## Fase 26 — facções, instituições e ocorrências
+Por dia (fase "facções"): agrega população por unidade (Censo; fallback setores de 1 km) → semeia/herda parcelas → conflito par a par (pressão = −relação × agressividade × Δpoder + ruído; tanh; baixas; milícia empurra grade F↔M) → expansão por vizinhas → normaliza → economia (renda = pop controlada × taxas; custos × k, k = pop/`populacaoReferencia`) → trégua/ruptura → dono por célula → `gerarOcorrencias` (Poisson por tipo × condições; despacho; mortos crescem com o atraso). Dados: `src/data/seguranca/`. Código: `src/sim/faccoes/`; desenho: `src/render/city/Ocorrencias.tsx`; painel: `PainelFaccoes.tsx`.

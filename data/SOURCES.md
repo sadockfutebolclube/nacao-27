@@ -25,3 +25,6 @@ Texturas, HDRI e modelos estão em `ASSETS_LICENSES.md`.
 
 ## Fase 23 — extração e cache
 - Nenhuma fonte nova. O extrato do Sudeste (Geofabrik, mesma URL acima) agora gera `data/osm-cache/recorte-<hash>.ndjson.gz` (caixa do Rio + 0,08°) e `manifesto.json`; ambos são derivados e ficam fora do git. Saída binária em `public/data/cidades/<ibge>/`.
+
+## Fase 26 — facções e instituições
+- Nenhuma fonte externa nova. `src/data/seguranca/*.json` são **parâmetros de jogo ilustrativos** (relações, rendas, armamento, tempos de resposta); a distribuição inicial é sorteada pela semente. Polígonos de bairro: os do Censo 2022/IPP já listados acima. Bases (batalhões, delegacias, quartéis) são posições de jogo ancoradas em bairros, não endereços oficiais.

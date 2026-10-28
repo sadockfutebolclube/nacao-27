@@ -276,13 +276,17 @@ describe('Simulação com orçamento e LOD', () => {
     for (let i = 0; i < 200 * TICKS_POR_DIA; i++) sim.step();
     sim.transporte.semanal(sim);
     const cheio = sim.transporte.resumo;
-    const g = sim.transporte.semanalFatiado(sim, 4, 1);
-    while (!g.next().done);
-    const amostra = sim.transporte.resumo;
-    expect(Number.isFinite(amostra.tempoMedio) && Number.isFinite(amostra.congestionamento)).toBe(true);
+    // as 4 fases da amostra (cada semana roda uma): a média das 4 é do porte do modelo completo
+    let soma = 0;
+    for (let fase = 0; fase < 4; fase++) {
+      const g = sim.transporte.semanalFatiado(sim, 4, fase);
+      while (!g.next().done);
+      expect(Number.isFinite(sim.transporte.resumo.tempoMedio) && Number.isFinite(sim.transporte.resumo.congestionamento)).toBe(true);
+      soma += sim.transporte.resumo.viagensDia;
+    }
     if (cheio.viagensDia > 200) {
-      expect(amostra.viagensDia).toBeGreaterThan(cheio.viagensDia * 0.3);
-      expect(amostra.viagensDia).toBeLessThan(cheio.viagensDia * 2.5);
+      expect(soma / 4).toBeGreaterThan(cheio.viagensDia * 0.3);
+      expect(soma / 4).toBeLessThan(cheio.viagensDia * 2.5);
     }
   }, 120_000);
 });

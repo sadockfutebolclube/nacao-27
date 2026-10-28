@@ -20,11 +20,11 @@ export interface EstadoPed {
   versao: number;
 }
 
-let estado: EstadoPed = { escala: 1, diaSemana: null, mapaCalor: false, agregado: { total: 0, hora: 0, fimDeSemana: false, desenhados: 0, porEstado: [0, 0, 0, 0, 0] }, dens: null, versao: 0 };
+let estado: EstadoPed = { escala: 1, diaSemana: null, mapaCalor: false, agregado: { total: 0, hora: 0, fimDeSemana: false, desenhados: 0, porEstado: [0, 0, 0, 0, 0, 0, 0] }, dens: null, versao: 0 };
 const ouvintes = new Set<() => void>();
 const avisar = () => ouvintes.forEach((f) => f());
 
-export const NOMES_ESTADO = ['andando', 'esperando ônibus', 'sentado', 'comprando', 'trabalhando'] as const;
+export const NOMES_ESTADO = ['andando', 'esperando ônibus', 'sentado', 'comprando', 'trabalhando', 'fugindo', 'olhando a ocorrência'] as const;
 
 export const pedDebug = {
   ler: () => estado,

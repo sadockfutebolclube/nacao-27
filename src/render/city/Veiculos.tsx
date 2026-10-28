@@ -19,6 +19,8 @@ import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
 import { alvoCamera } from './Camera';
 import { mergeGeos } from './Vias';
 import { registro } from '../../entidades/registro';
+import { fatorTransito, sireneAte } from './ocorrenciaEstado';
+import { DADOS as DADOS_SEG } from '../../sim/faccoes/dados';
 
 const MAX = 700;
 
@@ -80,7 +82,7 @@ export function sortearTipo(r: number, avenida: boolean, faixas: number, semOnib
 
 /** largura × altura × comprimento (m) de cada tipo, para a caixa do clique */
 const DIM: Record<number, [number, number, number]> = { 0: [1.8, 1.5, 4.5], 1: [2.5, 3.1, 12.2], 2: [0.8, 1.5, 1.9], 3: [1.7, 1.5, 4], 4: [1.8, 1.5, 4.5], 5: [2, 2.6, 6.6], 6: [1.9, 1.7, 4.6], 7: [1.9, 1.8, 5], 8: [2, 2.3, 5], 9: [2.55, 3.1, 18.2], 10: [1.9, 1.8, 5], 11: [2.5, 3.2, 7.5] };
-interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean; id: number; semente: number; vel: number; rumo: number }
+interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean; id: number; semente: number; vel: number; rumo: number; cede: boolean }
 
 // ── geometria ────────────────────────────────────────────────────────────────
 
@@ -163,7 +165,7 @@ function montar(partes: Parte[]): THREE.BufferGeometry {
 }
 
 /** Sedã (~250 tri); com `taxi`, ganha o luminoso “TÁXI” no teto. */
-function geoSedan(taxi: boolean) {
+export function geoSedan(taxi: boolean) {
   const partes: Parte[] = [
     { g: perfil([[-2.2, 0.32], [2.2, 0.32], [2.26, 0.6], [2.1, 0.8], [0.85, 0.96], [-1.55, 0.99], [-2.15, 0.93], [-2.27, 0.62]], 1.78), cor: BRANCO, pinta: true },
     { g: perfil([[0.9, 0.95], [-1.5, 0.97], [-1.2, 1.4], [0.22, 1.42]], 1.6), cor: VIDRO },
@@ -186,7 +188,7 @@ function geoSedan(taxi: boolean) {
 }
 
 /** Viatura da PM (Fase 16): sedã azul com a faixa branca nas portas e a barra de luz vermelha e azul no teto. */
-function geoViatura() {
+export function geoViatura() {
   const partes: Parte[] = [
     { g: perfil([[-2.2, 0.32], [2.2, 0.32], [2.26, 0.6], [2.1, 0.8], [0.85, 0.96], [-1.55, 0.99], [-2.15, 0.93], [-2.27, 0.62]], 1.78), cor: BRANCO, pinta: true },
     { g: perfil([[0.9, 0.95], [-1.5, 0.97], [-1.2, 1.4], [0.22, 1.42]], 1.6), cor: VIDRO },
@@ -207,7 +209,7 @@ function geoViatura() {
 }
 
 /** SUV (Fase 16): mais alto e mais comprido que o sedã. */
-function geoSuv() {
+export function geoSuv() {
   return montar([
     { g: perfil([[-2.25, 0.38], [2.25, 0.38], [2.3, 0.72], [2.15, 0.96], [0.9, 1.1], [-2.2, 1.12], [-2.3, 0.75]], 1.9), cor: BRANCO, pinta: true },
     { g: perfil([[0.95, 1.05], [-2.15, 1.08], [-2.0, 1.62], [0.35, 1.64]], 1.74), cor: VIDRO },
@@ -242,7 +244,7 @@ function geoPicape() {
 }
 
 /** Van de passageiros/carga (Fase 16). */
-function geoVan() {
+export function geoVan() {
   return montar([
     { g: caixa(2.0, 1.55, 5.0, 0, 1.2, 0), cor: BRANCO, pinta: true },
     { g: perfil([[2.5, 0.42], [2.5, 0.8], [2.35, 1.25], [2.2, 1.3], [2.2, 0.42]], 1.98), cor: BRANCO, pinta: true },
@@ -278,7 +280,7 @@ export function geoBrt() {
 }
 
 /** Caminhão de lixo da Comlurb (Fase 16): cabine e compactador laranja, caçamba traseira escura. */
-function geoLixo() {
+export function geoLixo() {
   return montar([
     { g: perfil([[1.9, 0.5], [3.3, 0.5], [3.3, 2.25], [3.12, 2.42], [1.9, 2.42]], 2.1), cor: BRANCO, pinta: true },
     { g: caixa(2.12, 0.68, 0.92, 0, 1.82, 2.86), cor: VIDRO },
@@ -315,7 +317,7 @@ function geoHatch() {
 }
 
 /** Utilitário/VUC (~220 tri): cabine pintada, baú de carga claro, rodado duplo atrás. */
-function geoCaminhao() {
+export function geoCaminhao() {
   return montar([
     { g: perfil([[1.9, 0.5], [3.3, 0.5], [3.3, 2.25], [3.12, 2.42], [1.9, 2.42]], 2.1), cor: BRANCO, pinta: true },
     { g: caixa(2.12, 0.68, 0.92, 0, 1.82, 2.86), cor: VIDRO },
@@ -488,7 +490,7 @@ export function Veiculos() {
     const alvo = edges.length ? Math.min(MAX, Math.round(porModelo || 6 + (st ? st.populacao / 90 + st.empregos / 160 : 0)), edges.length * 8) : 0;
     const lista = carros.current;
     // nasce/morre gradualmente
-    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false, id: 0, semente: 0, vel: 0, rumo: 0 });
+    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false, id: 0, semente: 0, vel: 0, rumo: 0, cede: false });
     if (lista.length > alvo) lista.length = alvo;
 
     const { p, m, q, v, s, off, eixo, n } = tmp;
@@ -544,7 +546,9 @@ export function Veiculos() {
           if (faseSemaforo(eixoSemaforo(tx, tz), ambiente.tempo) !== 0) passa = 0;
         }
       }
-      c.vel = Math.min(c.v, lim) * lento * passa;
+      // Fase 26: viatura de sirene ligada por perto → o carro comum encosta e para; cena de ocorrência fecha/afunila a via
+      if (c.cede) passa = 0;
+      c.vel = Math.min(c.v, lim) * lento * passa * fatorTransito(pf.x[pf.n >> 1], pf.z[pf.n >> 1]);
       c.s += c.dir * c.vel * dt;
       if (c.s < 0 || c.s > pf.comprimento) {
         // chegou ao nó: escolhe o próximo trecho (evita retorno se houver opção)
@@ -569,6 +573,7 @@ export function Veiculos() {
       // mão direita
       const nx = -p.tz * c.dir, nz = p.tx * c.dir;
       v.set(p.x + nx * faixaOff, p.y + 0.02, p.z + nz * faixaOff);
+      c.cede = sireneAte(p.x, p.z, DADOS_SEG.ocorrencias.reacao.viaturaCedePassagemM) >= 0;
       c.rumo = Math.atan2(p.tx * c.dir, p.tz * c.dir);
       q.setFromAxisAngle(eixo, c.rumo);
       m.compose(v, q, s);

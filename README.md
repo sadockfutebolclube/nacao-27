@@ -133,7 +133,7 @@ Sem isso o jogo usa só saves locais.
 ### Serviços, segurança e favelas (Fase 4)
 - **Serviços** e **Segurança** na barra: clínicas da família, UPAs, hospitais, escolas, delegacias, batalhões e bases comunitárias. Equipamento lotado atende pior.
 - Muito emprego e pouca moradia barata? Surge uma **favela**. Clique nela para urbanizar (obra do Estado), regularizar ou remover. Zoneie **ZEIS** para moradia popular formal.
-- Camada **Território** mostra onde a facção e a milícia mandam. **Operação policial** derruba o domínio na hora; uma base comunitária impede que ele volte.
+- Camada **Território** (tecla **T**) mostra onde Milícia, CV, ADA e TCP mandam, com painel de facções, instituições e ocorrências (despacho, sirenes, reação da população); tudo balanceável em `src/data/seguranca/*.json`. **Operação policial** derruba o domínio na hora; uma base comunitária impede que ele volte.
 - Palácio → **Secretarias**: doutrina de segurança, câmeras corporais, tempo integral, OS na saúde, renda estadual.
 
 ### Transporte (Fase 4)

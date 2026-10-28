@@ -11,10 +11,13 @@ import type { Simulation } from '../simulation';
 export const TERR_CELL = 64;
 export const TERR_RES = (BUILD_HALF * 2) / TERR_CELL; // 192
 
-/** Nomes fictícios — nenhum grupo real. */
+/**
+ * Os dois campos da grade (F, M): presença de facções do tráfico e presença miliciana. QUEM é cada facção (CV, ADA, TCP, Milícia)
+ * vem do sistema de facções (src/sim/faccoes, dados em src/data/seguranca/).
+ */
 export const GRUPOS = {
-  1: { nome: 'Comando da Laje', sigla: 'CDL', tipo: 'facção', cor: '#e5484d' },
-  2: { nome: 'Liga do Asfalto', sigla: 'LDA', tipo: 'milícia', cor: '#9b5de5' },
+  1: { nome: 'Facções do tráfico', sigla: 'FAC', tipo: 'facção', cor: '#e5484d' },
+  2: { nome: 'Milícia', sigla: 'MIL', tipo: 'milícia', cor: '#9b5de5' },
 } as const;
 
 export type Doutrina = 'confronto' | 'inteligencia' | 'prevencao';
@@ -155,8 +158,8 @@ export class Territorio {
       estado: tot ? est / tot : 1, disputado: tot ? dis / tot : 0, faccao: tot ? fac / tot : 0, milicia: tot ? mil / tot : 0,
       guerra: guerra > 3,
     };
-    if (guerra > 3) sim.noticia(`Guerra entre o ${GRUPOS[1].nome} e a ${GRUPOS[2].nome}: tiroteio fecha escolas e postos de saúde em ${guerra} quarteirões.`, 'ruim', 'guerra', 30);
-    if (this.resumo.milicia > 0.08 && vans === 'tolerar') sim.noticia(`Vans piratas da ${GRUPOS[2].nome} dominam o transporte nos bairros da zona norte; "taxa de segurança" vira regra no comércio.`, 'alerta', 'milVans', 60);
+    if (guerra > 3) sim.noticia(`Guerra entre as facções do tráfico e a milícia: tiroteio fecha escolas e postos de saúde em ${guerra} quarteirões.`, 'ruim', 'guerra', 30);
+    if (this.resumo.milicia > 0.08 && vans === 'tolerar') sim.noticia(`Vans piratas da milícia dominam o transporte nos bairros da zona norte; "taxa de segurança" vira regra no comércio.`, 'alerta', 'milVans', 60);
     this.versao++;
   }
 

@@ -12,6 +12,8 @@ import { ROAD_SPECS } from '../../world/roads';
 import { ambiente } from '../../render/city/ambiente';
 import { Icone } from '../Icone';
 import { PainelEntidade } from '../entidades/PainelEntidade';
+import { PainelFaccoes } from './PainelFaccoes';
+import { DADOS as DADOS_SEG } from '../../sim/faccoes/dados';
 import { PainelGoverno } from '../governo/Governo';
 import { BannerFesta, PainelDecisoes, TempoAgora } from './EventosUI';
 import { TelaLegado } from '../eleicao/Legado';
@@ -180,6 +182,8 @@ function BarraFerramentas() {
       const mapa: Record<string, string> = { v: 'vias', z: 'zonas' };
       if (mapa[e.key.toLowerCase()]) setGrupo((x) => (x === mapa[e.key.toLowerCase()] ? null : mapa[e.key.toLowerCase()]));
       if (e.key.toLowerCase() === 'b') set({ ferramenta: { tipo: 'demolir' } });
+      // T: liga/desliga o mapa de territórios das facções (e o painel de facções e instituições)
+      if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) { const c = useGame.getState().camada; set({ camada: c === 'territorio' ? 'nenhuma' : 'territorio' }); }
       if (e.key === '[') set({ raioPincel: Math.max(12, useGame.getState().raioPincel - 6) });
       if (e.key === ']') set({ raioPincel: Math.min(140, useGame.getState().raioPincel + 6) });
       if (e.key === 'Escape') setGrupo(null);
@@ -331,7 +335,7 @@ function LegendaCamada() {
   const camada = useGame((s) => s.camada);
   if (camada !== 'territorio' && camada !== 'transito') return null;
   const itens = camada === 'territorio'
-    ? [['#f5b942', 'Disputado'], [GRUPOS_CRIME[1].cor, `${GRUPOS_CRIME[1].nome} (facção)`], [GRUPOS_CRIME[2].cor, `${GRUPOS_CRIME[2].nome} (milícia)`], ['transparent', 'sem cor = presença do Estado']]
+    ? [['#f5b942', 'Domínio fraco / disputado'], ...DADOS_SEG.faccoes.ordem.map((id) => [DADOS_SEG.faccoes.faccoes[id].cor, `${DADOS_SEG.faccoes.faccoes[id].nome} (${DADOS_SEG.faccoes.faccoes[id].tipo})`]), ['transparent', 'sem cor = presença do Estado']]
     : [['#3ee0b0', 'Livre'], ['#f5d142', 'Moderado'], ['#ff8a3d', 'Lento'], ['#e5484d', 'Parado']];
   return (
     <div className="painel rounded-lg px-3 py-2 text-[11px] pointer-events-none space-y-0.5 self-start">
@@ -684,6 +688,7 @@ export function Hud() {
       <BarraSuperior st={st} onMenu={() => setPausa(true)} />
       <InfoLote />
       <PainelEntidade />
+      <PainelFaccoes />
       <FavelaInfo />
       <BarraLinha />
       {/* canto inferior esquerdo: legenda da camada e o assessor (Fase 10) */}

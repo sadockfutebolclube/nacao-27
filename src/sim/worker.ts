@@ -6,6 +6,7 @@
 import type { FromWorker, ToWorker } from './protocol';
 import { Simulation } from './simulation';
 import { deUF } from '../data/nomes';
+import type { BairroCenso } from '../data/bairros';
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -83,6 +84,10 @@ function setSpeed(s: number) {
 function novaSimulacao(s: Simulation) {
   sim = s;
   sim.orcamentoMs = ORCAMENTO_MS;
+  // Fase 26: o Censo dá os polígonos de bairro para as facções (cidade real do Rio)
+  if (s.real?.ibge === '3304557') {
+    fetch(`${import.meta.env.BASE_URL}data/rio/bairros.json`).then((r) => (r.ok ? r.json() : null)).then((j: { bairros: BairroCenso[] } | null) => { if (j && sim === s) s.definirBairros(j.bairros); }).catch(() => { /* sem o arquivo: setores de 1 km */ });
+  }
 }
 
 self.onmessage = (ev: MessageEvent<ToWorker>) => {

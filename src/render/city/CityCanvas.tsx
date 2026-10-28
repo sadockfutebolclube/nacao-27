@@ -30,6 +30,7 @@ import { Favelas } from './Favelas';
 import { Pedestres } from './Pedestres';
 import { MapaCalorPedestres } from './MapaCalorPedestres';
 import { Selecao } from './Selecao';
+import { Ocorrencias } from './Ocorrencias';
 import { TerritorioOverlay } from './TerritorioOverlay';
 import { TransporteRender } from './TransporteRender';
 import { Veiculos } from './Veiculos';
@@ -130,6 +131,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         <DebugMapa hm={hm} />
         <MapaCalorPedestres hm={hm} />
         <Selecao />
+        <Ocorrencias hm={hm} />
         {liga('Pedestres') && <Pedestres hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}

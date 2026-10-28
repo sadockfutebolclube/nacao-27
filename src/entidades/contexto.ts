@@ -9,6 +9,7 @@ import { bairroEm } from '../data/nomes';
 import { ambiente } from '../render/city/ambiente';
 import { clima } from '../render/city/climaVisual';
 import { pedDebug } from '../render/city/estadoPedestres';
+import { comercioFechadoEm } from '../render/city/ocorrenciaEstado';
 import { diaDaSemana, fimDeSemana } from '../render/city/densidade';
 import { ancoraMarco, prediosOcultos } from '../render/city/pontosRio';
 import { indiceDasVias, type AmostraVia } from '../render/city/perfilVias';
@@ -16,6 +17,7 @@ import { perfisAtuais } from '../render/city/Vias';
 import { mundo, useGame } from '../sim/bridge';
 import { Zone } from '../sim/catalog';
 import { GRUPOS, TERR_CELL, TERR_RES } from '../sim/city/territorio';
+import { DADOS as DADOS_SEG } from '../sim/faccoes/dados';
 import { LOT_STATE_STRIDE } from '../sim/protocol';
 import { BUILD_HALF } from '../world/constants';
 import { LOT_STRIDE } from '../world/lots';
@@ -58,6 +60,9 @@ export function dominioEm(x: number, z: number): { dominio: Dominio | null; disp
   const ti = Math.min(TERR_RES - 1, Math.max(0, Math.floor((x + BUILD_HALF) / TERR_CELL))), tj = Math.min(TERR_RES - 1, Math.max(0, Math.floor((z + BUILD_HALF) / TERR_CELL)));
   const tf = mundo.territorioF[tj * TERR_RES + ti] ?? 0, tm = mundo.territorioM[tj * TERR_RES + ti] ?? 0;
   if (Math.max(tf, tm) < 0.25) return { dominio: null, disputado: false };
+  // quem domina: a facção dona da célula no sistema de facções (CV, ADA, TCP ou Milícia); sem ele, o grupo da grade
+  const k = tj * TERR_RES + ti, d = mundo.faccoesDono[k] ?? 0;
+  if (d > 0) { const f = DADOS_SEG.faccoes.faccoes[DADOS_SEG.faccoes.ordem[d - 1]]; return { dominio: { nome: f.nome, tipo: f.tipo }, disputado: tf > 0.25 && tm > 0.25 }; }
   const g = tf >= tm ? GRUPOS[1] : GRUPOS[2];
   return { dominio: { nome: g.nome, tipo: g.tipo }, disputado: tf > 0.25 && tm > 0.25 };
 }
@@ -208,7 +213,10 @@ export function fichaDe(id: number, investigacao: (id: number) => number | undef
     const base = { id, pos: { x, z }, bairro: b, viva: true };
     const kind = meta.tipoPredio;
     if (kind === 1 || kind === 3 || kind === 4) {
-      const f = gerarEstabelecimento({ semente: id, nome: meta.nome, tipoPredio: tipoNome, endereco: end, w: L[o + 3], d: L[o + 4], andares: meta.andares, lv, hora: ag.hora, fimDeSemana: ag.fds, chuva: ag.chuva, dominio });
+      const f0 = gerarEstabelecimento({ semente: id, nome: meta.nome, tipoPredio: tipoNome, endereco: end, w: L[o + 3], d: L[o + 4], andares: meta.andares, lv, hora: ag.hora, fimDeSemana: ag.fds, chuva: ag.chuva, dominio });
+      // ocorrência grave por perto: o comércio fecha (cena ativa na tela)
+      const fechado = comercioFechadoEm(x, z);
+      const f = fechado ? { ...f0, aberto: false, clientesAgora: 0, horario: `${f0.horario} (fechado por causa de uma ocorrência na região)` } : f0;
       return { ...base, tipo: 'estabelecimento', ficha: f, endereco: end };
     }
     const f = gerarCasa({ semente: id, endereco: end, tipoPredio: tipoNome, andares: meta.andares, w: L[o + 3], d: L[o + 4], moradores: kind === 0 ? occ : 0, lv, cobSeg, crime, dominio, disputado, nome: meta.nome });
@@ -286,6 +294,8 @@ function textoAgora(f: FichaPessoa, vivo: { estado: string; atividade: string; p
   switch (vivo.estado) {
     case 'esperando ônibus': return `Esperando o ônibus na ${rua}`;
     case 'sentado': return `Sentado(a) descansando — ${bairro}`;
+    case 'fugindo': return `Fugindo de uma ocorrência (tiros ou perigo) pela ${rua}`;
+    case 'olhando a ocorrência': return `Parado(a), olhando uma ocorrência na ${rua}`;
     case 'comprando': return `Parado(a) em frente a uma loja na ${rua}`;
     case 'trabalhando': return vivo.persona === 'ambulante' ? `Vendendo na calçada da ${rua}` : `Trabalhando na ${rua}`;
     default:

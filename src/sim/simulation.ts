@@ -29,6 +29,9 @@ import { Estado } from './estado/estado';
 import { Favelas } from './city/favelas';
 import { ServicosSociais } from './city/servicos';
 import { Territorio, type Doutrina } from './city/territorio';
+import { Faccoes, type SaveFaccoes } from './faccoes/faccoes';
+import { registrarOperacaoOrdenada } from './faccoes/ocorrencias';
+import type { BairroCenso } from '../data/bairros';
 import { TIPOS_LINHA, Transporte } from './city/transporte';
 import type { EstadoSnapshot } from './estado/tipos';
 import {
@@ -148,6 +151,8 @@ export class Simulation {
   // ── Fase 4 ──
   servicosSociais = new ServicosSociais();
   territorio = new Territorio();
+  /** Fase 26: facções, instituições e ocorrências (território por polígono de bairro) */
+  faccoes = new Faccoes();
   favelas = new Favelas();
   transporte = new Transporte();
   /** obra estadual de contenção de encostas concluída */
@@ -470,6 +475,7 @@ export class Simulation {
         const local = this.favelas.favelaEm(cmd.x, cmd.z) >= 0 ? this.favelas.ativas().find((f) => f.id === this.favelas.favelaEm(cmd.x, cmd.z))!.nome : this.bairro(cmd.x, cmd.z);
         const r = this.territorio.operacao(cmd.x, cmd.z, this.dia, this.rng, doutrina, cameras, this.dataTexto(), local);
         if (!r.ok) return { ok: false, msg: r.msg };
+        registrarOperacaoOrdenada(this, this.faccoes, cmd.x, cmd.z, r.mortos, r.presos, local);
         void mes; void ano;
         this.estado?.registrarOperacao(r.mortos, r.presos);
         this.atualizarSnapshotEstado();
@@ -695,6 +701,7 @@ export class Simulation {
     this.faseAtual = 'redes'; yield* this.redesDeServico();
     this.faseAtual = 'serviços sociais'; this.servicosSociais.atualizar(this); yield;
     this.faseAtual = 'território'; this.territorio.atualizar(this, (this.estado?.politicas.doutrina ?? 'confronto') as Doutrina, this.transporte.vans); yield;
+    this.faseAtual = 'facções'; this.faccoes.atualizar(this); yield;
     this.faseAtual = 'favelas';
     {
       const { mes } = this.data();
@@ -1462,6 +1469,7 @@ export class Simulation {
     return {
       servicos: this.servicosSociais.resumo,
       territorio: this.territorio.resumo,
+      faccoes: this.faccoesResumo(),
       mobilidade: mob,
       transporte: {
         tarifa: this.transporte.tarifa, vans: this.transporte.vans, receitaMes: fin.receita, custoMes: fin.custo,
@@ -1475,8 +1483,19 @@ export class Simulation {
   }
 
   /** Dados de renderização com controle de versão (o Worker só manda o que mudou). */
-  renderDados(vistos: { terr: number; fav: number; lin: number; tran: number }) {
+  /** resumo das facções, refeito só quando elas mudam (o painel lê a cada envio de estado) */
+  private faccoesCache: { versao: number; resumo: import('./faccoes/tipos').ResumoFaccoes } | null = null;
+  private faccoesResumo() {
+    if (!this.faccoesCache || this.faccoesCache.versao !== this.faccoes.versao) this.faccoesCache = { versao: this.faccoes.versao, resumo: this.faccoes.resumo() };
+    return this.faccoesCache.resumo;
+  }
+
+  /** O Censo (polígonos de bairro) chegou: as facções passam a disputar bairros de verdade. */
+  definirBairros(b: BairroCenso[] | null) { this.faccoes.definirBairros(b); this.faccoesCache = null; }
+
+  renderDados(vistos: { terr: number; fav: number; lin: number; tran: number; fac?: number }) {
     const out: import('./protocol').CidadeRender = {};
+    if (this.faccoes.versao !== (vistos.fac ?? -1)) { out.faccoes = this.faccoes.renderDados(); vistos.fac = this.faccoes.versao; }
     if (this.territorio.versao !== vistos.terr) { out.territorio = { versao: this.territorio.versao, F: this.territorio.F.slice(), M: this.territorio.M.slice() }; vistos.terr = this.territorio.versao; }
     if (this.favelas.versao !== vistos.fav) {
       const casas: number[] = [];
@@ -1525,7 +1544,7 @@ export class Simulation {
       estado: this.estado?.serialize(),
       demanda: { ...this.demanda }, cooldown: [...this.cooldown],
       cidade: {
-        territorio: this.territorio.serializar(), favelas: this.favelas.serializar(), transporte: this.transporte.serializar(), contencao: this.contencaoEncostas, crime: [...this.servicosSociais.crime],
+        faccoes: this.faccoes.serializar(), territorio: this.territorio.serializar(), favelas: this.favelas.serializar(), transporte: this.transporte.serializar(), contencao: this.contencaoEncostas, crime: [...this.servicosSociais.crime],
         clima: { ...this.clima.serializar(), climaMes: this.climaMes, crimeExtra: this.crimeExtra }, eventos: JSON.parse(JSON.stringify(this.eventos)), visuais: this.visuais.map((v) => ({ ...v })),
         real: this.real ? { demolidos: [...this.reaisDemolidos], herdada: this.herdada, realLote: [...this.realLote] } : undefined,
       },
@@ -1543,6 +1562,7 @@ export class Simulation {
     if (s.cidade) {
       sim.favelas.restaurar(s.cidade.favelas as ReturnType<Favelas['serializar']>);
       sim.territorio.restaurar(s.cidade.territorio as ReturnType<Territorio['serializar']>);
+      if (s.cidade.faccoes) sim.faccoes.restaurar(s.cidade.faccoes as SaveFaccoes);
       sim.transporte.restaurar(s.cidade.transporte as ReturnType<Transporte['serializar']>);
       sim.contencaoEncostas = s.cidade.contencao;
       if (s.cidade.clima) {

@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## 1.19.0 — Fase 30: veículos reais e pessoas com esqueleto (28/10/2026)
+
+Prints antes/depois em `docs/qualidade-visual/`. **Esta fase NÃO fez tudo o que o pedido listava** (ver "Não feito").
+
+### Veículos (modelos reais no material físico da frota)
+- A frota de rua deixou de ser caixas extrudadas: sedã, hatch, táxi, SUV, picape, van, utilitário, caminhão de lixo e viatura (Kenney Car Kit, CC0), **ônibus e BRT** (Poly Pizza "Bus", Poly by Google, escalado a 12 e 18 m) e **moto** (Paul Spooner). Tabela em `src/data/veiculos/frota.json`; créditos em `assets/CREDITS.md`; GLB com meshopt.
+- `src/render/modelos/veiculoReal.ts` classifica cada vértice pela cor que ele tem (paleta da textura ou cor do material) em **lataria** (recebe a cor da instância, com as sombras da paleta), **vidro**, **pneu**, **lente** de farol e lanterna, metal e fosco, e grava os atributos que o `materialVeiculo` já usava: MeshPhysicalMaterial com verniz (clearcoat 1, rugosidade 0,32, metal 0,35), vidro liso refletindo o HDRI, pneu fosco. **Faróis e lanternas acendem à noite** (emissivo no shader); a lanterna também no freio e há pisca-pisca na troca de faixa.
+- Um `InstancedMesh` por tipo + `instanceColor`; **paleta brasileira** (branco, prata, preto e cinza dominam) e escala ±3% por veículo.
+
+### Pessoas (esqueleto + animação na GPU)
+- "Man" (Quaternius, domínio público; 31 ossos, ~1.200 triângulos): as animações **Idle, Walk, Run e Sitting** são assadas numa **textura de posições de vértice** (4.096 colunas × 68 quadros; normais numa 2ª textura) e o vertex shader só faz a leitura (`pessoaVAT.ts`): sem esqueleto na CPU. O clipe sai do estado da pessoa (sentado, parado, andando, correndo/fugindo) e a fase da passada varia por instância.
+- Variações por instância: **tom de pele**, **cabelo**, **camisa** (instanceColor), **calça** e **altura** (0,9–1,1× já existente); guarda-chuva rígido no mesmo desenho.
+- **LOD**: a menos de 45 m da câmera é o personagem com esqueleto (até 220 instâncias); mais longe, a silhueta de ~146 triângulos de antes.
+
+### Medido (mesma máquina, painel embutido; qualidade "alta")
+| ponto | antes: calls / tris / fps | depois: calls / tris / fps |
+|---|---|---|
+| Copacabana | 1.188 / 12,1 M / 15,9–29,6 | 1.161 / 17,5 M / 39,9 |
+| Centro | 737 / 10,5 M / 41,2 | 848 / 12,7 M / 42,2 |
+| Comunidade | 374 / 7,3 M / 42,5 | 377 / 10,6 M / 51,5 |
+| Cruzamento (antes: tráfego padrão; depois: 1.100 veículos) | 1.242 / 11,6 M / 29,6 | 1.240 / 15,2 M / 41,1 |
+- As calls ficaram iguais (1 por tipo de veículo + 1 das pessoas); os triângulos (que incluem as passadas de sombra) subiram 20–45% pelos modelos reais. O fps não caiu nesta máquina; o ruído entre rodadas é de ±10 fps.
+- Em "média" só as draw calls e os triângulos valem (média: Copacabana 1.184 / 17,2 M; Centro 723 / 12,2 M; Comunidade 349 / 10,6 M; Cruzamento 1.174 / 14,7 M): o painel ficou oculto e o fps foi estrangulado. Em "baixa" (sem sombras): 764 / 7,6 M, 415 / 6,2 M, 173 / 4,0 M, 788 / 6,7 M, **sem fps confiável**.
+
+### Não feito (o pedido pedia, esta fase não entregou)
+- **Prédios e casas**: fachada em atlas, normal map de reboco, telhados por `roof:shape`, comunidades com lajes, caixas d'água e fios, altura inferida por bairro — nada disso mudou (as fachadas das Fases 12 e 21 seguem).
+- **Render**: a pilha já tinha ACES, CSM de 2 cascatas, HDRI, AO, bloom, SMAA e vinheta; **não** passei a 3–4 cascatas, nem fiz bloom seletivo, LUT quente, GTAO ou temperatura de cor por hora.
+- **Água** (Fresnel, espuma), **vegetação com vento e floresta da Tijuca com LOD**, **viadutos** (New Jersey, juntas, capitel): não foram tocados.
+- **Pessoas**: só adultos homens com esqueleto; crianças, idosos e mulheres (a textura única de "Woman" não permite variar a roupa) ficam por escala e cor; o **billboard acima de 150 m** não existe; o clipe "sit" é a pose final do clipe de sentar (sem transição).
+- **Bicicleta**: baixada, mas sem tipo de veículo no tráfego.
+- **Veículos**: sem LOD de geometria por distância (todos os modelos de ~2.300 triângulos); sem `transmission` no vidro (é vidro escuro liso com reflexo).
+- Prints: Copacabana, Centro e comunidade estão **iguais** nos dois lados porque o que mudou são veículos e pessoas; o ganho aparece nos close-ups (`depois-sedan-de-perto`, `depois-pessoas-vat-de-perto`, `depois-carro-de-noite`).
 ## 1.18.0 — Fase 29: tráfego microscópico (IDM, MOBIL, faixas, cruzamentos, emergência) no Worker (28/10/2026)
 
 Prints em `docs/auditoria-trafego/` e a medição de 2 minutos no grafo real em `medicao-rio-2min-1500-veiculos.json`.

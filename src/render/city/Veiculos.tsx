@@ -7,7 +7,7 @@
  * A quantidade acompanha população e empregos simulados.
  */
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { enviarTrafego, mundo, useGame } from '../../sim/bridge';
 import { F } from '../../sim/trafego/trafego';
@@ -17,6 +17,8 @@ import { mergeGeos } from './Vias';
 import { alvoCamera } from './Camera';
 import { registro } from '../../entidades/registro';
 import { percorrerTrafego } from './trafegoPose';
+import frota from '../../data/veiculos/frota.json';
+import { carregarVeiculoReal, type VeiculoReal } from '../modelos/veiculoReal';
 import { trafegoEstado } from '../../sim/trafegoEstado';
 
 const MAX = 700;
@@ -33,15 +35,17 @@ const TIPOS = 12;
 export const GRANDES = new Set<number>([1, 5, 8, 9, 11]);
 
 const paleta = (cs: string[]) => cs.map((c) => new THREE.Color(c));
+/** Paleta dos carros de passeio no Brasil: branco, prata, preto e cinza dominam (cada cor repetida = mais comum); poucas cores vivas */
+const BR = ['#f2f2ee', '#f2f2ee', '#f2f2ee', '#e8e8e8', '#e8e8e8', '#c9ccd1', '#c9ccd1', '#c9ccd1', '#8f969c', '#8f969c', '#5a5f63', '#1b1b1e', '#1b1b1e', '#1b1b1e', '#2b2d30', '#b0262b', '#1d3f73', '#7a2030'];
 const CORES: Record<Tipo, THREE.Color[]> = {
-  0: paleta(['#e8e8e8', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#1d3f73', '#e8e8e8', '#5a5f63', '#f2f2ee', '#3a5f3a', '#d9c39a']),
+  0: paleta(BR),
   1: paleta(['#f2f2ee', '#e0b030', '#2f6db5', '#c8302a', '#3a8a4a', '#f08a24', '#f2f2ee', '#8a8f96']),
   2: paleta(['#c8202a', '#1b1b1e', '#f2f2ee', '#1d3f73', '#e0b030', '#c8202a']),
-  3: paleta(['#f2f2ee', '#c9ccd1', '#2b2d30', '#8f969c', '#b0262b', '#e8e8e8', '#1d3f73', '#5a5f63', '#7a2030']),
+  3: paleta(BR),
   4: paleta(['#f2c418', '#f4f4f0', '#f2c418']),
   5: paleta(['#f2f2ee', '#c8302a', '#1d3f73', '#5a5f63', '#e8e8e8', '#2f6db5']),
-  6: paleta(['#2b2d30', '#e8e8e8', '#8f969c', '#1d3f73', '#5a5f63', '#b0262b', '#f2f2ee', '#3a3d40']),
-  7: paleta(['#f2f2ee', '#c9ccd1', '#2b2d30', '#b0262b', '#5a5f63', '#e8e8e8', '#3a5f3a']),
+  6: paleta(BR),
+  7: paleta(BR),
   8: paleta(['#f2f2ee', '#e8e8e8', '#c9ccd1', '#2f6db5', '#f2f2ee']),
   9: paleta(['#c42b2b']),
   10: paleta(['#1b3a73']),
@@ -400,7 +404,9 @@ export function materialVeiculo(uNoite: { value: number }) {
           material.clearcoat *= acabV == 0 ? 1.0 : (acabV == 1 ? 0.6 : 0.0);
         #endif`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        if (vBrilho > 1.5) totalEmissiveRadiance += diffuseColor.rgb * (0.35 + uNoite * 1.6);
+        if (vBrilho > 3.5) totalEmissiveRadiance += vec3(1.0, 0.08, 0.05) * (0.25 + uNoite * 1.8);
+        else if (vBrilho > 2.5) totalEmissiveRadiance += vec3(1.0, 0.92, 0.7) * uNoite * 2.2;
+        else if (vBrilho > 1.5) totalEmissiveRadiance += diffuseColor.rgb * (0.35 + uNoite * 1.6);
         else if (vBrilho > 0.5) totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * 0.55 * uNoite;`);
   };
   m.customProgramCacheKey = () => 'veiculo-pbr-verniz';
@@ -433,6 +439,20 @@ export function Veiculos() {
     luzP: new THREE.MeshBasicMaterial({ color: '#ffb020', toneMapped: false }),
   }), [uNoite]);
   useEffect(() => () => { geos.corpos.forEach((g) => g.dispose()); geos.luz.dispose(); geos.pisca.dispose(); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
+
+  // Fase 30: modelos reais (GLB) no lugar da geometria procedural, assim que cada um carrega; o procedural fica de reserva
+  const [reais, setReais] = useState<(VeiculoReal | null)[]>(() => Array(TIPOS).fill(null));
+  useEffect(() => {
+    let vivo = true;
+    for (let t = 0; t < TIPOS; t++) {
+      const e = (frota.tipos as Record<string, { arquivo: string; comprimentoM: number; frenteGraus: number }>)[String(t)];
+      if (!e) continue;
+      carregarVeiculoReal(`frota-${t}`, e).then((r) => { if (vivo) setReais((a) => { const b = a.slice(); b[t] = r; return b; }); }).catch((err) => console.error('[frota]', t, err));
+    }
+    return () => { vivo = false; };
+  }, []);
+  const reaisRef = useRef(reais);
+  reaisRef.current = reais;
 
   /** id do veículo no tráfego → id do registro de entidades (a ficha do clique) e os dados vivos dele */
   const regIds = useRef(new Map<number, number>());
@@ -485,6 +505,9 @@ export function Veiculos() {
       if (n[tipo] >= MAX) return;
       v.set(p.x, p.y, p.z);
       q.setFromAxisAngle(tmp.eixo, p.yaw);
+      // leve variação de escala por veículo (±3%), estável pelo id
+      const k = 0.97 + (((p.id * 2654435761) >>> 0) % 7) / 100 * 1;
+      s.set(k, k, k);
       m.compose(v, q, s);
       let rid = regIds.current.get(p.id);
       if (rid === undefined) { rid = registro.novoId(); regIds.current.set(p.id, rid); if (regIds.current.size > 6000) regIds.current.clear(); }
@@ -495,7 +518,9 @@ export function Veiculos() {
       const im = corpos[tipo]!;
       im.setMatrixAt(n[tipo], m); im.setColorAt(n[tipo], pal[p.cor % pal.length]);
       n[tipo]++;
-      const lz = LUZES[tipo as Tipo];
+      const real = reaisRef.current[tipo];
+      const lz = real ? real.luz : LUZES[tipo as Tipo];
+      s.set(1, 1, 1);
       // lanternas: acesas à noite e, de dia, quando o carro freia
       if ((noite > 0.05 || (p.flags & F.FREIO)) && nT < MAX) {
         off.set(0, lz.y + 0.05, lz.t).applyQuaternion(q).add(v);
@@ -533,7 +558,7 @@ export function Veiculos() {
   return (
     <group>
       {geos.corpos.map((geo, t) => (
-        <instancedMesh key={t} ref={(m) => { refs.corpos.current[t] = m; }} args={[geo, mats.corpo, MAX]} castShadow frustumCulled={false} />
+        <instancedMesh key={`${t}-${reais[t] ? 'r' : 'p'}`} ref={(m) => { refs.corpos.current[t] = m; }} args={[reais[t]?.geo ?? geo, mats.corpo, MAX]} castShadow frustumCulled={false} />
       ))}
       <instancedMesh ref={refs.luzF} args={[geos.luz, mats.luzF, MAX]} frustumCulled={false} />
       <instancedMesh ref={refs.luzT} args={[geos.luz, mats.luzT, MAX]} frustumCulled={false} />

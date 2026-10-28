@@ -28,12 +28,16 @@ import { registro } from '../../entidades/registro';
 import { selecao } from '../../entidades/selecao';
 import { cenaEm, cenas, supressaoDeSpawn } from './ocorrenciaEstado';
 import { DADOS } from '../../sim/faccoes/dados';
+import { carregarPessoaVAT, materialPessoaVAT, type PessoaVAT } from '../modelos/pessoaVAT';
 
 const MAX = 1500;
 /** altura do topo da calçada sobre o perfil do leito (igual à malha das vias) */
 export const ALTURA_CALCADA = 0.17;
 /** acima desta distância câmera→alvo as pessoas viram poeira: nem simula */
 const DIST_MAX = 950;
+/** Fase 30: até esta distância (m) da câmera a pessoa é o personagem com esqueleto (animação por textura); além, a silhueta simples de ~146 triângulos */
+const DIST_PERTO = 45;
+const MAX_PERTO = 220;
 
 // ── funções puras (testadas) ────────────────────────────────────────────────
 
@@ -259,6 +263,24 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
   }, []);
   useEffect(() => () => { rec.geo.dispose(); rec.mat.dispose(); rec.mesh.dispose(); }, [rec]);
 
+  // personagem com esqueleto e animações assadas em textura (VAT), para quem está perto da câmera
+  const [vat, setVat] = useState<PessoaVAT | null>(null);
+  useEffect(() => { let vivo = true; carregarPessoaVAT().then((v) => { if (vivo) setVat(v); }).catch((e) => console.error('[pessoas VAT]', e)); return () => { vivo = false; }; }, []);
+  const perto = useMemo(() => {
+    if (!vat) return null;
+    const geo = vat.geo.clone();
+    geo.setAttribute('iCalca', new THREE.InstancedBufferAttribute(new Float32Array(MAX_PERTO * 3), 3));
+    geo.setAttribute('iAnim', new THREE.InstancedBufferAttribute(new Float32Array(MAX_PERTO * 4), 4));
+    const mat = materialPessoaVAT(vat, rec.uniforms);
+    const mesh = new THREE.InstancedMesh(geo, mat, MAX_PERTO);
+    mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PERTO * 3), 3);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+    mesh.frustumCulled = false; mesh.castShadow = true; mesh.receiveShadow = true; mesh.count = 0;
+    return { geo, mat, mesh };
+  }, [vat, rec]);
+  useEffect(() => () => { perto?.geo.dispose(); perto?.mat.dispose(); perto?.mesh.dispose(); }, [perto]);
+
   const adj = useMemo(() => {
     const m = new Map<number, number[]>();
     for (const e of mundo.roads.edges.values()) {
@@ -318,7 +340,7 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
     const selId = selecao.ler().id; // a pessoa selecionada não some enquanto o jogador a olha
     const alvoCam = alvoCamera();
     const dist = camera.position.distanceTo(alvoCam);
-    if (!dens || dist > DIST_MAX || perfisAtuais.size === 0) { mesh.count = 0; return; }
+    if (!dens || dist > DIST_MAX || perfisAtuais.size === 0) { mesh.count = 0; if (perto) perto.mesh.count = 0; return; }
     const dbg = pedDebug.ler();
     const st = g.stats;
     const dow = dbg.diaSemana ?? (st ? diaDaSemana(st.ano, st.mes, st.dia) : 6);
@@ -605,7 +627,40 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
       n++;
     }
 
-    mesh.count = n;
+    // Fase 30 — LOD: quem está a menos de DIST_PERTO m da câmera vira o personagem com esqueleto; o resto fica na silhueta (compacta no lugar)
+    let nLonge = n;
+    if (perto) {
+      const pm = perto.mesh, pmat = pm.instanceMatrix.array as Float32Array, pcor = pm.instanceColor!.array as Float32Array;
+      const pca = (perto.geo.getAttribute('iCalca') as THREE.InstancedBufferAttribute), pan = (perto.geo.getAttribute('iAnim') as THREE.InstancedBufferAttribute);
+      const pcaA = pca.array as Float32Array, panA = pan.array as Float32Array;
+      const cxp = camera.position.x, cyp = camera.position.y, czp = camera.position.z, R2 = DIST_PERTO * DIST_PERTO;
+      let nP = 0, nL = 0;
+      for (let k = 0; k < n; k++) {
+        const dx = mat[k * 16 + 12] - cxp, dy = mat[k * 16 + 13] - cyp, dz = mat[k * 16 + 14] - czp;
+        if (dx * dx + dy * dy + dz * dz < R2 && nP < MAX_PERTO) {
+          for (let q = 0; q < 16; q++) pmat[nP * 16 + q] = mat[k * 16 + q];
+          for (let q = 0; q < 3; q++) { pcor[nP * 3 + q] = cor[k * 3 + q]; pcaA[nP * 3 + q] = ca[k * 3 + q]; }
+          for (let q = 0; q < 4; q++) panA[nP * 4 + q] = an[k * 4 + q];
+          nP++;
+        } else {
+          if (nL !== k) {
+            for (let q = 0; q < 16; q++) mat[nL * 16 + q] = mat[k * 16 + q];
+            for (let q = 0; q < 3; q++) { cor[nL * 3 + q] = cor[k * 3 + q]; ca[nL * 3 + q] = ca[k * 3 + q]; }
+            for (let q = 0; q < 4; q++) an[nL * 4 + q] = an[k * 4 + q];
+          }
+          nL++;
+        }
+      }
+      nLonge = nL;
+      pm.count = nP;
+      for (const [attr, tam] of [[pm.instanceMatrix, 16], [pm.instanceColor!, 3], [pca, 3], [pan, 4]] as const) {
+        attr.clearUpdateRanges();
+        attr.addUpdateRange(0, Math.max(1, nP) * tam);
+        attr.needsUpdate = true;
+      }
+    }
+
+    mesh.count = nLonge;
     for (const [attr, tam] of [[mesh.instanceMatrix, 16], [mesh.instanceColor!, 3], [calca, 3], [anim, 4]] as const) {
       attr.clearUpdateRanges();
       attr.addUpdateRange(0, Math.max(1, n) * tam);
@@ -619,5 +674,10 @@ export function Pedestres({ hm }: { hm: Heightmap }) {
     }
   });
 
-  return <primitive object={rec.mesh} />;
+  return (
+    <>
+      <primitive object={rec.mesh} />
+      {perto && <primitive object={perto.mesh} />}
+    </>
+  );
 }

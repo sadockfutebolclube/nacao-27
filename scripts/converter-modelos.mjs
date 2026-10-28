@@ -30,7 +30,11 @@ const LISTA = [
   [`${P}/humvee.glb`, 'terrestre', 'humvee'],
   ...['ship-cargo-a', 'ship-cargo-b', 'ship-cargo-c', 'ship-large', 'ship-ocean-liner', 'ship-ocean-liner-small', 'ship-small',
     'boat-fishing-small', 'boat-sail-a', 'boat-sail-b', 'boat-speed-a', 'boat-speed-b', 'boat-speed-d', 'boat-tug-a', 'boat-row-small', 'boat-tow-a'].map((n) => [`${W}/${n}.glb`, 'navio', n]),
-  ...['police', 'ambulance', 'firetruck', 'truck', 'suv', 'van'].map((n) => [`${C}/${n}.glb`, 'terrestre', n]),
+  ...['police', 'ambulance', 'firetruck', 'truck', 'suv', 'van', 'sedan', 'hatchback-sports', 'taxi', 'delivery', 'garbage-truck'].map((n) => [`${C}/${n}.glb`, 'terrestre', n]),
+  // Fase 30: ônibus e moto (Poly Pizza, CC-BY)
+  // Fase 30: personagens com esqueleto (sem quantização: a pele precisa das posições em float)
+  [`${origem}/pessoas/homem.glb`, 'pessoa', 'homem'],
+  [`${P}/onibus-a.glb`, 'terrestre', 'onibus-a'], [`${P}/moto-b.glb`, 'terrestre', 'moto-b'],
 ];
 
 await MeshoptEncoder.ready;
@@ -38,7 +42,8 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
 let antes = 0, depois = 0;
 for (const [src, cat, nome] of LISTA) {
   const doc = await io.read(src);
-  await doc.transform(dedup(), prune(), weld(), quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
+  if (cat === 'pessoa') await doc.transform(dedup(), prune());
+  else await doc.transform(dedup(), prune(), weld(), quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
   for (const t of doc.getRoot().listTextures()) { const [w, h] = t.getSize() ?? [0, 0]; if (Math.max(w, h) > 1024) throw new Error(`${nome}: textura ${w}x${h} > 1024`); }
   const dst = join(raiz, 'assets/models', cat, `${nome}.glb`);
   mkdirSync(dirname(dst), { recursive: true });

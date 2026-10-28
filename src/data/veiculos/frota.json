@@ -1,0 +1,65 @@
+{
+  "_leia_me": "Modelos 3D reais da frota de rua (Fase 30), por tipo de veículo do tráfego (0 sedã · 1 ônibus · 2 moto · 3 hatch · 4 táxi · 5 utilitário · 6 SUV · 7 picape · 8 van · 9 BRT · 10 viatura · 11 caminhão de lixo). Arquivos em assets/models; créditos em assets/CREDITS.md. frenteGraus gira o modelo para o nariz ficar em +Z.",
+  "tipos": {
+    "0": {
+      "arquivo": "terrestre/sedan.glb",
+      "comprimentoM": 4.5,
+      "frenteGraus": 0
+    },
+    "1": {
+      "arquivo": "terrestre/onibus-a.glb",
+      "comprimentoM": 12.2,
+      "frenteGraus": 0
+    },
+    "2": {
+      "arquivo": "terrestre/moto-b.glb",
+      "comprimentoM": 2.1,
+      "frenteGraus": -90
+    },
+    "3": {
+      "arquivo": "terrestre/hatchback-sports.glb",
+      "comprimentoM": 4,
+      "frenteGraus": 0
+    },
+    "4": {
+      "arquivo": "terrestre/taxi.glb",
+      "comprimentoM": 4.5,
+      "frenteGraus": 0
+    },
+    "5": {
+      "arquivo": "terrestre/delivery.glb",
+      "comprimentoM": 6.6,
+      "frenteGraus": 0
+    },
+    "6": {
+      "arquivo": "terrestre/suv.glb",
+      "comprimentoM": 4.7,
+      "frenteGraus": 0
+    },
+    "7": {
+      "arquivo": "terrestre/truck.glb",
+      "comprimentoM": 5.2,
+      "frenteGraus": 0
+    },
+    "8": {
+      "arquivo": "terrestre/van.glb",
+      "comprimentoM": 5.3,
+      "frenteGraus": 0
+    },
+    "9": {
+      "arquivo": "terrestre/onibus-a.glb",
+      "comprimentoM": 18.2,
+      "frenteGraus": 0
+    },
+    "10": {
+      "arquivo": "terrestre/police.glb",
+      "comprimentoM": 4.8,
+      "frenteGraus": 0
+    },
+    "11": {
+      "arquivo": "terrestre/garbage-truck.glb",
+      "comprimentoM": 8.5,
+      "frenteGraus": 0
+    }
+  }
+}

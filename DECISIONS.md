@@ -411,3 +411,12 @@ Reservar cedo (a 14 m) zerou o fluxo (84% parados: impasses cíclicos). Ficou re
 
 ## D-134 · Viaturas de ocorrência viram veículos do tráfego
 A Fase 26/27 desenhava as viaturas por um caminho próprio. Agora o desenho pede (`emergencia`) e o Worker conduz: assim elas furam a fila de verdade e os outros abrem passagem. A compressão de tempo (chegada em eta × 2,2 s) continua.
+
+## D-135 · Classificar vértices pela cor para reaproveitar o material físico
+Em vez de reescrever o shader para cada modelo, o carregador transforma cores de paleta em atributos (`aPinta`, `aAcab`, `aBrilho`) e o `materialVeiculo` (clearcoat, vidro, emissivos) continua o mesmo. A lataria é a matiz dominante, não a cor exata: a paleta do Kenney tem 2–3 tons de sombra por cor.
+
+## D-136 · VAT para as pessoas, personagem sem quantização
+Esqueleto na CPU para ~1.500 pedestres não cabe; animação assada em textura (4.096 × 68) custa uma leitura por vértice. O GLB do personagem fica sem quantização/meshopt (a pele precisa de posições em float) e por isso é exceção no teste de assets.
+
+## D-137 · LOD de pessoas por partição no quadro
+O laço dos pedestres continua escrevendo um único conjunto de instâncias; uma passada final move os que estão a < 45 m para a malha do personagem e compacta o resto no lugar. Sem duplicar a lógica de nascer/andar.

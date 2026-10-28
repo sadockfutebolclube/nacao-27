@@ -733,3 +733,6 @@ Frota = `quantidade` veículos na mesma viagem defasados em `cicloS / quantidade
 
 ## Fase 29 — tráfego microscópico
 Passo de 0,05 s (subpassos ≤ 0,06 s), 20 Hz. Links = sentidos das arestas; faixas = `lanes` do OSM ÷ 2 (ou as do tipo). IDM: a = a_max·[1 − (v/v0)⁴ − (s_d/s)²], s_d = s0 + vT + vΔv/(2√(ab)) com s0 = 2 m, b = 2 m/s². MOBIL: p = 0,3, Δa_th = 0,15, b_safe = 3, viés à direita 0,12. Prioridade: semáforo (fases de `semaforo.ts`) → emergência cruzando → rotatória → via maior → direita → esquerda cede. Código: `src/sim/trafego/`; desenho: `Veiculos.tsx`, `trafegoPose.ts`, `Ocorrencias.tsx`; estado: `src/sim/trafegoEstado.ts`.
+
+## Fase 30 — aparência (não altera a simulação)
+Frota: `frota.json` → `veiculoReal.ts` (GLB → vértices classificados) → `Veiculos.tsx`. Pessoas: `pessoaVAT.ts` (bake) → `Pedestres.tsx` (LOD por distância).

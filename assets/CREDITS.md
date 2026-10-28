@@ -42,7 +42,8 @@ gravados em `assets/models/<categoria>/`. Os originais ficam em `data/cache/mode
 | navio/ship-small, boat-sail-a, boat-sail-b | Watercraft Kit 2.1 | idem | escunas e veleiros de passeio |
 | navio/boat-fishing-small, boat-tug-a, boat-speed-a, boat-speed-b, boat-speed-d | Watercraft Kit 2.1 | idem | pesca, rebocador, jetskis e botes |
 | navio/boat-row-small, boat-tow-a, boat-sail-a | Watercraft Kit 2.1 | idem | convertidos, ainda sem uso (reserva) |
-| terrestre/police, ambulance, firetruck, truck, suv, van | Car Kit 3.1 | https://kenney.nl/assets/car-kit | viaturas (PM, Civil, Federal, Guarda), SAMU, Bombeiros, blindado do BOPE |
+| terrestre/police, ambulance, firetruck, truck, suv, van | Car Kit 3.1 | https://kenney.nl/assets/car-kit | viaturas (PM, Civil, Federal, Guarda), SAMU, Bombeiros, blindado do BOPE; também a frota de rua (SUV, picape, van) |
+| terrestre/sedan, hatchback-sports, taxi, delivery, garbage-truck | Car Kit 3.1 | https://kenney.nl/assets/car-kit | **frota de rua (Fase 30)**: sedã, hatch, táxi, utilitário, caminhão de lixo |
 
 ### Poly Pizza (https://poly.pizza)
 
@@ -58,9 +59,12 @@ gravados em `assets/models/<categoria>/`. Os originais ficam em `data/cache/mode
 | helicoptero/heli-grande | "Helicopter", Poly by Google | CC-BY 3.0 | https://poly.pizza/m/6U2H_0VSAXY | imprensa |
 | helicoptero/heli-militar | "Helicopter", Zsky | CC-BY 3.0 | https://poly.pizza/m/hG2Qr0A3zR | Bombeiros (resgate aéreo) |
 | terrestre/humvee | "Humvee", madtrollstudio | CC-BY 3.0 | https://poly.pizza/m/Ebryot9iKM | veículo do Exército |
+| terrestre/onibus-a | "Bus", Poly by Google | CC-BY 3.0 | https://poly.pizza/m/4CPpvEmrMoF | ônibus e BRT da frota de rua (Fase 30) |
+| terrestre/moto-b | "Motorcycle, Suzuki SV650", Paul Spooner | CC-BY 3.0 | https://poly.pizza/m/1yfyze7uGxS | moto da frota de rua (Fase 30) |
+| pessoa/homem | "Man", Quaternius | Domínio público (CC0) | https://poly.pizza/m/HMnuH5geEG | **pedestres com esqueleto** (Fase 30): clipes Idle, Walk, Run e Sitting assados em textura de vértices (VAT); 31 ossos, ~1.200 triângulos |
 
-Atribuição CC-BY 3.0: modelos de "Poly by Google", Vojtěch Balák, jeremy, Zsky e madtrollstudio, via Poly Pizza, sem alterações além da conversão/compressão e de
-escala/cor no jogo. O jato executivo "Jet" (Poly by Google, bgUY8zN2Bq9) foi baixado mas **não** usado (textura de 2048 px, acima do limite de 1024).
+Atribuição CC-BY 3.0: modelos de "Poly by Google", Vojtěch Balák, jeremy, Zsky, madtrollstudio e Paul Spooner, via Poly Pizza, sem alterações além da conversão/compressão e de
+escala/cor no jogo. Baixados e não usados (Fase 30): ônibus de turismo "Bus" (jeremy), "Motorcycle" (jeremy), "Bicycle" (jeremy, Poly by Google), "Woman" e "Character Animated" (Quaternius, domínio público: já têm clipes Walking/Run/SitIdle, ficam para as mulheres e crianças). O jato executivo "Jet" (Poly by Google, bgUY8zN2Bq9) foi baixado mas **não** usado (textura de 2048 px, acima do limite de 1024).
 Sketchfab não foi usado (sem `SKETCHFAB_TOKEN`).
 
 ### Estádio de São Januário (Fase 28)

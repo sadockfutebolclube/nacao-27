@@ -46,7 +46,7 @@ export function fatorHorario(hora: number): number {
 
 /** Trecho caminhável da calçada (s em metros), sem a área do cruzamento; null se curto demais. */
 export function trechoCaminhavel(pf: Perfil): [number, number] | null {
-  if (pf.edge.nivel === -1) return null; // túnel não tem calçada
+  if (pf.nivel === -1) return null; // túnel não tem calçada
   const ini = pf.cortaA + 0.5, fim = pf.comprimento - pf.cortaB - 0.5;
   return fim - ini > 1 ? [ini, fim] : null;
 }

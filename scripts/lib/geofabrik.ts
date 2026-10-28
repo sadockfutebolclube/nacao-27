@@ -48,6 +48,8 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
   const bairros = new Map<string, { nome: string; lat: number; lon: number; t: number }[]>(alvos.map((a) => [a.ibge, []]));
   /** Fase 18: trilhos (metrô, trem, VLT, bonde, cremalheira) e estações no mapa de cada cidade */
   const trilhos = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
+  /** Fase 20: escadarias, trilhas e calçadões (vias que não são de carro) */
+  const caminhos = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
   const estacoes = new Map<string, { lat: number; lon: number; tags: Record<string, string> }[]>(alvos.map((a) => [a.ibge, []]));
   /** vias sem etiqueta dentro de algum mapa (podem ser contornos de lagos em relações) */
   const contornos = new Map<number, number[]>();
@@ -95,7 +97,9 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             const viaPredio = !!t.building || (!!t.highway && RE_VIA.test(t.highway)) || /^(residential|commercial|retail|industrial)$/.test(t.landuse ?? '');
             const nat = /^(water|wood|scrub|coastline)$/.test(t.natural ?? '') || /^(river|canal|riverbank)$/.test(t.waterway ?? '') || /^(forest|reservoir|basin|grass|meadow)$/.test(t.landuse ?? '') || /^(park|nature_reserve|garden)$/.test(t.leisure ?? '');
             const trilho = /^(subway|light_rail|rail|tram|rack|funicular|monorail)$/.test(t.railway ?? '') && !/^(yard|siding|spur|crossover)$/.test(t.service ?? '');
-            if (!viaPredio && !nat && !trilho && temTag) continue;
+            // calçada (footway=sidewalk) e faixa de pedestre já existem no desenho das ruas; área (area=yes) não é linha
+            const caminho = /^(steps|footway|path|pedestrian|track|cycleway)$/.test(t.highway ?? '') && t.area !== 'yes' && !/^(sidewalk|crossing|traffic_island)$/.test(t.footway ?? '');
+            if (!viaPredio && !nat && !trilho && !caminho && temTag) continue;
             if (!it.refs!.some((r) => idx.has(r))) continue;
             if (!temTag) { contornos.set(it.id, it.refs!); continue; }
             const g = geometria(it.refs!);
@@ -104,6 +108,11 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             for (const a of alvos) {
               if (viaPredio && cruza(a.construivel, ...g.bb)) viasPredios.get(a.ibge)!.push(el);
               if (nat && cruza(a.mapa, ...g.bb)) natureza.get(a.ibge)!.push(el);
+              if (caminho && cruza(a.construivel, ...g.bb)) {
+                const dica: Record<string, string> = {};
+                for (const k of ['highway', 'name', 'surface', 'width', 'incline', 'bridge', 'tunnel', 'footway', 'step_count', 'handrail']) if (t[k]) dica[k] = t[k];
+                caminhos.get(a.ibge)!.push({ ...el, tags: dica });
+              }
               if (trilho && cruza(a.mapa, ...g.bb)) {
                 const dica: Record<string, string> = {};
                 for (const k of ['railway', 'name', 'ref', 'colour', 'operator', 'network', 'tunnel', 'bridge', 'layer', 'usage', 'electrified', 'line', 'route']) if (t[k]) dica[k] = t[k];
@@ -135,6 +144,7 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
     await writeFile(join(saida, `${a.ibge}-natureza.json`), JSON.stringify(natureza.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-sinais.json`), JSON.stringify(sinais.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-bairros.json`), JSON.stringify(bairros.get(a.ibge)));
+    await writeFile(join(saida, `${a.ibge}-caminhos.json`), JSON.stringify(caminhos.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-trilhos.json`), JSON.stringify({ vias: trilhos.get(a.ibge), estacoes: estacoes.get(a.ibge) }));
   }
 }

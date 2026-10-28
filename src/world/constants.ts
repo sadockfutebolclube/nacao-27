@@ -6,8 +6,8 @@
 /** Extensão total do terreno (inclui a moldura de paisagem fora da área edificável). */
 export const MAP_SIZE = 16384;
 /** Células do heightmap por lado → (HM_RES + 1)² vértices. */
-export const HM_RES = 1024;
-export const HM_STEP = MAP_SIZE / HM_RES; // 16 m (a grade de relevo real do Rio também é de 16 m)
+export const HM_RES = 1536;
+export const HM_STEP = MAP_SIZE / HM_RES; // 10,67 m (Fase 20; era 16 m). O arquivo da cidade tem a mesma grade: HM_RES = CELULAS de scripts/fetch-cidades.ts
 export const HM_VERTS = HM_RES + 1;
 
 /** Metade do lado da área edificável (Fase 13: 12,3 × 12,3 km — Centro, Zona Sul, Tijuca e Maracanã). */

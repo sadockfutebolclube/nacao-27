@@ -6,6 +6,7 @@ import { construirPerfis } from '../src/render/city/perfilVias';
 import { chaveLeito, eixoSemaforo, faseSemaforo, CICLO_SEM } from '../src/render/city/Vias';
 import { grafoReal, terrenoReal } from '../src/world/cidadeReal';
 import { RASTER_RES } from '../src/world/constants';
+import { sampleHeight } from '../src/world/terrain';
 import { computeLots } from '../src/world/lots';
 import { calcadaVia, faixasVia, larguraVia, meiaVia, emptyGraph, type RoadEdge } from '../src/world/roads';
 
@@ -99,7 +100,7 @@ describe('Fase 14 — ruas fiéis', () => {
     const tunel = perfis.get(2)!, ponte = perfis.get(3)!, chao = perfis.get(1)!;
     // no meio do morro (60 m) o túnel fica bem abaixo do terreno e liga as duas bocas sem degrau
     const meio = tunel.n >> 1;
-    const topoMorro = hm.h[Math.round((tunel.z[meio] + 8192) / 16) * 1025 + Math.round((tunel.x[meio] + 8192) / 16)];
+    const topoMorro = sampleHeight(hm, tunel.x[meio], tunel.z[meio]);
     expect(topoMorro).toBeGreaterThan(40);
     expect(tunel.y[meio]).toBeLessThan(topoMorro - 20);
     expect(Math.abs(tunel.y[0] - chao.y[chao.n - 1])).toBeLessThan(0.01);

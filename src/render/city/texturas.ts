@@ -32,6 +32,29 @@ function finalizar(c: HTMLCanvasElement, repetir = true): THREE.CanvasTexture {
   return t;
 }
 
+/** Asfalto liso, sem sinalização, igual ao dos leitos (cruzamentos); `claro` = ilha pintada da minirrotatória (um tom acima). */
+export function texturaAsfalto(claro = false): THREE.CanvasTexture {
+  const W = 128, H = 128;
+  const [c, ctx] = canvas(W, H);
+  ruido(ctx, W, H, claro ? [86, 88, 90] : [60, 62, 64], 22, claro ? 21 : 7);
+  ctx.fillStyle = 'rgba(30,30,30,0.25)';
+  for (let i = 0; i < 24; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 2 + Math.random() * 18, 1 + Math.random() * 3);
+  const tex = finalizar(c);
+  tex.wrapS = THREE.RepeatWrapping; // cobre cruzamentos e ilhas em qualquer direção
+  return tex;
+}
+
+/** Grama de banqueta e talude (ladrilho de 2 m). */
+export function texturaGrama(): THREE.CanvasTexture {
+  const W = 128, H = 128;
+  const [c, ctx] = canvas(W, H);
+  ruido(ctx, W, H, [104, 126, 64], 34, 17);
+  for (let i = 0; i < 160; i++) { ctx.fillStyle = `rgba(${40 + Math.random() * 60},${90 + Math.random() * 70},${30 + Math.random() * 40},0.5)`; ctx.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 2, 2 + Math.random() * 5); }
+  const tex = finalizar(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
+
 /** Rua de mão dupla: bordas brancas, eixo amarelo tracejado. v = 10 m por repetição. */
 export function texturaRua(): THREE.CanvasTexture {
   const W = 256, H = 256;

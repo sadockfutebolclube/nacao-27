@@ -77,6 +77,12 @@ Outros comandos:
 - Prédios reais com a planta verdadeira, fachadas fotográficas, telhas, laje e janelas que acendem à noite; céu HDRI, asfalto, calçadas e terreno fotográficos (materiais CC0 do ambientCG e do Poly Haven, em `public/assets/`; para baixar de novo: `npm run fetch-assets` e depois `scripts/comprimir-materiais.ps1`).
 - **Vista Google 3D** (painel Visual): mostra a cidade nos Photorealistic 3D Tiles do Google, ao vivo. Precisa de uma chave sua da Map Tiles API (Google Cloud, com faturamento): ponha `VITE_GOOGLE_MAPS_KEY=...` no `.env.local` ou digite na tela (fica só no navegador). O jogo não baixa nem guarda nada do Google.
 
+### O chão, a luz e os detalhes (Fase 21)
+- O chão tem **4 camadas** (terra, grama, mato, rocha) por inclinação e uso do solo; a pedra portuguesa só aparece na orla; a **via férrea** tem brita e dormentes; os **muros de arrimo** são de concreto fosco com barbacãs e patamares de até 5 m; prédios que invadiam a pista foram deslocados; as **sombras** vêm de cascatas (CSM) com ACES e AO. O **F3** conta tudo por categoria.
+
+### Encostas (Fase 20)
+- As ruas das encostas foram **regradadas**: nenhuma passa de 25% de rampa; onde o morro pede mais, a rua vira **viaduto**, **túnel com portal** ou ganha **muro de arrimo** com guarda-corpo. O relevo é de 10,7 m, com **escadarias, trilhas, calçadões e ciclovias** do OSM e minirrotatórias. **F3** mostra, por trecho, a classe do problema e a inclinação máxima.
+
 ### Relevo e ruas auditados (Fase 19)
 - O relevo vem do **Copernicus DEM GLO-30**, filtrado (sem espetos nem paredões), e o terreno acompanha cada rua (corte e aterro): nada de asfalto flutuando ou enterrado. Rotatória só onde o OSM diz que é rotatória. **F3** liga o wireframe, as normais do terreno e a lista de ruas com problema.
 

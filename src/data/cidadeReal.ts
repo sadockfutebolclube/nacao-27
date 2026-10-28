@@ -43,6 +43,8 @@ export const CidadeReal = z.object({
     faixasPed: z.array(z.number()).optional(),
     /** Fase 19: rotatórias validadas do OSM (`junction=roundabout`, círculo fechado de 8–40 m) — [x, z, raio] cada */
     rotatorias: z.array(z.number()).optional(),
+    /** Fase 20: minirrotatórias (`junction=circular` ou rotatória de 4–8 m) — [x, z, raio] cada: cruzamento com ilha pintada */
+    minirrotatorias: z.array(z.number()).optional(),
     /** Fase 19: o que foi descartado e por quê (painel de depuração F3) */
     rotatoriasDescartadas: z.array(z.object({ nome: z.string(), motivo: z.string(), x: z.number(), z: z.number() })).optional(),
   }),
@@ -58,6 +60,18 @@ export const CidadeReal = z.object({
   /** Fase 16: nomes de bairro do OSM — [x, z, tipo (0 bairro, 1 sub-bairro/comunidade), índice do nome] cada */
   bairros: z.array(z.number()).optional(),
   nomesBairros: z.array(z.string()).optional(),
+  /**
+   * Fase 20: caminhos de pedestre do OSM — [tipo (0 escada · 1 calçada · 2 trilha · 3 estradinha · 4 ciclovia · 5 calçadão),
+   * largura × 10, n, x₀, z₀, … x₍n−1₎, z₍n−1₎] por caminho, concatenados
+   */
+  caminhos: z.array(z.number()).optional(),
+  /** Fase 21: o que o gerador tirou — vias soltas (com o motivo) e prédios que invadiam a pista (n e posições [x, z, …]) */
+  removidos: z.object({
+    vias: z.array(z.object({ nome: z.string(), motivo: z.string(), x: z.number(), z: z.number() })),
+    prediosSobreVias: z.number(),
+    prediosDeslocados: z.number().optional(),
+    prediosPos: z.array(z.number()),
+  }).optional(),
   estat: z.object({ predios: z.number(), comAndares: z.number(), vias: z.number(), km: z.number() }),
 });
 export type CidadeReal = z.infer<typeof CidadeReal>;

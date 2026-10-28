@@ -1,5 +1,101 @@
 # CHANGELOG
 
+## 1.11.0 — Fase 21: o chão, os trilhos, os muros e a luz (28/10/2026)
+
+Cada problema foi reproduzido com print antes de mexer; os 7 pontos de câmera estão em `docs/auditoria-visual/` (antes-N / depois-N), com as medições e o log de geração.
+
+### 1. Chão em 4 camadas
+- O chão deixou de ser uma cor chapada: **splat map** (um texel por vértice do relevo) com **terra** (Ground103), **grama** (Grass004), **mato** (Moss001, nova) e **rocha** (Rock064, em três projeções), todas CC0 do ambientCG (registradas em `assets/CREDITS.md`).
+- Pesos por inclinação e uso do solo: rocha exposta acima de 35°; terra onde há gente (cobertura de prédios suavizada em ~30 m); mato onde o OSM mapeia mata ou a encosta passa de ~16°; grama no resto. O OSM não mapeia toda a vegetação do Rio, então "sem dado" virou verde, não solo exposto.
+- Cada camada usa duas escalas (a segunda girada) misturadas por ruído e há variação de tom em escala de centenas de metros: sem repetição de ladrilho. A cor do vértice só leva a areia da praia.
+
+### 2. Calçadão só na orla
+- A pedra portuguesa em ondas saía em toda avenida a menos de 320 m da água (Niemeyer, Vidigal…). Agora só nas calçadas das ruas listadas em `src/data/orla.json` (Atlântica, Vieira Souto, Delfim Moreira…) e nos `highway=pedestrian` a menos de 250 m da água. Avenida comum e ferrovia nunca.
+
+### 3. Via férrea
+- Leito de **brita cinza-escura** (e não o concreto claro que parecia calçada) com **um dormente de madeira a cada 60 cm**, mais comprido que os trilhos; trilhos de aço por cima; nada de calçada ao lado. Só a estação tem plataforma.
+
+### 4. Vias soltas e 7. prédios sobre a pista
+- **Vias soltas**: ponte, túnel ou avenida (inclui as alças) cuja ponta tem grau 1, fica a mais de 40 m da borda e sem outra via a menos de 10 m. 5 saíram (Rua Uberaba, uma sem nome, Rua Teodoro da Silva, Estrada da Gávea, Avenida Rio de Janeiro); repete até não sobrar ponta.
+- **Prédios**: o retângulo que passa a menos de 30% da meia largura do eixo da pista é empurrado para fora (até 3 vezes); se ainda invade, sai. **5.752 deslocados e 1.188 removidos** (0,8%) de 153.886; a planta (contorno) anda junto. Fora de viaduto e de túnel; prédio com nome (Arcos da Lapa, igrejas, estações) fica onde está. Sobra menos de 0,5% invadindo.
+
+### 5. Minirrotatória e cruzamentos
+- O "disco cinza" era o asfalto do cruzamento com UV constante (um texel só): agora a UV vem do mundo (6 m) e o tom e o grão são os da rua. A minirrotatória tem **ilha pintada** (asfalto um tom mais claro, +4,5 cm, `polygonOffset` −5: sem z-fighting) com **meio-fio** circular de 12 cm.
+
+### 6. Muros de arrimo
+- Concreto **fosco** (roughness 0,96, sem metal, reflexo do ambiente a 15%) em placas de 3 × 2,5 m com junta e **barbacãs**; o brilho de vidro vinha de metade das faces com o enrolamento do triângulo contrário à normal (agora o enrolamento segue a normal). Acima de 5 m, **patamares de até 5 m** com **banquetas de grama de 2 m** e guarda-corpo no topo (corte) ou na borda da pista (aterro).
+
+### 8. Luz
+- **CSM** (`three/addons/csm`): 2 cascatas em "alta" (2048) e em "média" (1024); a "baixa" segue sem sombra. Cada material do mundo recebe os uniformes do CSM encadeados ao `onBeforeCompile` que já tinha (terreno, prédios). **ACES** já era o mapeamento (pós-processamento) e o **N8AO** continua em "alta"; em "média" entra um AO leve (`quality: performance`). O "plano e sem sombra" vinha também do modo automático derrubar a qualidade para "média" no painel de pré-visualização.
+
+### F3 por categoria
+- O painel mostra vias soltas removidas, prédios deslocados e removidos (com as posições dos removidos), minirrotatórias, muros, pontes e túneis, além de morro, vão, rampa e rotatórias descartadas.
+
+### Medições (painel do app, mesma máquina, qualidade "alta", 4 pontos)
+| | média de fps |
+|---|---|
+| luz única (antes) | 91,7 |
+| CSM, 2 cascatas | 89,2 (−3%; duas séries: 88,6 e 89,7) |
+| CSM, 3 cascatas | 82,5 (−10%) — descartado |
+| qualidade "média" (3 cascatas na medição) / "baixa" | 83–104 / ~142 |
+Carga: mapa de normais do terreno ~0,6 s, construção das vias ~1,0–1,1 s (já eram). Heap JS ~1 GB (sem medição anterior do mesmo ponto).
+
+### Verificado
+- 9 testes novos (`tests/fase21.test.ts`: splat por inclinação/mata/prédios, lista da orla, vias soltas e prédios sobre a pista no arquivo do Rio, painel F3); typecheck estrito; build.
+
+### Limitações
+- Os prints são de 7 pontos; não percorri todo o mapa. O CSM de 2 cascatas deixa as sombras longínquas (> ~1,8 km) fora.
+- A minirrotatória não tem faixas de pedestre próprias nem setas; os muros terraceados ficam em pé sobre o chão escavado (a grade de 10,7 m não representa o degrau).
+- Os vãos sob a pista seguem fechados por lateral até o chão, não por talude de grama; `junction=circular` grande vira minirrotatória (sem a ilha elevada).
+- O "antes" do fps usa o mesmo código com o CSM desligado (`localStorage['n27:desligar'] = 'CSM'`), não o commit anterior.
+
+## 1.10.0 — Fase 20: encostas — regrade, muros, pontes, túneis e escadarias (28/10/2026)
+
+### O que restava errado
+- 715 trechos de rua acima de 30% de rampa (22 acima de 100%, máximo 290%): o perfil seguia o morro.
+- Terreno cobrindo o asfalto: 1.302 trechos a mais de 30 cm, 178 a mais de 1 m, 48 a mais de 1,5 m (mesma régua, na pista).
+- Escadarias, trilhas e calçadões do OSM nem entravam nos dados; `junction=circular` era descartado.
+
+### Regrade da rede (`src/world/regrade.ts`)
+- A rua muda, não o morro: as cotas dos **nós** relaxam trecho a trecho até 25% de rampa (teto 30%) e cada trecho é projetado na restrição com as duas pontas presas (`limitarRampa`). Resultado no Rio: maior rampa 25,7%, nenhum trecho acima de 30%; 984 nós movidos.
+- Pela diferença rua × relevo original: **ponte/viaduto** (rua ≥ 3 m acima por ≥ 15 m), **túnel** (≥ 8 m abaixo por ≥ 40 m, com portal de concreto) e **muro de arrimo** (mais de 4 m de diferença), tudo por trecho contínuo. 403 pontes, 100 túneis, 172 trechos com muro.
+- O muro (concreto, com guarda-corpo no topo) fica do lado do morro (corte) ou do vale (aterro); a lateral da pista agora desce até o terreno (até 14 m) em vez de parar a 2,2 m.
+- A terraplenagem usa o regrade: ponte e túnel não escavam; cada célula obedece à rua que a puxa com mais força (a média deixava o morro 1 m acima do eixo); um teto final (30 cm abaixo do asfalto, no máximo 4 m de rebaixo) tira o morro de cima da pista.
+
+### Relevo de 10,7 m
+- A grade do relevo passa de 16 m (1.024 células) para **10,67 m** (1.536): o Copernicus (30 m) é reamostrado em **bicúbico** (preso ao intervalo dos 4 pixels vizinhos), a gaussiana segue em 24 m e entra **detalhe de alta frequência só nas encostas** (ruído simplex de ±0,9 m em 80 m e ±0,45 m em 40 m, ponderado pela inclinação; sem espetos).
+
+### Escadarias, trilhas e minirrotatórias
+- **Caminhos** do OSM (`steps`, `footway`, `path`, `track`, `cycleway`, `pedestrian`; sem calçada e faixa de pedestre que já existem nas ruas): 3.616 no Rio (579 escadas, 2.464 calçadas, 173 trilhas, 190 ciclovias, 209 calçadões). Não são asfalto: faixa estreita colada ao terreno, com textura própria (degraus, terra batida, concreto) e **sem escavar** (`Caminhos.tsx`).
+- **Minirrotatórias**: `junction=circular` (círculo ajustado por mínimos quadrados) e rotatória de 4 a 8 m com raio ≥ 4 m viram cruzamento com ilha pintada. O resto continua descartado e registrado (hoje nada sobrou para descartar).
+
+### F3 por trecho
+- Cada linha do painel traz a classe do problema (morro sobre asfalto, vão, rampa), a inclinação máxima do trecho e o botão "ir"; no topo, as contagens de muros, pontes e túneis tratados.
+
+### Antes → depois (Rio, `docs/auditoria-encostas/`)
+| | antes (Fase 19) | depois |
+|---|---|---|
+| trechos com rampa > 30% | 715 | **0** |
+| trechos com rampa > 100% | 22 | **0** |
+| maior rampa de rua | 290% | **25,7%** |
+| trechos com morro sobre a pista > 1 m | 178 | **21** |
+| … > 1,5 m / > 3 m | 48 / 5 | 13 / 3 |
+| … > 30 cm | 1.302 | 57 |
+| trechos com o morro 1,2 m acima da calçada (régua antiga) | 530 | 72 |
+| ponte / túnel / muro | 0 | 403 / 100 / 172 |
+| arquivo do Rio | 12,5 MB | 16,3 MB |
+
+### Verificado
+- 8 testes novos (`tests/fase20.test.ts`: rampa, vale→ponte, morro→túnel, corte→muro, túnel não escava, rampa do Rio ≤ 30%, caminhos, minirrotatórias); 130 testes no total; typecheck estrito. Prints de Santa Teresa, da favela do Vidigal e da falésia da Avenida Niemeyer antes e depois, mais muro de arrimo, escadarias e o painel F3.
+- No navegador (painel do app, GPU de software): 48 a 60 fps nos três casos; `[lento]` de 1,0 s para construir as vias.
+
+### Limitações
+- A meta "morro sobre asfalto < 30" vale a partir de 1 m (21 trechos); a 30 cm ainda são 57. A grade de 10,7 m não representa duas ruas paralelas a menos de ~20 m em cotas diferentes: a célula entre elas só obedece a uma.
+- Os **vãos sob a pista** (rua > 3 m acima do chão) passaram de 117 para 2.857 trechos: baixar o terreno de cima do asfalto abre espaço embaixo da rua vizinha, mais alta. A lateral agora desce até o chão (até 14 m), então não há buraco aberto, mas é uma parede, não um viaduto com pilares (esses só nascem nos trechos contínuos de ≥ 15 m).
+- Cortes de muro chegam a 125 m em um ponto (encosta quase vertical do Dois Irmãos/Vidigal); o muro cobre, mas o corte é irreal.
+- A carga do relevo subiu (2,25× mais células, terraplenagem e regrade): `terrenoReal` ~1,9 s a frio no Node, e roda duas vezes (tela e worker). Os trens de rua do Vias e os lotes da simulação não conhecem pontes/túneis criados pelo regrade (só os do OSM).
+- Os caminhos ainda não têm pedestres nem entram na simulação.
+
 ## 1.9.0 — Fase 19: auditoria do relevo e das ruas (28/10/2026)
 
 ### O que estava errado (medido com `npm run auditar-mapa`)

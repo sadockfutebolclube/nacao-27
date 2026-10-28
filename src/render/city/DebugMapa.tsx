@@ -33,7 +33,7 @@ export function DebugMapa({ hm }: { hm: Heightmap }) {
 
   // diagnóstico das vias só quando alguém liga o modo (varre ~180 mil seções)
   useEffect(() => {
-    if (d.modo > 0 && d.contagem.trechos === 0 && perfisAtuais.size) diagnosticarVias(perfisAtuais, hm, mundo.real?.vias.rotatoriasDescartadas);
+    if (d.modo > 0 && d.contagem.trechos === 0 && perfisAtuais.size) diagnosticarVias(perfisAtuais, hm, mundo.real?.vias.rotatoriasDescartadas, mundo.real?.removidos, (mundo.real?.vias.minirrotatorias?.length ?? 0) / 3);
   }, [d.modo, d.contagem.trechos, hm]);
 
   // wireframe em todas as malhas (blocos novos entram a cada segundo)

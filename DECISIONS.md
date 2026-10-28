@@ -273,3 +273,30 @@ A grade de 16 m não conhece as ruas. Em vez de gravar o corte no arquivo (as vi
 
 ## D-090 · Rotatória só com junction=roundabout
 O que parecia rotatória em avenida reta era o disco de calçada que o desenho punha em todo cruzamento de grau ≥ 3. Agora o cruzamento é uma caixa de asfalto rente ao leito e a rotatória (ilha central em calçada) só nasce de um anel `junction=roundabout` fechado, circular (desvio ≤ 20% do raio) e de 8 a 40 m; ways partidas se juntam antes de validar. O que sobra (`junction=circular`, raio fora da faixa, anel aberto) vai para `rotatoriasDescartadas` no arquivo e aparece no painel F3.
+
+## D-091 · Regrade antes da terraplenagem: a rua muda, o morro fica
+A Fase 19 prendia o perfil a 4 m do terreno; onde o morro pedia 100% de rampa, a rua ficava com 100%. Agora as cotas dos nós relaxam (média de dois nós por trecho, iterando) até 25% de rampa por trecho e cada trecho é projetado entre as cotas dos nós. Quem decide o que fazer com a diferença é a classe: ponte (≥ 3 m por ≥ 15 m), túnel (≥ 8 m por ≥ 40 m), muro de arrimo (> 4 m). Ponte e túnel valem por amostra, não pela aresta: uma rua de 120 m pode ter 50 m de viaduto no meio.
+
+## D-092 · Grade de 10,7 m e a regra "cada célula obedece a uma rua"
+Duas ruas paralelas a menos de ~20 m em cotas diferentes partilham as mesmas células; a média dos alvos deixava as duas erradas (morro 1 m acima do eixo). Cada célula agora segue a rua que a puxa com mais força. Depois, um teto por célula (30 cm abaixo da rua mais baixa que a usa) tira o morro de cima da pista, com rebaixo máximo de 4 m; o vão que isso abre embaixo da rua mais alta é fechado pela lateral da pista até o terreno (até 14 m). Medido com 1,2 / 2,5 / 4 m de rebaixo: morro sobre a pista > 1,5 m = 61 / 32 / 13 trechos.
+
+## D-093 · Caminhos de pedestre separados do asfalto
+`steps|footway|path|track|cycleway|pedestrian` do OSM viram caminhos (tipo, largura, linha simplificada a 1,5 m), desenhados como faixa colada ao relevo, sem escavar nem entrar no grafo de ruas (nada de carros em escadaria). Calçadas e travessias mapeadas à parte (`footway=sidewalk|crossing`) ficam de fora: as ruas já têm calçada.
+
+## D-094 · Minirrotatória
+`junction=circular` e rotatória de 4 a 8 m (círculo por mínimos quadrados, desvio ≤ 25% do raio, raio ≥ 4 m) são cruzamentos com uma ilha pintada rente ao asfalto, sem a ilha elevada da rotatória grande (8–40 m, `junction=roundabout` fechado).
+
+## D-095 · Chão por splat de 4 camadas, "sem dado" é verde
+O OSM mapeia floresta, parque e grama onde alguém desenhou; no resto da encosta carioca não há polígono e o chão ficava com a cor chapada de bioma (e, na primeira versão do splat, em terra laranja por toda parte). Agora: terra onde há prédios (cobertura suavizada), mato onde há mata OSM ou encosta ≥ ~16°, grama no resto, rocha acima de 35°. O splat é calculado no carregamento a partir do relevo, do `forest` e dos prédios — sem novo arquivo de dados.
+
+## D-096 · Calçadão por lista em JSON
+O padrão de ondas era regra geométrica (avenida a menos de 320 m da água). Virou dado: `src/data/orla.json` lista as ruas da orla; o resto é calçada comum.
+
+## D-097 · Prédio na pista: desloca antes de remover
+Remover tudo que invadia a pista tiraria 4,6% dos prédios (7.032); deslocar (empurrão para fora, até 3×) e só remover o que não cabe tira 0,8% (1.188). A planta anda junto com o retângulo.
+
+## D-098 · CSM com hook encadeado e 2 cascatas
+O CSM do three só precisa de defines e uniformes por material (o chunk de luz é global). `ligarCSM` encadeia o `onBeforeCompile` do material com o do CSM e acrescenta o número de cascatas à chave do programa. Três cascatas custaram 10% de fps, duas, ~3%.
+
+## D-099 · Normais dos muros pelo enrolamento
+Em material DoubleSide o three inverte a normal das faces "de trás"; com o enrolamento do triângulo contrário à normal pretendida metade dos muros saía escura, com aparência de vidro. O índice agora é escolhido pelo sinal de (normal pretendida · frente do triângulo).

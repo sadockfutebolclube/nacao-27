@@ -50,6 +50,25 @@ export class Copernicus {
       for (let lo = Math.floor(Math.min(lo0, lo1)); lo <= Math.floor(Math.max(lo0, lo1)); lo++) await this.ladrilho(la, lo);
   }
 
+  /**
+   * Altitude (m) por interpolação bicúbica (Catmull-Rom 4×4), presa ao intervalo dos 4 pixels vizinhos para não
+   * "tocar" (ringing) na beira do mar e dos degraus. NaN fora do ladrilho; perto da borda do ladrilho cai no bilinear.
+   */
+  altitudeBicubica(lat: number, lon: number): number {
+    const la = Math.floor(lat), lo = Math.floor(lon);
+    const t = this.ladrilhos.get(nome(la, lo));
+    if (!t) return NaN;
+    const fx = (lon - lo) * (t.w - 1), fy = (1 - (lat - la)) * (t.h - 1);
+    const x0 = Math.floor(fx), y0 = Math.floor(fy);
+    if (x0 < 1 || y0 < 1 || x0 > t.w - 3 || y0 > t.h - 3) return this.altitude(lat, lon);
+    const ax = fx - x0, ay = fy - y0;
+    const cr = (p0: number, p1: number, p2: number, p3: number, u: number) => p1 + 0.5 * u * (p2 - p0 + u * (2 * p0 - 5 * p1 + 4 * p2 - p3 + u * (3 * (p1 - p2) + p3 - p0)));
+    const linha = (y: number) => { const k = y * t.w + x0; return cr(t.dado[k - 1], t.dado[k], t.dado[k + 1], t.dado[k + 2], ax); };
+    const v = cr(linha(y0 - 1), linha(y0), linha(y0 + 1), linha(y0 + 2), ay);
+    const k0 = y0 * t.w + x0, a = t.dado[k0], b = t.dado[k0 + 1], c = t.dado[k0 + t.w], d = t.dado[k0 + t.w + 1];
+    return Math.min(Math.max(a, b, c, d), Math.max(Math.min(a, b, c, d), v));
+  }
+
   /** Altitude (m) por interpolação bilinear; NaN onde não há ladrilho (mar aberto sem arquivo). Precisa de `preparar` antes. */
   altitude(lat: number, lon: number): number {
     const la = Math.floor(lat), lo = Math.floor(lon);

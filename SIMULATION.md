@@ -693,3 +693,26 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Depuração**: `render/city/DebugMapa.tsx` (F3: wireframe, normais), `estadoDebug.ts` (`diagnosticarVias`: enterrada > 1,2 m, flutuando > 2,5 m, rampa > 18%), `ui/PainelDebugMapa.tsx`.
 - **Medição**: `npm run auditar-mapa [-- --json]` (relevo e ruas, mesmos números antes e depois); `docs/auditoria-mapa/{antes,depois}.json` e prints.
 - **Testes** (`tests/fase19.test.ts`).
+
+# Parte XIX — Encostas (Fase 20)
+
+- **Grade**: `HM_RES = 1536` (10,67 m); o arquivo do Rio tem a mesma (`res` = 1537, `passo` = 10,667). Gerador: Copernicus em bicúbico (`altitudeBicubica`), Hampel, gaussiana σ = 24 m, detalhe nas encostas (`detalharEncostas`: simplex ±0,9 m/80 m + ±0,45 m/40 m × smoothstep da inclinação 12–50%), limite de inclinação 1,2, água em −3 m.
+- **Regrade** (`world/regrade.ts`): `regradarVias(h0, grafo)` → cotas dos nós (relaxação, ≤ 1.500 iterações, ~220 no Rio) e, por trecho, `y`, `dev` (y − relevo original), `classe` por amostra (0 normal · 1 ponte · 2 túnel · 3 muro), `nivel` efetivo (≥ 60% do trecho em ponte/túnel), `gradeMax`. `registrarRegrade(h, r)` associa o resultado ao `Float32Array` do relevo; `regradeDe(hm.h)` o devolve ao desenho. `limitarRampa` (em `relevo.ts`) projeta o perfil: cone das pontas + passada para frente e para trás.
+- **Terraplenagem** (`world/escavar.ts`): núcleo = max(pista + calçada + 1,5 m, célula + 1 m), transição de 8 m (4 m nas amostras de muro), cada célula leva o alvo da rua de maior peso (empate: a mais perto); ponte e túnel não escavam; `rebaixarSobreAsfalto` aplica teto/piso por célula (rebaixo ≤ 4 m).
+- **Desenho** (`Vias.tsx`): `perfilVias.ts` usa o perfil do regrade (`Perfil.nivel`, `classe`, `gradeMax`); calçadas só fora do túnel por amostra; `lateralAteTerreno`; muros (concreto por 3 × 2,5 m, normal para fora, cortes e aterros não se ligam) com fita e balaústres de guarda-corpo; portais (2 pilares + verga) por corrida de túnel; minirrotatórias (disco pintado 1,1–2,6 m); `Caminhos.tsx` (blocos de 1 km a 1,8 km da câmera).
+- **Dados**: `vias.minirrotatorias` [x, z, r]; `caminhos` [tipo, largura × 10, n, x₀, z₀, …] (cache OSM `-caminhos.json`, regerado com a extração do PBF).
+- **F3** (`estadoDebug.ts`): por trecho, morro sobre o asfalto (> 0,5 m na pista), vão (> 3 m), rampa (> 25%) com a inclinação máxima; contagens de muros, pontes e túneis.
+- **Auditoria**: `npm run auditar-mapa` agora imprime trechos com morro sobre a pista por limiar, vãos e o resumo do regrade.
+- **Testes** (`tests/fase20.test.ts`).
+
+# Parte XX — O chão, os trilhos, os muros e a luz (Fase 21)
+
+- **Chão** (`Terreno.tsx`): `texturaSplat(hm, predios)` — DataTexture RGBA8 de 1.537² (um texel por vértice): R terra, G grama, B mato, A rocha; `coberturaDePredios` (área dos prédios por célula, caixa 5×5 duas vezes). Shader: `albedoMix` (duas escalas, a segunda girada), rocha em 3 projeções só onde `sp.a > 0.01`, variação de tom por ruído, normais da grama e da rocha; o vértice só carrega a areia (`firme` = quanto a cor do vértice é branca).
+- **Orla** (`data/orla.json`, `Vias.tsx`, `Caminhos.tsx`): `calcadaoAqui` = rua da lista e água a < 250 m; caminhos `pedestrian` a < 250 m da água usam a pedra portuguesa (tipo interno 6).
+- **Via férrea** (`Trilhos.tsx`): `texturaBalastro` (128 × 64 px = 3,4 × 0,6 m), `fita(... vEsc = 0,6)`.
+- **Gerador** (`fetch-cidades.ts`): `removerSoltas` (nó de grau 1 de ponte/túnel/avenida, > 40 m da borda, nada a < 10 m; até 6 rodadas) e `sobrePista` (retângulo × amostras de via a cada 5 m, limite 30% da meia largura, empurrão = invasão + 1,2 m, 3 tentativas); saída `removidos: { vias, prediosSobreVias, prediosDeslocados, prediosPos }`.
+- **Cruzamentos e minirrotatórias** (`Vias.tsx`): `disco` com UV do mundo (÷ 6); `texturaAsfalto(claro)`; `meioFioCircular`.
+- **Muros** (`Vias.tsx`): por par de amostras de mesmo tipo (corte/aterro), `np = ceil(H / 5)` patamares; cada um recua 2 m; face de concreto (`texturaConcreto`, 256 px por 3 × 2,5 m, barbacãs a 64/192 px), banqueta de grama (`texturaGrama`), guarda-corpo (fita + balaústres a cada 3 m); o enrolamento dos índices segue a normal.
+- **Luz** (`CeuLuz.tsx`): `CSM` com `CASCATAS` e `MAPA_CASCATA` por nível, `maxFar` 1.800 m, `ligarCSM(csm, id, material)` (varredura a cada 0,5 s para materiais novos), luzes do CSM com a cor e a intensidade do sol; `SEM_CSM` (dev) volta à luz única.
+- **F3** (`estadoDebug.ts`): `Contagem` ganha `solta`, `predioDeslocado`, `predioRemovido`, `minirrotatoria`; `Problema.tipo` ganha `solta` e `predio`.
+- **Testes** (`tests/fase21.test.ts`).

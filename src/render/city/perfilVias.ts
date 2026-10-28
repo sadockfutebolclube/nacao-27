@@ -5,6 +5,7 @@
 import { edgeEnds, larguraVia, meiaVia, nodeDegree, sampleByLength, type RoadEdge, type RoadGraph } from '../../world/roads';
 import { roadBaseY, type Heightmap } from '../../world/terrain';
 import { suavizarPerfil } from '../../world/relevo';
+import { regradeDe, type Regrade } from '../../world/regrade';
 
 export interface Perfil {
   edge: RoadEdge;
@@ -13,6 +14,11 @@ export interface Perfil {
   tx: Float32Array; tz: Float32Array;
   s: Float32Array;
   comprimento: number;
+  /** nível efetivo (Fase 20): −1 túnel · 0 chão · +1 ponte/viaduto, do OSM ou criado pelo regrade */
+  nivel?: -1 | 0 | 1;
+  /** classe de cada amostra (`Classe` de regrade.ts): 0 normal · 1 ponte · 2 túnel · 3 muro de arrimo; ausente fora do regrade */
+  classe?: Uint8Array;
+  gradeMax?: number;
   /** recorte (m) nas pontas por causa do cruzamento */
   cortaA: number;
   cortaB: number;
@@ -31,7 +37,7 @@ export function raioNo(g: RoadGraph, nodeId: number): number {
  * cota do terreno; os nós só de túnel ou só de viaduto relaxam por média dos vizinhos entre os portais — o
  * túnel vira uma rampa reta por baixo do morro e o viaduto uma ponte reta sobre o vale.
  */
-function cotasDosNos(g: RoadGraph, hm: Heightmap): Map<number, number> {
+function cotasDosNos(g: RoadGraph, hm: Heightmap, reg?: Regrade): Map<number, number> {
   const nivelNo = new Map<number, number>(); // 0 = chão (portal), ±1 = só de túnel/viaduto
   for (const e of g.edges.values()) for (const id of [e.a, e.b]) {
     const v = e.nivel ?? 0;
@@ -44,7 +50,7 @@ function cotasDosNos(g: RoadGraph, hm: Heightmap): Map<number, number> {
   for (const [id, nv] of nivelNo) {
     const n = g.nodes.get(id);
     if (!n) continue;
-    y.set(id, roadBaseY(hm, n.x, n.z));
+    y.set(id, reg?.nos.get(id) ?? roadBaseY(hm, n.x, n.z));
     if (nv !== 0) livres.push(id);
   }
   if (!livres.length) return y;
@@ -69,7 +75,8 @@ function cotasDosNos(g: RoadGraph, hm: Heightmap): Map<number, number> {
 
 export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil> {
   const out = new Map<number, Perfil>();
-  const cotaNo = cotasDosNos(g, hm);
+  const reg = regradeDe(hm.h);
+  const cotaNo = cotasDosNos(g, hm, reg);
   // raio de cada cruzamento num passe só (raioNo por nó varreria todas as vias: 15 mil no Rio)
   const grau = new Map<number, number>(), meia = new Map<number, number>();
   for (const e of g.edges.values()) for (const id of [e.a, e.b]) {
@@ -89,6 +96,12 @@ export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil
       x[i] = p.x; z[i] = p.z; tx[i] = p.tx; tz[i] = p.tz; s[i] = p.s;
       bruto[i] = roadBaseY(hm, p.x, p.z);
     }
+    const rg = reg?.trechos.get(e.id);
+    if (rg && rg.y.length === n) {
+      // Fase 20: perfil regradado (rampa ≤ 25%), com ponte/túnel onde o morro pede
+      out.set(e.id, { edge: e, n, x, y: Float32Array.from(rg.y), z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b), nivel: rg.nivel, classe: rg.classe, gradeMax: rg.gradeMax });
+      continue;
+    }
     if (e.nivel) {
       // túnel (−1): rampa reta entre as cotas dos nós, nunca acima do chão; viaduto (+1): reta, nunca abaixo do chão
       const yA = cotaNo.get(e.a) ?? bruto[0], yB = cotaNo.get(e.b) ?? bruto[n - 1];
@@ -97,7 +110,7 @@ export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil
         y[i] = e.nivel < 0 ? Math.min(bruto[i], lin) : Math.max(bruto[i], lin);
       }
       y[0] = yA; y[n - 1] = yB;
-      out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b) });
+      out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b), nivel: e.nivel });
       continue;
     }
     // perfil longitudinal suave (o mesmo que a terraplenagem do relevo usou), pontas fixas para casar com os nós
@@ -106,7 +119,7 @@ export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil
       // nunca abaixo do terreno (evita asfalto enterrado)
       y[i] = i === 0 || i === n - 1 ? bruto[i] : Math.max(liso[i], bruto[i] - 0.15);
     }
-    out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b) });
+    out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b), nivel: 0 });
   }
   return out;
 }

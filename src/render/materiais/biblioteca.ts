@@ -47,7 +47,7 @@ export const CAMADA = Object.fromEntries(CAMADAS.map((c, i) => [c.id, i])) as Re
 export const N_FACHADAS = 8;
 
 /** Materiais de chão (texturas comuns com repetição): terreno, ruas e calçadas. */
-export const PISOS = ['Grass004', 'Ground103', 'Rock064', 'Asphalt033', 'PavingStones046', 'PavingStones128'] as const;
+export const PISOS = ['Grass004', 'Ground103', 'Rock064', 'Moss001', 'Asphalt033', 'PavingStones046', 'PavingStones128'] as const;
 export type Piso = (typeof PISOS)[number];
 
 const BASE = `${import.meta.env.BASE_URL}assets/materiais/`;

@@ -122,3 +122,21 @@ export function suavizarPerfil(bruto: ArrayLike<number>, passo: number, raio = 6
   for (let i = 1; i < n - 1; i++) y[i] = Math.min(ref[i] + maxDesvio, Math.max(ref[i] - maxDesvio, y[i]));
   return y;
 }
+
+/**
+ * Projeta o perfil de uma via na restrição de rampa (|dy/ds| ≤ g) com as duas pontas fixas: primeiro o cone que as
+ * pontas permitem, depois uma passada para frente e outra para trás (cada cota fica a no máximo g·ds da vizinha). As
+ * pontas têm de ser compatíveis (|y₀ − yₙ| ≤ g·L); a regra da rede (`regrade.ts`) garante isso nos nós.
+ */
+export function limitarRampa(y: Float32Array, s: ArrayLike<number>, g: number): Float32Array {
+  const n = y.length;
+  if (n < 3) return y;
+  const y0 = y[0], yn = y[n - 1], s0 = s[0], sn = s[n - 1];
+  const lo = (i: number) => Math.max(y0 - g * (s[i] - s0), yn - g * (sn - s[i]));
+  const hi = (i: number) => Math.min(y0 + g * (s[i] - s0), yn + g * (sn - s[i]));
+  const prende = (v: number, a: number, b: number) => (a > b ? (a + b) / 2 : Math.min(b, Math.max(a, v)));
+  for (let i = 1; i < n - 1; i++) y[i] = prende(y[i], lo(i), hi(i));
+  for (let i = 1; i < n - 1; i++) { const d = g * (s[i] - s[i - 1]); y[i] = prende(y[i], Math.max(lo(i), y[i - 1] - d), Math.min(hi(i), y[i - 1] + d)); }
+  for (let i = n - 2; i >= 1; i--) { const d = g * (s[i + 1] - s[i]); y[i] = prende(y[i], Math.max(lo(i), y[i + 1] - d), Math.min(hi(i), y[i + 1] + d)); }
+  return y;
+}

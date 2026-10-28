@@ -24,6 +24,8 @@ import { CidadeReal, CAMPOS_PREDIO } from '../src/data/cidadeReal.ts';
 import { Terrarium } from './lib/terrarium.ts';
 import { Copernicus } from './lib/copernicus.ts';
 import { limitarInclinacao, removerOutliers, suavizarGaussiano } from '../src/world/relevo.ts';
+import { createNoise2D } from 'simplex-noise';
+import { larguraVia } from '../src/world/roads.ts';
 import { extrairRegiao, REGIAO_UF, type AlvoCidade } from './lib/geofabrik.ts';
 import { prediosMS } from './lib/msbuildings.ts';
 import { existsSync } from 'node:fs';
@@ -32,7 +34,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'public', 'data', 'cidades');
 const CACHE_OSM = join(ROOT, 'data', 'osm-cache');
 // Fase 13: Rio em larga escala — mapa de 16 km com 12 × 12 km construíveis (Centro, Zona Sul, Tijuca, Maracanã)
-const MAP = 16384, HALF = MAP / 2, BUILD = 6144, PASSO = 16, RES = MAP / PASSO + 1, VERDE_RES = 512;
+// Fase 20: grade do relevo de 10,67 m (1.536 células; era 16 m) — precisa casar com HM_RES de src/world/constants.ts
+const MAP = 16384, HALF = MAP / 2, BUILD = 6144, CELULAS = 1536, PASSO = MAP / CELULAS, RES = CELULAS + 1, VERDE_RES = 512;
 /** centro do mapa quando não é a sede: no Rio, entre o Centro e a Zona Sul (perto do Cristo) */
 const CENTRO: Record<string, [number, number]> = { '3304557': [-22.945, -43.195] };
 const ESPELHOS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
@@ -368,56 +371,203 @@ function tratarRelevo(alt: Float32Array) {
   const terra = new Uint8Array(alt.length);
   for (let k = 0; k < alt.length; k++) terra[k] = alt[k] > 0.3 ? 1 : 0;
   const trocados = removerOutliers(alt, RES, terra, 5);
-  suavizarGaussiano(alt, RES, terra, 1.5);
-  const lim = limitarInclinacao(alt, RES, PASSO, 1.2, terra, 300);
+  suavizarGaussiano(alt, RES, terra, 24 / PASSO); // σ = 24 m, como na grade de 16 m (1,5 célula)
+  const detalhe = detalharEncostas(alt, terra);
+  const lim = limitarInclinacao(alt, RES, PASSO, 1.2, terra, 400);
   for (let k = 0; k < alt.length; k++) alt[k] = terra[k] ? Math.max(alt[k], 0.8) : 0;
-  console.log(`    relevo filtrado: ${trocados} espetos removidos, gaussiana σ=1,5, inclinação ≤ 1,2 (${lim.ajustados} vértices em ${lim.iteracoes} iterações)`);
+  console.log(`    relevo filtrado: ${trocados} espetos removidos, gaussiana σ=24 m, detalhe em ${detalhe} células de encosta, inclinação ≤ 1,2 (${lim.ajustados} vértices em ${lim.iteracoes} iterações)`);
+}
+
+/**
+ * Detalhe de alta frequência só nas encostas (Fase 20): o DEM de 30 m, reamostrado a 10,7 m, fica liso demais.
+ * Soma ruído simplex de baixa amplitude (±0,9 m em 80 m, ±0,45 m em 40 m — nunca abaixo de 3,7 células, sem espeto),
+ * ponderado pela inclinação: 0 abaixo de 12% e inteiro acima de 50%. Determinístico (semente fixa).
+ */
+function detalharEncostas(alt: Float32Array, terra: Uint8Array): number {
+  let semente = 20261028;
+  const aleatorio = () => { semente = (semente * 1664525 + 1013904223) >>> 0; return semente / 4294967296; };
+  const ruido = createNoise2D(aleatorio);
+  const base = Float32Array.from(alt);
+  let tocadas = 0;
+  for (let j = 1; j < RES - 1; j++) for (let i = 1; i < RES - 1; i++) {
+    const k = j * RES + i;
+    if (!terra[k]) continue;
+    const gx = (base[k + 1] - base[k - 1]) / (2 * PASSO), gz = (base[k + RES] - base[k - RES]) / (2 * PASSO);
+    const t = Math.min(1, Math.max(0, (Math.hypot(gx, gz) - 0.12) / 0.38));
+    if (t <= 0) continue;
+    const x = -HALF + i * PASSO, z = -HALF + j * PASSO;
+    alt[k] += (t * t * (3 - 2 * t)) * (0.9 * ruido(x / 80, z / 80) + 0.45 * ruido(x / 40 + 31.7, z / 40 - 12.3));
+    tocadas++;
+  }
+  return tocadas;
 }
 
 // ── rotatórias (Fase 19) ─────────────────────────────────────────────────────────
 
 /**
- * Só vira rotatória a via com `junction=roundabout` cujo desenho é um círculo fechado de 8 a 40 m de raio. O resto
- * (`junction=circular`, anéis abertos, "rotatórias" de calçada, cruzamentos comuns) é descartado e registrado.
+ * Vias soltas (Fase 21): ponta solta = nó de grau 1 de ponte, túnel ou avenida (inclui as alças `_link`), a mais de 40 m da
+ * borda da área construível e sem outra via a menos de 10 m — um viaduto ou rampa que termina no ar. O trecho sai; repete,
+ * porque a ponta que sobra pode ficar solta. Devolve o que saiu, para o painel F3.
+ */
+function removerSoltas(g: { nos: number[]; arestas: number[]; nomes: string[] }) {
+  const K = 8, saiu: { nome: string; motivo: string; x: number; z: number }[] = [];
+  for (let rodada = 0; rodada < 6; rodada++) {
+    const nA = g.arestas.length / K;
+    const grau = new Map<number, number>();
+    for (let i = 0; i < nA; i++) for (const id of [g.arestas[i * K], g.arestas[i * K + 1]]) grau.set(id, (grau.get(id) ?? 0) + 1);
+    const cel = new Map<string, { x: number; z: number; e: number }[]>();
+    for (let i = 0; i < nA; i++) {
+      const o = i * K, a = g.arestas[o] - 1, b = g.arestas[o + 1] - 1, cx = g.arestas[o + 2], cz = g.arestas[o + 3];
+      const ax = g.nos[a * 2], az = g.nos[a * 2 + 1], bx = g.nos[b * 2], bz = g.nos[b * 2 + 1];
+      const n = Math.max(2, Math.ceil(Math.hypot(bx - ax, bz - az) / 5));
+      for (let s = 0; s <= n; s++) {
+        const t = s / n, u = 1 - t, x = u * u * ax + 2 * u * t * cx + t * t * bx, z = u * u * az + 2 * u * t * cz + t * t * bz;
+        const k = `${Math.floor(x / 40)},${Math.floor(z / 40)}`;
+        (cel.get(k) ?? cel.set(k, []).get(k)!).push({ x, z, e: i });
+      }
+    }
+    const tirar = new Set<number>();
+    for (let i = 0; i < nA; i++) {
+      const o = i * K, tipo = g.arestas[o + 4], flags = g.arestas[o + 7];
+      if (!(tipo === 1 || flags & 6)) continue;
+      for (const id of [g.arestas[o], g.arestas[o + 1]]) {
+        if ((grau.get(id) ?? 0) !== 1) continue;
+        const x = g.nos[(id - 1) * 2], z = g.nos[(id - 1) * 2 + 1];
+        if (Math.abs(x) > BUILD - 40 || Math.abs(z) > BUILD - 40) continue;
+        let perto = false;
+        for (let dx = -1; dx <= 1 && !perto; dx++) for (let dz = -1; dz <= 1 && !perto; dz++) for (const sm of cel.get(`${Math.floor(x / 40) + dx},${Math.floor(z / 40) + dz}`) ?? []) {
+          if (sm.e !== i && Math.hypot(sm.x - x, sm.z - z) < 10) { perto = true; break; }
+        }
+        if (perto) continue;
+        tirar.add(i);
+        saiu.push({ nome: g.arestas[o + 5] >= 0 ? g.nomes[g.arestas[o + 5]] : '', motivo: flags & 2 ? 'ponte sem ligação' : flags & 4 ? 'túnel sem ligação' : 'avenida ou alça sem ligação', x: r1(x), z: r1(z) });
+      }
+    }
+    if (!tirar.size) break;
+    const nova: number[] = [];
+    for (let i = 0; i < nA; i++) if (!tirar.has(i)) for (let k = 0; k < K; k++) nova.push(g.arestas[i * K + k]);
+    g.arestas.length = 0;
+    g.arestas.push(...nova);
+  }
+  return saiu;
+}
+
+/**
+ * Rotatória (Fases 19 e 20): só vira rotatória grande a via com `junction=roundabout` cujo desenho é um círculo fechado de
+ * 8 a 40 m de raio. `junction=circular` e rotatórias de 4 a 8 m (círculo ajustado por mínimos quadrados, desvio ≤ 25% do
+ * raio) viram MINIRROTATÓRIA: cruzamento com ilha pintada, sem a ilha elevada. O resto (raio < 4 m, não circular, anel
+ * aberto) é descartado e registrado com o motivo.
  */
 function rotatoriasValidas(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
-  const validas: number[] = [];
+  const validas: number[] = [], minis: number[] = [];
   const descartadas: { id: number; nome: string; motivo: string; x: number; z: number }[] = [];
-  const centro = (pts: P[]): [number, number] => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
-  for (const w of ways) {
-    const j = w.tags?.junction;
-    if (j === 'circular') { const [x, z] = centro(w.geometry!.map((q) => xz(q.lat, q.lon))); descartadas.push({ id: w.id, nome: w.tags?.name ?? '', motivo: 'junction=circular não é rotatória', x: r1(x), z: r1(z) }); }
-  }
-  // o OSM costuma partir o anel em duas ou mais ways: junta as pontas que se tocam antes de validar
-  const rs = ways.filter((w) => w.tags?.junction === 'roundabout');
-  const usados = new Set<number>();
-  for (const w of rs) {
-    if (usados.has(w.id)) continue;
-    usados.add(w.id);
-    const nodes = [...w.nodes!], pts = w.geometry!.map((q) => xz(q.lat, q.lon));
-    for (let guarda = 0; guarda < 8 && nodes[0] !== nodes[nodes.length - 1]; guarda++) {
-      const ponta = nodes[nodes.length - 1];
-      const prox = rs.find((o) => !usados.has(o.id) && (o.nodes![0] === ponta || o.nodes![o.nodes!.length - 1] === ponta));
-      if (!prox) break;
-      usados.add(prox.id);
-      const pp = prox.geometry!.map((q) => xz(q.lat, q.lon)), nn = prox.nodes!;
-      if (nn[0] === ponta) { nodes.push(...nn.slice(1)); pts.push(...pp.slice(1)); }
-      else { nodes.push(...nn.slice(0, -1).reverse()); pts.push(...pp.slice(0, -1).reverse()); }
+  /** círculo por mínimos quadrados (Kåsa) */
+  const ajusta = (pts: P[]) => {
+    const n = pts.length;
+    const mx = pts.reduce((a, p) => a + p[0], 0) / n, mz = pts.reduce((a, p) => a + p[1], 0) / n;
+    let suu = 0, svv = 0, suv = 0, suuu = 0, svvv = 0, suvv = 0, svuu = 0;
+    for (const p of pts) { const u = p[0] - mx, v = p[1] - mz; suu += u * u; svv += v * v; suv += u * v; suuu += u * u * u; svvv += v * v * v; suvv += u * v * v; svuu += v * u * u; }
+    const det = suu * svv - suv * suv;
+    if (Math.abs(det) < 1e-9) return { cx: mx, cz: mz, r: 0, desvio: 1e9 };
+    const uc = ((suuu + suvv) / 2 * svv - (svvv + svuu) / 2 * suv) / det, vc = ((svvv + svuu) / 2 * suu - (suuu + suvv) / 2 * suv) / det;
+    const cx = mx + uc, cz = mz + vc;
+    const ds = pts.map((p) => Math.hypot(p[0] - cx, p[1] - cz));
+    const r = ds.reduce((a, d) => a + d, 0) / n;
+    return { cx, cz, r, desvio: Math.sqrt(ds.reduce((a, d) => a + (d - r) ** 2, 0) / n) };
+  };
+  const grupos = new Map<string, ElOSM[]>();
+  for (const w of ways) { const j = w.tags?.junction; if (j === 'roundabout' || j === 'circular') (grupos.get(j) ?? grupos.set(j, []).get(j)!).push(w); }
+  for (const [juncao, rs] of grupos) {
+    const usados = new Set<number>();
+    for (const w of rs) {
+      if (usados.has(w.id)) continue;
+      usados.add(w.id);
+      // o OSM costuma partir o anel em duas ou mais ways: junta as pontas que se tocam antes de validar
+      const nodes = [...w.nodes!], pts = w.geometry!.map((q) => xz(q.lat, q.lon));
+      for (let guarda = 0; guarda < 8 && nodes[0] !== nodes[nodes.length - 1]; guarda++) {
+        const ponta = nodes[nodes.length - 1];
+        const prox = rs.find((o) => !usados.has(o.id) && (o.nodes![0] === ponta || o.nodes![o.nodes!.length - 1] === ponta));
+        if (!prox) break;
+        usados.add(prox.id);
+        const pp = prox.geometry!.map((q) => xz(q.lat, q.lon)), nn = prox.nodes!;
+        if (nn[0] === ponta) { nodes.push(...nn.slice(1)); pts.push(...pp.slice(1)); }
+        else { nodes.push(...nn.slice(0, -1).reverse()); pts.push(...pp.slice(0, -1).reverse()); }
+      }
+      const fechada = nodes[0] === nodes[nodes.length - 1] && pts.length >= 6;
+      const u = fechada ? pts.slice(0, -1) : pts;
+      const ref = { id: w.id, nome: w.tags?.name ?? '', x: r1(u.reduce((a, p) => a + p[0], 0) / u.length), z: r1(u.reduce((a, p) => a + p[1], 0) / u.length) };
+      if (u.length < 4) { descartadas.push({ ...ref, motivo: 'poucos pontos para ser círculo' }); continue; }
+      const c = ajusta(u);
+      if (Math.abs(c.cx) > BUILD - 10 || Math.abs(c.cz) > BUILD - 10) { descartadas.push({ ...ref, motivo: 'fora da área construível' }); continue; }
+      if (c.r < 4) { descartadas.push({ ...ref, motivo: `raio ${c.r.toFixed(1)} m < 4 m` }); continue; }
+      if (c.desvio > c.r * 0.25) { descartadas.push({ ...ref, motivo: `não é círculo (desvio ${c.desvio.toFixed(1)} m em ${c.r.toFixed(1)} m)` }); continue; }
+      if (juncao === 'circular') { minis.push(r1(c.cx), r1(c.cz), r1(c.r)); continue; }
+      if (!fechada) { descartadas.push({ ...ref, motivo: 'anel não fecha (way partida sem par ou curta)' }); continue; }
+      if (c.r < 8) { minis.push(r1(c.cx), r1(c.cz), r1(c.r)); continue; }
+      if (c.r > 40) { descartadas.push({ ...ref, motivo: `raio ${c.r.toFixed(1)} m fora de 8–40 m` }); continue; }
+      validas.push(r1(c.cx), r1(c.cz), r1(c.r));
     }
-    const [cx0, cz0] = centro(pts);
-    const ref = { id: w.id, nome: w.tags?.name ?? '', x: r1(cx0), z: r1(cz0) };
-    if (!(nodes[0] === nodes[nodes.length - 1] && pts.length >= 6)) { descartadas.push({ ...ref, motivo: 'anel não fecha (way partida sem par ou curta)' }); continue; }
-    const u = pts.slice(0, -1);
-    const [cx, cz] = centro(u);
-    const ds = u.map((p) => Math.hypot(p[0] - cx, p[1] - cz));
-    const raio = ds.reduce((a, d) => a + d, 0) / ds.length;
-    const desvio = Math.sqrt(ds.reduce((a, d) => a + (d - raio) ** 2, 0) / ds.length);
-    if (raio < 8 || raio > 40) { descartadas.push({ ...ref, motivo: `raio ${raio.toFixed(1)} m fora de 8–40 m` }); continue; }
-    if (desvio > raio * 0.2) { descartadas.push({ ...ref, motivo: `não é círculo (desvio ${desvio.toFixed(1)} m em ${raio.toFixed(1)} m)` }); continue; }
-    if (Math.abs(cx) > BUILD - 10 || Math.abs(cz) > BUILD - 10) { descartadas.push({ ...ref, motivo: 'fora da área construível' }); continue; }
-    validas.push(r1(cx), r1(cz), r1(raio));
   }
-  return { validas, descartadas };
+  return { validas, minis, descartadas };
+}
+
+// ── caminhos: escadarias, trilhas e calçadões (Fase 20) ───────────────────────────
+
+const TIPO_CAMINHO: Record<string, number> = { steps: 0, footway: 1, path: 2, track: 3, cycleway: 4, pedestrian: 5 };
+const LARG_CAMINHO = [1.8, 1.4, 1.1, 3, 1.6, 4];
+
+/** Douglas–Peucker (aberto) */
+function simplificarLinha(p: P[], tol: number): P[] {
+  if (p.length < 3) return p;
+  const [ax, az] = p[0], [bx, bz] = p[p.length - 1];
+  const L = Math.hypot(bx - ax, bz - az) || 1;
+  let dm = 0, im = 0;
+  for (let i = 1; i < p.length - 1; i++) {
+    const d = Math.abs((bx - ax) * (az - p[i][1]) - (ax - p[i][0]) * (bz - az)) / L;
+    if (d > dm) { dm = d; im = i; }
+  }
+  if (dm <= tol) return [p[0], p[p.length - 1]];
+  return [...simplificarLinha(p.slice(0, im + 1), tol).slice(0, -1), ...simplificarLinha(p.slice(im), tol)];
+}
+
+/**
+ * Caminhos de pedestre do OSM como linhas simplificadas (3 m), recortadas na área construível:
+ * [tipo (0 escada · 1 calçada · 2 trilha · 3 estradinha · 4 ciclovia · 5 calçadão), largura × 10, n, x₀, z₀, …] por caminho.
+ * Pontes e túneis ficam de fora; caminho com menos de 10 m também.
+ */
+function montarCaminhos(els: ElOSM[], xz: (lat: number, lon: number) => P) {
+  const out: number[] = [];
+  const cont = [0, 0, 0, 0, 0, 0];
+  let pontos = 0;
+  for (const e of els) {
+    const t = e.tags ?? {};
+    const tipo = TIPO_CAMINHO[t.highway ?? ''];
+    if (tipo === undefined || !e.geometry || e.geometry.length < 2) continue;
+    if ((t.bridge && t.bridge !== 'no') || (t.tunnel && t.tunnel !== 'no')) continue;
+    let larg = parseFloat((t.width ?? '').replace(',', '.'));
+    if (!Number.isFinite(larg) || larg < 0.6 || larg > 12) larg = LARG_CAMINHO[tipo];
+    const lim = BUILD - 5;
+    let run: P[] = [];
+    const fechar = () => {
+      if (run.length >= 2) {
+        const s = simplificarLinha(run, 1.5);
+        let L = 0;
+        for (let i = 1; i < s.length; i++) L += Math.hypot(s[i][0] - s[i - 1][0], s[i][1] - s[i - 1][1]);
+        if (L >= 10) {
+          out.push(tipo, Math.round(larg * 10), s.length);
+          for (const [x, z] of s) out.push(r1(x), r1(z));
+          cont[tipo]++; pontos += s.length;
+        }
+      }
+      run = [];
+    };
+    for (const q of e.geometry) {
+      const p = xz(q.lat, q.lon);
+      if (Math.abs(p[0]) <= lim && Math.abs(p[1]) <= lim) run.push(p); else fechar();
+    }
+    fechar();
+  }
+  return { dados: out, cont, pontos };
 }
 
 // ── principal ──────────────────────────────────────────────────────────────────
@@ -454,7 +604,7 @@ async function gerar(m: Mun, terr: Terrarium) {
   let doCopernicus = 0;
   for (let j = 0; j < RES; j++) for (let i = 0; i < RES; i++) {
     const [la, lo] = latlon(-HALF + i * PASSO, -HALF + j * PASSO);
-    let v = cop.altitude(la, lo);
+    let v = cop.altitudeBicubica(la, lo);
     if (Number.isFinite(v)) doCopernicus++; else v = await terr.altitude(la, lo);
     alt[j * RES + i] = v;
   }
@@ -523,8 +673,14 @@ async function gerar(m: Mun, terr: Terrarium) {
   // ── ruas
   const ways = vias.filter((e) => e.type === 'way' && e.tags?.highway && e.geometry && e.nodes && e.geometry.length >= 2);
   const g = montarVias(ways, xz);
+  const soltas = removerSoltas(g);
+  console.log(`    vias soltas removidas: ${soltas.length}${soltas.length ? ' (' + soltas.map((v) => v.nome || 'sem nome').slice(0, 5).join(', ') + ')' : ''}`);
   const rot = rotatoriasValidas(ways, xz);
-  console.log(`    rotatórias: ${rot.validas.length / 3} validadas, ${rot.descartadas.length} descartadas`);
+  console.log(`    rotatórias: ${rot.validas.length / 3} validadas, ${rot.minis.length / 3} minirrotatórias, ${rot.descartadas.length} descartadas`);
+  let caminhosOsm: ElOSM[] = [];
+  try { caminhosOsm = JSON.parse(await readFile(join(CACHE_OSM, `${m.ibge}-caminhos.json`), 'utf8')); } catch { /* sem extrato de caminhos: sem escadarias */ }
+  const caminhos = montarCaminhos(caminhosOsm, xz);
+  console.log(`    caminhos: ${caminhos.cont.reduce((a, b) => a + b, 0)} (escadas ${caminhos.cont[0]}, calçadas ${caminhos.cont[1]}, trilhas ${caminhos.cont[2]}, estradinhas ${caminhos.cont[3]}, ciclovias ${caminhos.cont[4]}, calçadões ${caminhos.cont[5]}), ${caminhos.pontos} pontos`);
   await writeFile(join(ROOT, 'data', 'cache', 'rotatorias-descartadas.json'), JSON.stringify(rot.descartadas, null, 1));
   // amostras das arestas para achar a rua mais próxima de cada prédio
   const amostras = new Map<string, { x: number; z: number; e: number; tx: number; tz: number }[]>();
@@ -541,6 +697,32 @@ async function gerar(m: Mun, terr: Terrarium) {
       (amostras.get(key) ?? amostras.set(key, []).get(key)!).push({ x, z, e: k + 1, tx: tgx / tl, tz: tgz / tl });
     }
   }
+  // Fase 21: prédio que invade a pista (centro da pista a menos de 30% da meia largura do retângulo) sai do jogo
+  const hwE: number[] = [], nivelE: number[] = [];
+  for (let k = 0; k < nA; k++) {
+    const faixas = g.arestas[k * 8 + 6], flags = g.arestas[k * 8 + 7];
+    hwE.push(larguraVia({ type: g.arestas[k * 8 + 4] === 1 ? 'avenida' : 'rua', faixas, maoUnica: !!(flags & 1) }) / 2);
+    nivelE.push(flags & 6);
+  }
+  /** Pior invasão da pista (amostra de via a menos de 30% da meia largura do retângulo): devolve o empurrão que a tira, ou null. */
+  const sobrePista = (x: number, z: number, a: number, w: number, d: number): { ex: number; ez: number } | null => {
+    const cu = Math.cos(a), su = Math.sin(a), rc = Math.ceil((Math.max(w, d) / 2 + 24) / 40);
+    const cx = Math.floor(x / 40), cz = Math.floor(z / 40);
+    let pior: { ex: number; ez: number } | null = null, folga = 0;
+    for (let dx = -rc; dx <= rc; dx++) for (let dz = -rc; dz <= rc; dz++) for (const sm of amostras.get(`${cx + dx},${cz + dz}`) ?? []) {
+      if (nivelE[sm.e - 1]) continue; // sob viaduto ou sobre túnel o prédio pode ficar
+      const ddx = sm.x - x, ddz = sm.z - z, u = ddx * cu - ddz * su, v = ddx * su + ddz * cu;
+      const dist = Math.hypot(Math.max(Math.abs(u) - w / 2, 0), Math.max(Math.abs(v) - d / 2, 0)), lim = hwE[sm.e - 1] * 0.3;
+      if (dist < lim && lim - dist > folga) {
+        folga = lim - dist;
+        // empurra o prédio para longe da amostra, até a pista deixar de ser invadida (+ 1,2 m de folga)
+        const l = Math.hypot(ddx, ddz) || 1;
+        const quanto = (hwE[sm.e - 1] - dist) + 1.2;
+        pior = { ex: (-ddx / l) * quanto, ez: (-ddz / l) * quanto };
+      }
+    }
+    return pior;
+  };
   const ruaProxima = (x: number, z: number) => {
     let melhor = { d: Infinity, x: 0, z: 0, e: 0, tx: 1, tz: 0 };
     for (let raio = 1; raio <= 4 && melhor.e === 0; raio++) {
@@ -591,6 +773,8 @@ async function gerar(m: Mun, terr: Terrarium) {
   /** por prédio: n e n×(dx, dz) em decímetros a partir do centro; n = 0 usa o próprio retângulo */
   const contornos: number[] = [];
   let comAndares = 0;
+  let prediosDeslocados = 0, prediosRemovidosSobreVias = 0;
+  const posSobreVias: number[] = [];
   const alturaEm = (x: number, z: number) => {
     const i = Math.round((x + HALF) / PASSO), j = Math.round((z + HALF) / PASSO);
     return alturas[Math.max(0, Math.min(RES - 1, j)) * RES + Math.max(0, Math.min(RES - 1, i))] / 10;
@@ -658,12 +842,26 @@ async function gerar(m: Mun, terr: Terrarium) {
       }
     }
     ang = Math.atan2(Math.sin(ang), Math.cos(ang));
+    // Fase 21: prédio que invade a pista é deslocado para fora (até 3 empurrões); se ainda invade, sai do jogo
+    const xOrig = r.x, zOrig = r.z; // a planta (contorno) anda junto com o retângulo: os deslocamentos dela são medidos do centro original
+    let cxp = r.x, czp = r.z, invadia = false;
+    // prédio com nome (Arcos da Lapa, estações, igrejas…) fica onde está: marco que cruza a rua de propósito não é erro
+    for (let it = 0; it < (nome ? 0 : 3); it++) {
+      const e = sobrePista(cxp, czp, ang, w, d);
+      if (!e) break;
+      invadia = true; cxp += e.ex; czp += e.ez;
+    }
+    if (invadia) {
+      if (sobrePista(cxp, czp, ang, w, d) || Math.abs(cxp) > BUILD - 12 || Math.abs(czp) > BUILD - 12 || alturaEm(cxp, czp) < 0.5) { prediosRemovidosSobreVias++; if (posSobreVias.length < 800) posSobreVias.push(r1(r.x), r1(r.z)); return; }
+      prediosDeslocados++;
+    }
+    r = { ...r, x: cxp, z: czp };
     let ni = -1;
     if (nome) { ni = nomesPredios.length; nomesPredios.push(nome); }
     if (origemMS) deMS++;
     predios.push(r1(r.x), r1(r.z), Math.round(ang * 1000), r1(Math.max(3, w)), r1(Math.max(3, d)), andares, tipo, rua.e, ni);
     contornos.push(cont ? cont.length : 0);
-    if (cont) for (const [px, pz] of cont) contornos.push(Math.round((px - r1(r.x)) * 10), Math.round((pz - r1(r.z)) * 10));
+    if (cont) for (const [px, pz] of cont) contornos.push(Math.round((px - r1(xOrig)) * 10), Math.round((pz - r1(zOrig)) * 10));
   };
 
   // 1) OpenStreetMap: tipo, nome e andares quando mapeados
@@ -689,11 +887,12 @@ async function gerar(m: Mun, terr: Terrarium) {
     }
   }
 
+  console.log(`    prédios que invadiam a pista: ${prediosDeslocados} deslocados, ${prediosRemovidosSobreVias} removidos`);
   const toB64 = (u: Uint8Array) => Buffer.from(u.buffer, u.byteOffset, u.byteLength).toString('base64');
   const dados = CidadeReal.parse({
     versao: 1, ibge: m.ibge, nome: m.nome, uf: m.uf, lat: m.lat, lon: m.lon, geradoEm: new Date().toISOString(), base: Math.round(base * 10) / 10, litoral,
     passo: PASSO, res: RES, alturas: toB64(new Uint8Array(alturas.buffer)), verde: toB64(verde),
-    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed, rotatorias: rot.validas, rotatoriasDescartadas: rot.descartadas.map(({ nome, motivo, x, z }) => ({ nome, motivo, x, z })) }, predios, nomesPredios,
+    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed, rotatorias: rot.validas, minirrotatorias: rot.minis, rotatoriasDescartadas: rot.descartadas.map(({ nome, motivo, x, z }) => ({ nome, motivo, x, z })) }, predios, nomesPredios,
     ...(() => {
       // bairros únicos pelo nome (mantém o 'suburb' se houver os dois), com a posição no mapa
       const porNome = new Map<string, { nome: string; x: number; z: number; t: number }>();
@@ -706,6 +905,8 @@ async function gerar(m: Mun, terr: Terrarium) {
       return { nomesBairros: lista.map((b) => b.nome), bairros: lista.flatMap((b, i) => [b.x, b.z, b.t, i]) };
     })(),
     contornos: toB64(new Uint8Array(Int16Array.from(contornos).buffer)),
+    caminhos: caminhos.dados,
+    removidos: { vias: soltas, prediosSobreVias: prediosRemovidosSobreVias, prediosDeslocados, prediosPos: posSobreVias },
     estat: { predios: predios.length / CAMPOS_PREDIO, comAndares, vias: g.arestas.length / 8, km: Math.round(g.km * 10) / 10 },
   });
   await mkdir(OUT, { recursive: true });
@@ -730,7 +931,7 @@ async function main() {
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).
   const porRegiao = new Map<string, Mun[]>();
   for (const m of alvo) {
-    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-trilhos.json`))) continue;
+    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-trilhos.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-caminhos.json`))) continue;
     const r = REGIAO_UF[m.uf];
     porRegiao.set(r, [...(porRegiao.get(r) ?? []), m]);
   }

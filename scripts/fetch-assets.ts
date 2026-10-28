@@ -34,6 +34,8 @@ export const MATERIAIS: Record<string, ('cor' | 'normal' | 'rug' | 'emis')[]> = 
   RoofingTiles014A: ['cor', 'normal', 'rug'], RoofingTiles006: ['cor', 'normal', 'rug'], RoofingTiles013A: ['cor', 'normal', 'rug'], Gravel043: ['cor', 'normal', 'rug'],
   // chão, ruas e calçadas
   Grass004: ['cor', 'normal', 'rug'], Ground103: ['cor', 'normal', 'rug'], Rock064: ['cor', 'normal', 'rug'],
+  // Fase 21: mato (sub-bosque e musgo) para a quarta camada do chão
+  Moss001: ['cor', 'normal', 'rug'],
   Asphalt033: ['cor', 'normal', 'rug'], PavingStones046: ['cor', 'normal', 'rug'], PavingStones128: ['cor', 'normal', 'rug'],
 };
 const ARQ: Record<string, string> = { cor: 'Color', normal: 'NormalGL', rug: 'Roughness', emis: 'Emission' };
@@ -52,6 +54,7 @@ async function baixar(url: string, destino: string) {
 async function main() {
   await mkdir(join(OUT, 'materiais'), { recursive: true });
   for (const [id, mapas] of Object.entries(MATERIAIS)) {
+    if (existsSync(join(OUT, 'materiais', `${id}_${mapas[0]}.jpg`))) continue; // já baixado (e comprimido)
     const zip = join(CACHE, `${id}_1K.zip`);
     await baixar(`https://ambientcg.com/get?file=${id}_1K-JPG.zip`, zip);
     const tmp = join(CACHE, `x_${id}`);

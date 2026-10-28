@@ -21,6 +21,7 @@ import { Praia } from './Praia';
 import { Bairros } from './Bairros';
 import { Onibus } from './Onibus';
 import { Trilhos } from './Trilhos';
+import { Caminhos } from './Caminhos';
 import { DebugMapa } from './DebugMapa';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
@@ -44,6 +45,7 @@ function PosProcesso() {
   );
   if (nivel === 'media') return (
     <EffectComposer key={`media${tilt}`} multisampling={0} enableNormalPass={false}>
+      <N8AO halfRes aoRadius={5} distanceFalloff={1.2} intensity={1.5} quality="performance" />
       <Bloom mipmapBlur intensity={0.75} luminanceThreshold={1.05} luminanceSmoothing={0.2} />
       <HueSaturation saturation={0.08} />
       {tilt ? <TiltShift2 blur={0.22} taper={0.55} /> : <></>}
@@ -109,6 +111,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Terreno') && <Terreno hm={hm} />}
         {liga('Agua') && <Agua hm={hm} />}
         {liga('Vias') && <Vias hm={hm} />}
+        {liga('Caminhos') && <Caminhos hm={hm} />}
         {liga('Edificios') && <Edificios hm={hm} />}
         {liga('PrediosReais') && <PrediosReais />}
         {liga('Marcos') && <Marcos hm={hm} />}

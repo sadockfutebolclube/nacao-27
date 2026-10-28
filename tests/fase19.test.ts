@@ -113,28 +113,29 @@ describe('Fase 19 — o Rio depois da auditoria', () => {
       if (Math.abs(h[k] - (viz[3] + viz[4]) / 2) > 8) espetos++;
       maxIncl = Math.max(maxIncl, Math.hypot((h[k + 1] - h[k - 1]) / (2 * HM_STEP), (h[k + HM_VERTS] - h[k - HM_VERTS]) / (2 * HM_STEP)));
     }
-    expect(maxIncl).toBeLessThan(2.6); // eixos limitados a 1,2 (1,4 nos picos); a diagonal e os cortes das ruas passam um pouco
-    expect(espetos).toBeLessThan(450); // antes da Fase 19: 2.559, com desvios de até 178 m
+    expect(maxIncl).toBeLessThan(6); // eixos limitados a 1,2 (1,4 nos picos); os cortes de muro de arrimo (Fase 20) são degraus de até ~4,5
+    expect(espetos).toBeLessThan(450); // antes da Fase 19: 2.559, com desvios de até 178 m (grade de 16 m; hoje 10,7 m)
   }, 60000);
 
-  it('as ruas não ficam enterradas nem flutuando (seções de 2 amostras, fora pontes e túneis)', () => {
+  it('as ruas não ficam com o morro sobre a pista nem com vão grande embaixo (fora ponte, túnel e muro)', () => {
     if (!rio) return;
     const hm = terrenoReal(rio, rj.terreno, 'mata-atlantica', 1);
     const perfis = construirPerfis(grafoReal(rio, () => ''), hm);
-    let secoes = 0, enterra = 0, flutua = 0;
+    let secoes = 0, cobre = 0, vao = 0;
     for (const p of perfis.values()) {
-      if (p.edge.nivel) continue;
-      const meia = larguraVia(p.edge) / 2 + calcadaVia(p.edge);
+      if (p.nivel) continue;
+      const hw = larguraVia(p.edge) / 2;
       for (let i = 0; i < p.n; i += 2) {
+        if (p.classe && p.classe[i] >= 1) continue;
         secoes++;
         const nx = -p.tz[i], nz = p.tx[i];
-        const a = sampleHeight(hm, p.x[i] + nx * meia, p.z[i] + nz * meia), b = sampleHeight(hm, p.x[i] - nx * meia, p.z[i] - nz * meia), c = sampleHeight(hm, p.x[i], p.z[i]);
-        if (Math.max(a, b, c) - p.y[i] > 1.2) enterra++;
-        if (p.y[i] - Math.min(a, b, c) > 2.5 && p.y[i] > 3) flutua++;
+        const t0 = sampleHeight(hm, p.x[i], p.z[i]), t1 = sampleHeight(hm, p.x[i] + nx * hw, p.z[i] + nz * hw), t2 = sampleHeight(hm, p.x[i] - nx * hw, p.z[i] - nz * hw);
+        if (Math.max(t0, t1, t2) - (p.y[i] + 0.02) > 1.5) cobre++;
+        if (p.y[i] > 3 && p.y[i] - Math.min(t0, t1, t2) > 3) vao++;
       }
     }
-    expect(enterra / secoes).toBeLessThan(0.02);
-    expect(flutua / secoes).toBeLessThan(0.02);
+    expect(cobre / secoes).toBeLessThan(0.005);
+    expect(vao / secoes).toBeLessThan(0.08); // desde a Fase 20 o terreno desce sob o asfalto (até 4 m) e a lateral da pista fecha o vão até o chão
   }, 120000);
 
   it('só há rotatória onde o OSM diz roundabout: círculo fechado de 8 a 40 m; o resto fica registrado', () => {
@@ -146,9 +147,8 @@ describe('Fase 19 — o Rio depois da auditoria', () => {
       expect(r[k + 2]).toBeGreaterThanOrEqual(8);
       expect(r[k + 2]).toBeLessThanOrEqual(40);
     }
-    const d = rio.vias.rotatoriasDescartadas ?? [];
-    expect(d.length).toBeGreaterThan(0);
-    for (const x of d) expect(x.motivo.length).toBeGreaterThan(3);
+    // o que não serve é registrado com o motivo (desde a Fase 20 o junction=circular vira minirrotatória, então pode não sobrar nada)
+    for (const x of rio.vias.rotatoriasDescartadas ?? []) expect(x.motivo.length).toBeGreaterThan(3);
   });
 
   it('a fonte do relevo está registrada em data/SOURCES.md', () => {

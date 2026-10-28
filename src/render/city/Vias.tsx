@@ -14,13 +14,40 @@ import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
 import { calcadaVia, larguraVia, type RoadEdge } from '../../world/roads';
 import { roadBaseY, sampleHeight, sampleWaterDist, type Heightmap } from '../../world/terrain';
+import { alturaOriginal, Classe, regradeDe } from '../../world/regrade';
 import { ambiente } from './ambiente';
 import { clima } from './climaVisual';
 import { amostrarPerfil, construirPerfis, type Perfil } from './perfilVias';
-import { texturaAvenida, texturaCalcada, texturaCalcadao, texturaFaixas, texturaHalo, texturaRua, texturaZebra } from './texturas';
+import orla from '../../data/orla.json';
+import { texturaAsfalto, texturaAvenida, texturaCalcada, texturaCalcadao, texturaFaixas, texturaGrama, texturaHalo, texturaRua, texturaZebra } from './texturas';
 import { comDetalhe } from '../materiais/detalhe';
 
 export let perfisAtuais: Map<number, Perfil> = new Map();
+const ruasOrla = new Set<string>(orla.ruas);
+
+/**
+ * Concreto de muro de arrimo (Fase 21): placas de 3 × 2,5 m com junta, manchas de umidade e dois barbacãs (furos de
+ * drenagem) rente ao pé de cada placa; fosco (sem brilho) — uv em metros ÷ placa.
+ */
+function texturaConcreto(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const x = c.getContext('2d')!;
+  x.fillStyle = '#a7a49b'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 1800; i++) { x.fillStyle = `rgba(${70 + Math.random() * 120},${70 + Math.random() * 115},${64 + Math.random() * 105},0.2)`; x.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 4, 1 + Math.random() * 8); }
+  // escorrimento de umidade, mais escuro embaixo
+  const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, 'rgba(60,70,55,0)'); g.addColorStop(1, 'rgba(50,60,45,0.30)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 9; i++) { x.fillStyle = 'rgba(48,52,44,0.16)'; x.fillRect(20 + Math.random() * 216, Math.random() * 120, 3 + Math.random() * 6, 80 + Math.random() * 120); }
+  // juntas da placa
+  x.strokeStyle = 'rgba(52,50,46,0.85)'; x.lineWidth = 4; x.strokeRect(2, 2, 252, 252);
+  // barbacãs
+  x.fillStyle = 'rgba(30,30,28,0.92)';
+  for (const px of [64, 192]) { x.beginPath(); x.arc(px, 226, 7, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(95,90,82,0.9)'; x.fillRect(px - 9, 219, 18, 2); x.fillStyle = 'rgba(30,30,28,0.92)'; }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  return t;
+}
 
 interface Buffers { pos: number[]; nor: number[]; uv: number[]; idx: number[] }
 const novo = (): Buffers => ({ pos: [], nor: [], uv: [], idx: [] });
@@ -59,14 +86,54 @@ function faixa(b: Buffers, p: Perfil, i0: number, i1: number, d0: number, d1: nu
   }
 }
 
+/**
+ * Lateral da pista (Fase 20): do alto da calçada até o terreno embaixo — no mínimo 2,2 m (como era) e até 14 m onde a rua
+ * passa bem acima do chão (muro sob a rua, em vez de um vão aberto). A face fica voltada para fora.
+ */
+function lateralAteTerreno(b: Buffers, p: Perfil, i0: number, i1: number, d: number, lado: number, hm: Heightmap) {
+  const base = b.pos.length / 3;
+  let cont = 0;
+  for (let i = i0; i <= i1; i++) {
+    const nx = -p.tz[i], nz = p.tx[i];
+    const x = p.x[i] + nx * d, z = p.z[i] + nz * d;
+    const fundo = Math.max(-14, Math.min(-2.2, sampleHeight(hm, x, z) - p.y[i] - 0.25));
+    const topo = 0.17, v = p.s[i] / 1;
+    // lado > 0: (alto, baixo); lado < 0: (baixo, alto) — inverte o enrolamento para a face apontar sempre para fora
+    const [y0, y1] = lado > 0 ? [topo, fundo] : [fundo, topo];
+    b.pos.push(x, p.y[i] + y0, z, x, p.y[i] + y1, z);
+    b.nor.push(nx * lado, 0, nz * lado, nx * lado, 0, nz * lado);
+    b.uv.push(0, v, 0, v);
+    cont++;
+  }
+  for (let k = 0; k < cont - 1; k++) { const a = base + k * 2, c = a + 2; b.idx.push(a, a + 1, c, a + 1, c + 1, c); }
+}
+
+/** Meio-fio circular: topo (anel de 22 cm) e face externa vertical, da pista (y) até y + alto. */
+function meioFioCircular(b: Buffers, x: number, y: number, z: number, r: number, alto: number, seg = 24) {
+  const base = b.pos.length / 3;
+  for (let i = 0; i <= seg; i++) {
+    const a = (i / seg) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+    b.pos.push(x + c * (r - 0.22), y + alto, z + sn * (r - 0.22), x + c * r, y + alto, z + sn * r, x + c * r, y, z + sn * r);
+    b.nor.push(0, 1, 0, 0, 1, 0, c, 0, sn);
+    b.uv.push(0.5, i, 0.6, i, 0.6, i);
+  }
+  for (let i = 0; i < seg; i++) {
+    const a = base + i * 3, n = a + 3;
+    b.idx.push(a, n, a + 1, a + 1, n, n + 1); // topo
+    b.idx.push(a + 1, n + 1, a + 2, a + 2, n + 1, n + 2); // face externa
+  }
+}
+
 function disco(b: Buffers, x: number, y: number, z: number, r: number, seg = 20) {
   const base = b.pos.length / 3;
-  b.pos.push(x, y, z); b.nor.push(0, 1, 0); b.uv.push(0.5, 0.5);
+  // uv pelas coordenadas do mundo (6 m por repetição): o asfalto do cruzamento tem o mesmo grão e o mesmo tom do leito
+  b.pos.push(x, y, z); b.nor.push(0, 1, 0); b.uv.push(x / 6, z / 6);
   for (let i = 0; i <= seg; i++) {
     const a = (i / seg) * Math.PI * 2;
-    b.pos.push(x + Math.cos(a) * r, y, z + Math.sin(a) * r);
+    const px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r;
+    b.pos.push(px, y, pz);
     b.nor.push(0, 1, 0);
-    b.uv.push(0.5, 0.5);
+    b.uv.push(px / 6, pz / 6);
   }
   for (let i = 0; i < seg; i++) b.idx.push(base, base + 2 + i, base + 1 + i);
 }
@@ -97,6 +164,15 @@ interface MalhaBloco {
   calcadoes: THREE.BufferGeometry;
   laterais: THREE.BufferGeometry;
   cruzamentos: THREE.BufferGeometry;
+  /** Fase 20: muros de arrimo, guarda-corpo (fita) e tinta da minirrotatória */
+  muros: THREE.BufferGeometry;
+  /** banquetas de grama dos patamares (Fase 21) */
+  banquetas: THREE.BufferGeometry;
+  guardas: THREE.BufferGeometry;
+  ilhas: THREE.BufferGeometry;
+  /** balaústres do guarda-corpo e peças (pilares e verga) dos portais de túnel */
+  balaustres: THREE.Matrix4[];
+  portais: THREE.Matrix4[];
   postes: THREE.Matrix4[];
   pilares: THREE.Matrix4[];
   palmeiras: THREE.Matrix4[];
@@ -117,8 +193,8 @@ export function faseSemaforo(eixo: number, t: number): 0 | 1 | 2 {
   return u < 16 ? 0 : u < 20 ? 1 : 2;
 }
 
-interface Acum { leitos: Record<string, Buffers>; calc: Buffers; calcadao: Buffers; lat: Buffers; cruz: Buffers; postes: THREE.Matrix4[]; pilares: THREE.Matrix4[]; palmeiras: THREE.Matrix4[]; zebras: THREE.Matrix4[]; hastesSem: THREE.Matrix4[]; lampSem: { m: THREE.Matrix4; eixo: number }[] }
-const novoAcum = (): Acum => ({ leitos: {}, calc: novo(), calcadao: novo(), lat: novo(), cruz: novo(), postes: [], pilares: [], palmeiras: [], zebras: [], hastesSem: [], lampSem: [] });
+interface Acum { leitos: Record<string, Buffers>; calc: Buffers; calcadao: Buffers; lat: Buffers; cruz: Buffers; muro: Buffers; banqueta: Buffers; guarda: Buffers; ilha: Buffers; balaustres: THREE.Matrix4[]; portais: THREE.Matrix4[]; postes: THREE.Matrix4[]; pilares: THREE.Matrix4[]; palmeiras: THREE.Matrix4[]; zebras: THREE.Matrix4[]; hastesSem: THREE.Matrix4[]; lampSem: { m: THREE.Matrix4; eixo: number }[] }
+const novoAcum = (): Acum => ({ leitos: {}, calc: novo(), calcadao: novo(), lat: novo(), cruz: novo(), muro: novo(), banqueta: novo(), guarda: novo(), ilha: novo(), balaustres: [], portais: [], postes: [], pilares: [], palmeiras: [], zebras: [], hastesSem: [], lampSem: [] });
 
 export function construir(hm: Heightmap): MalhaVias {
   const g = mundo.roads;
@@ -135,28 +211,32 @@ export function construir(hm: Heightmap): MalhaVias {
   for (const p of perfis.values()) {
     const meio = p.n >> 1;
     const { leitos, calc, calcadao, lat, postes, pilares, palmeiras } = bloco(p.x[meio], p.z[meio]);
+    const regrade = regradeDe(hm.h);
     const hw = larguraVia(p.edge) / 2, sw = calcadaVia(p.edge);
     const i0 = indiceDoCorte(p, p.cortaA, false), i1 = indiceDoCorte(p, p.cortaB, true);
     if (i1 - i0 < 1) continue;
     const chave = chaveLeito(p.edge);
     faixa(leitos[chave] ??= novo(), p, i0, i1, -hw, hw, 0.02, 0.02, 0, 1, p.edge.faixas === undefined ? (p.edge.type === 'avenida' ? 20 : 10) : 16);
     // túnel: só o leito (escondido sob o morro, aparece nos portais); sem calçada, poste nem canteiro
-    if (p.edge.nivel === -1) continue;
+    if (p.nivel === -1) continue;
     // pedra portuguesa: avenidas do jogador e, nas reais, só perto do mar (os calçadões da orla)
-    const calcadaoAqui = p.edge.type === 'avenida' && (p.edge.faixas === undefined || sampleWaterDist(hm, p.x[meio], p.z[meio]) < 320);
+    // trechos fora de túnel (a rua pode ter só uma parte em túnel): calçada, meio-fio e lateral só neles
+    const segs: [number, number][] = [];
+    { let a = -1; for (let i = i0; i <= i1; i++) { const tun = p.classe?.[i] === Classe.Tunel; if (!tun && a < 0) a = i; if ((tun || i === i1) && a >= 0) { const b = tun ? i - 1 : i; if (b > a) segs.push([a, b]); a = -1; } } }
+    // Fase 21: pedra portuguesa só nas avenidas do jogador e nas ruas da orla (src/data/orla.json) a menos de 250 m da água
+    const calcadaoAqui = p.edge.faixas === undefined ? p.edge.type === 'avenida' : ruasOrla.has(p.edge.name) && sampleWaterDist(hm, p.x[meio], p.z[meio]) < 250;
     const destino = calcadaoAqui ? calcadao : calc;
     const escalaV = calcadaoAqui ? 8 : 4;
-    for (const lado of [-1, 1]) {
+    for (const [sa, sb] of segs) for (const lado of [-1, 1]) {
       const dIn = lado * hw, dOut = lado * (hw + sw);
       // (a ordem dos argumentos garante faces voltadas para fora em ambos os lados)
       // meio-fio (face vertical voltada para o leito) e calçada elevada
-      if (lado > 0) faixa(lat, p, i0, i1, dIn, dIn, 0.02, 0.17, 0, 0, 1, -lado);
-      else faixa(lat, p, i0, i1, dIn, dIn, 0.17, 0.02, 0, 0, 1, -lado);
-      if (lado > 0) faixa(destino, p, i0, i1, dIn, dOut, 0.17, 0.17, 0, 1, escalaV);
-      else faixa(destino, p, i0, i1, dOut, dIn, 0.17, 0.17, 0, 1, escalaV);
+      if (lado > 0) faixa(lat, p, sa, sb, dIn, dIn, 0.02, 0.17, 0, 0, 1, -lado);
+      else faixa(lat, p, sa, sb, dIn, dIn, 0.17, 0.02, 0, 0, 1, -lado);
+      if (lado > 0) faixa(destino, p, sa, sb, dIn, dOut, 0.17, 0.17, 0, 1, escalaV);
+      else faixa(destino, p, sa, sb, dOut, dIn, 0.17, 0.17, 0, 1, escalaV);
       // talude / lateral da ponte até abaixo do chão (face voltada para fora)
-      if (lado > 0) faixa(lat, p, i0, i1, dOut, dOut, 0.17, -2.2, 0, 0, 1, lado);
-      else faixa(lat, p, i0, i1, dOut, dOut, -2.2, 0.17, 0, 0, 1, lado);
+      lateralAteTerreno(lat, p, sa, sb, dOut, lado, hm);
     }
     // postes
     const passo = 30;
@@ -165,6 +245,7 @@ export function construir(hm: Heightmap): MalhaVias {
     for (let s = Math.max(p.cortaA + 4, 8); s < p.comprimento - Math.max(p.cortaB + 4, 8); s += passo / (p.edge.type === 'avenida' ? 1.5 : 1)) {
       const f = (s / p.comprimento) * (p.n - 1);
       const i = Math.min(p.n - 1, Math.round(f));
+      if (p.classe?.[i] === Classe.Tunel) { lado = -lado; continue; }
       const nx = -p.tz[i], nz = p.tx[i];
       for (const ld of p.edge.type === 'avenida' ? [-1, 1] : [lado]) {
         pos.set(p.x[i] + nx * offPoste * ld, p.y[i] + 0.17, p.z[i] + nz * offPoste * ld);
@@ -185,12 +266,82 @@ export function construir(hm: Heightmap): MalhaVias {
         palmeiras.push(m.clone());
       }
     }
+    // Fase 20/21: muro de arrimo onde o terreno original difere da rua em mais de 4 m — do lado do morro (corte) ou do vale
+    // (aterro). Acima de 5 m vira patamares de até 5 m com banquetas de grama de 2 m (cada patamar recua 2 m); guarda-corpo
+    // no topo (corte) ou na borda da pista (aterro). A parede fica logo depois da calçada e vai até o relevo ORIGINAL.
+    if (regrade && p.classe && !p.nivel) {
+      type PontoMuro = { x: number; z: number; nx: number; nz: number; via: number; terr: number; s: number; corte: boolean };
+      for (const lado of [-1, 1]) {
+        const d = lado * (hw + sw + 0.35);
+        let ant = null as PontoMuro | null;
+        let proximoBal = 0;
+        for (let i = i0; i <= i1; i++) {
+          let atual = null as PontoMuro | null;
+          if (p.classe[i] === Classe.Muro) {
+            const nx = -p.tz[i] * lado, nz = p.tx[i] * lado; // para fora da pista
+            const x = p.x[i] + nx * (hw + sw + 0.35), z = p.z[i] + nz * (hw + sw + 0.35);
+            const terr = alturaOriginal(regrade, hm, x, z), via = p.y[i] + 0.17;
+            if (terr > via + 0.6 && terr - via < 40) atual = { x, z, nx, nz, via, terr: terr + 0.25, s: p.s[i], corte: true };
+            else if (terr < via - 0.6 && via - terr < 40) atual = { x, z, nx, nz, via, terr: terr - 0.3, s: p.s[i], corte: false };
+          }
+          if (atual && ant && atual.corte === ant.corte) { // corte e aterro não se ligam (a parede se torceria)
+            const B = bloco(atual.x, atual.z);
+            const H = Math.max(Math.abs(ant.terr - ant.via), Math.abs(atual.terr - atual.via));
+            const np = Math.max(1, Math.ceil(H / 5));
+            const nivelK = (pt: PontoMuro, k: number) => pt.via + (pt.terr - pt.via) * (k / np);
+            for (let k = 0; k < np; k++) {
+              const off = k * 2, off2 = off + (k === np - 1 ? 2.5 : 2);
+              const ax = ant.x + ant.nx * off, az = ant.z + ant.nz * off, bx = atual.x + atual.nx * off, bz = atual.z + atual.nz * off;
+              const ya0 = nivelK(ant, k), ya1 = nivelK(ant, k + 1), yb0 = nivelK(atual, k), yb1 = nivelK(atual, k + 1);
+              // face do patamar: no corte olha para a pista; no aterro, para fora
+              const sg = atual.corte ? -1 : 1, fnx = atual.nx * sg, fnz = atual.nz * sg;
+              const r0 = B.muro.pos.length / 3;
+              B.muro.pos.push(ax, ya0, az, ax, ya1, az, bx, yb0, bz, bx, yb1, bz);
+              for (let q4 = 0; q4 < 4; q4++) B.muro.nor.push(fnx, 0, fnz);
+              B.muro.uv.push(ant.s / 3, ya0 / 2.5, ant.s / 3, ya1 / 2.5, atual.s / 3, yb0 / 2.5, atual.s / 3, yb1 / 2.5);
+              // frente do triângulo (anti-horário) = a normal pretendida: tangente t = (b − a); a frente de (v0, v1, v2) olha para (tz, −tx)
+              const tgx = bx - ax, tgz = bz - az;
+              if (fnx * tgz - fnz * tgx >= 0) B.muro.idx.push(r0, r0 + 1, r0 + 2, r0 + 1, r0 + 3, r0 + 2);
+              else B.muro.idx.push(r0, r0 + 2, r0 + 1, r0 + 1, r0 + 2, r0 + 3);
+              // banqueta de grama no alto do patamar (corte) ou no pé dele (aterro): 2 m de largura, no nível seguinte
+              const cx0 = ant.x + ant.nx * off2, cz0 = ant.z + ant.nz * off2, dx0 = atual.x + atual.nx * off2, dz0 = atual.z + atual.nz * off2;
+              const b0 = B.banqueta.pos.length / 3;
+              B.banqueta.pos.push(ax, ya1 + 0.01, az, cx0, ya1 + 0.01, cz0, bx, yb1 + 0.01, bz, dx0, yb1 + 0.01, dz0);
+              for (let q4 = 0; q4 < 4; q4++) B.banqueta.nor.push(0, 1, 0);
+              B.banqueta.uv.push(ant.s / 2, 0, ant.s / 2, 1, atual.s / 2, 0, atual.s / 2, 1);
+              // topo da banqueta: a frente olha para cima quando (para fora × tangente).y > 0
+              if (atual.nz * tgx - atual.nx * tgz >= 0) B.banqueta.idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2);
+              else B.banqueta.idx.push(b0, b0 + 2, b0 + 1, b0 + 1, b0 + 2, b0 + 3);
+              // guarda-corpo: no alto do último patamar do corte; na borda da pista, no aterro
+              if ((atual.corte && k === np - 1) || (!atual.corte && k === 0)) {
+                const gy = (atual.corte ? yb1 : yb0), gya = (atual.corte ? ya1 : ya0);
+                const gb = B.guarda.pos.length / 3;
+                B.guarda.pos.push(ax, gya + 0.8, az, ax, gya + 1.0, az, bx, gy + 0.8, bz, bx, gy + 1.0, bz);
+                for (let q4 = 0; q4 < 4; q4++) B.guarda.nor.push(fnx, 0, fnz);
+                B.guarda.uv.push(0, 0, 0, 1, 1, 0, 1, 1);
+                if (fnx * tgz - fnz * tgx >= 0) B.guarda.idx.push(gb, gb + 1, gb + 2, gb + 1, gb + 3, gb + 2);
+                else B.guarda.idx.push(gb, gb + 2, gb + 1, gb + 1, gb + 2, gb + 3);
+                if (atual.s >= proximoBal) {
+                  pos.set(bx, gy, bz);
+                  q.setFromAxisAngle(eixoY, Math.atan2(p.tx[i], p.tz[i]));
+                  m.compose(pos, q, sc.set(1, 1, 1));
+                  B.balaustres.push(m.clone());
+                  proximoBal = atual.s + 3;
+                }
+              }
+            }
+          }
+          ant = atual;
+        }
+        void d;
+      }
+    }
     // pilares de ponte/viaduto
     for (let s = 12; s < p.comprimento - 12; s += 24) {
       const i = Math.min(p.n - 1, Math.round((s / p.comprimento) * (p.n - 1)));
       const chao = Math.min(sampleHeight(hm, p.x[i], p.z[i]), p.y[i]);
       const vao = p.y[i] - chao;
-      if (vao > 3.5) {
+      if (vao > 3) {
         const base = Math.min(chao, -6);
         const alt = p.y[i] - 1.2 - base;
         pos.set(p.x[i], base + alt / 2, p.z[i]);
@@ -247,7 +398,7 @@ export function construir(hm: Heightmap): MalhaVias {
     const { zebras, hastesSem, lampSem } = bloco(n.x, n.z);
     for (const e of es) {
       const p = perfis.get(e.id);
-      if (!p || e.nivel) continue;
+      if (!p || p.nivel) continue;
       const noA = e.a === id;
       const dist = noA ? p.cortaA + 2.2 : p.comprimento - p.cortaB - 2.2;
       if (dist < 2 || dist > p.comprimento - 2) continue;
@@ -279,12 +430,78 @@ export function construir(hm: Heightmap): MalhaVias {
     bloco(x, z).zebras.push(m.clone());
   }
 
+  // portais dos túneis (os do OSM e as corridas criadas pelo regrade): pilares e verga de concreto onde o túnel encontra o chão
+  // ou acaba. Nas pontas de trecho, só se alguma outra rua que chega ao nó não segue em túnel.
+  const grauNo = new Map<number, number>(), tunelNo = new Map<number, number>();
+  const corridasTunel = (p: Perfil): [number, number][] => {
+    if (p.nivel === -1) return [[0, p.n - 1]];
+    const r: [number, number][] = [];
+    if (!p.classe) return r;
+    let ini = -1;
+    for (let i = 0; i < p.n; i++) {
+      if (p.classe[i] === Classe.Tunel && ini < 0) ini = i;
+      if ((p.classe[i] !== Classe.Tunel || i === p.n - 1) && ini >= 0) { r.push([ini, p.classe[i] === Classe.Tunel ? i : i - 1]); ini = -1; }
+    }
+    return r.filter(([x, y]) => y - x >= 2);
+  };
+  const corridas = new Map<number, [number, number][]>();
+  for (const p of perfis.values()) {
+    for (const id of [p.edge.a, p.edge.b]) grauNo.set(id, (grauNo.get(id) ?? 0) + 1);
+    const cs = corridasTunel(p);
+    if (!cs.length) continue;
+    corridas.set(p.edge.id, cs);
+    for (const [x, y] of cs) { if (x === 0) tunelNo.set(p.edge.a, (tunelNo.get(p.edge.a) ?? 0) + 1); if (y === p.n - 1) tunelNo.set(p.edge.b, (tunelNo.get(p.edge.b) ?? 0) + 1); }
+  }
+  const regradePortal = regradeDe(hm.h);
+  for (const [id, cs] of corridas) {
+    const p = perfis.get(id)!;
+    for (const [x0, x1] of cs) for (const fim of [0, 1]) {
+      const i = fim === 0 ? x0 : x1;
+      const noPonta = fim === 0 ? x0 === 0 : x1 === p.n - 1;
+      if (noPonta) {
+        const nid = fim === 0 ? p.edge.a : p.edge.b;
+        if ((grauNo.get(nid) ?? 0) > 1 && (tunelNo.get(nid) ?? 0) >= (grauNo.get(nid) ?? 0)) continue; // todas seguem em túnel
+      }
+      const sg = fim === 0 ? -1 : 1; // para fora do túnel
+      const ia = Math.max(0, Math.min(p.n - 1, i + (fim === 0 ? 1 : -1)));
+      const tx = (p.x[ia] - p.x[i]) * (fim === 0 ? -1 : 1), tz = (p.z[ia] - p.z[i]) * (fim === 0 ? -1 : 1), tl = Math.hypot(tx, tz) || 1;
+      const ox = tx / tl, oz = tz / tl;
+      void sg;
+      const larg = larguraVia(p.edge) + 1.6;
+      const topo = (regradePortal ? alturaOriginal(regradePortal, hm, p.x[i] + ox * 2, p.z[i] + oz * 2) : sampleHeight(hm, p.x[i], p.z[i])) + 0.4;
+      const alto = Math.max(5.6, Math.min(topo - p.y[i], 16));
+      q.setFromAxisAngle(eixoY, Math.atan2(ox, oz));
+      const dir = new THREE.Vector3(oz, 0, -ox); // à direita de quem sai
+      const { portais } = bloco(p.x[i], p.z[i]);
+      for (const lado of [-1, 1]) {
+        pos.set(p.x[i] + dir.x * lado * (larg / 2 + 0.5), p.y[i] + 2.8, p.z[i] + dir.z * lado * (larg / 2 + 0.5));
+        m.compose(pos, q, sc.set(1.0, 5.6, 1.6)); portais.push(m.clone());
+      }
+      pos.set(p.x[i], p.y[i] + 5.6 + (alto - 5.6) / 2 + 0.6, p.z[i]);
+      m.compose(pos, q, sc.set(larg + 2.0, alto - 5.6 + 1.2, 1.6)); portais.push(m.clone());
+    }
+  }
+
+  // minirrotatórias (junction=circular ou rotatória de 4–8 m): ilha pintada rente ao asfalto, na cota média do cruzamento
+  const mini = mundo.real?.vias.minirrotatorias ?? [];
+  for (let k = 0; k + 2 < mini.length; k += 3) {
+    const [mx, mz, mr] = [mini[k], mini[k + 1], mini[k + 2]];
+    let soma = 0, cont = 0;
+    for (const p of perfis.values()) for (let i = 0; i < p.n; i += 2) if (!p.nivel && Math.hypot(p.x[i] - mx, p.z[i] - mz) < mr + 6) { soma += p.y[i]; cont++; }
+    if (!cont) continue;
+    // ilha central: asfalto um tom mais claro rente à pista (+4,5 cm, polygonOffset −5: sem z-fighting) e meio-fio de 12 cm na borda
+    const B = bloco(mx, mz), yi = soma / cont, ri = Math.min(2.6, Math.max(1.1, mr * 0.3));
+    disco(B.ilha, mx, yi + 0.045, mz, ri, 24);
+    meioFioCircular(B.calc, mx, yi, mz, ri, 0.12);
+  }
+
   return [...blocos].map(([chave, b]) => {
     const [bx, bz] = chave.split(',').map(Number);
     return {
       chave, cx: (bx + 0.5) * BLOCO_VIAS, cz: (bz + 0.5) * BLOCO_VIAS,
       leitos: Object.fromEntries(Object.entries(b.leitos).map(([k, v]) => [k, geometria(v)])),
       calcadas: geometria(b.calc), calcadoes: geometria(b.calcadao), laterais: geometria(b.lat), cruzamentos: geometria(b.cruz),
+      muros: geometria(b.muro), banquetas: geometria(b.banqueta), guardas: geometria(b.guarda), ilhas: geometria(b.ilha), balaustres: b.balaustres, portais: b.portais,
       postes: b.postes, pilares: b.pilares, palmeiras: b.palmeiras, zebras: b.zebras, hastesSem: b.hastesSem, lampSem: b.lampSem,
     };
   });
@@ -407,7 +624,7 @@ export function Vias({ hm }: { hm: Heightmap }) {
   useEffect(() => () => {
     for (const b of malha) {
       Object.values(b.leitos).forEach((g) => g.dispose());
-      b.calcadas.dispose(); b.calcadoes.dispose(); b.laterais.dispose(); b.cruzamentos.dispose();
+      b.calcadas.dispose(); b.calcadoes.dispose(); b.laterais.dispose(); b.cruzamentos.dispose(); b.muros.dispose(); b.banquetas.dispose(); b.guardas.dispose(); b.ilhas.dispose();
     }
   }, [malha]);
 
@@ -422,7 +639,12 @@ export function Vias({ hm }: { hm: Heightmap }) {
       calcada: comDetalhe(new THREE.MeshStandardMaterial({ ...comumCalcada, map: texturaCalcada(), roughness: 0.85 }), 'PavingStones046', 2.4, 0.75),
       calcadao: new THREE.MeshStandardMaterial({ ...comumCalcada, map: texturaCalcadao(), roughness: 0.7 }),
       lateral: new THREE.MeshStandardMaterial({ color: '#9b958a', roughness: 0.95 }),
-      cruz: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, color: '#3e4042', roughness: 0.9 }), 'Asphalt033', 4, 0.85),
+      muro: new THREE.MeshStandardMaterial({ map: texturaConcreto(), roughness: 0.96, metalness: 0, envMapIntensity: 0.15, side: THREE.DoubleSide }),
+      guarda: new THREE.MeshStandardMaterial({ color: '#4a4f54', roughness: 0.5, metalness: 0.5, side: THREE.DoubleSide }),
+      ilha: comDetalhe(new THREE.MeshStandardMaterial({ map: texturaAsfalto(true), roughness: 0.92, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5 }), 'Asphalt033', 4, 0.85),
+      grama: new THREE.MeshStandardMaterial({ map: texturaGrama(), roughness: 0.98, metalness: 0, side: THREE.DoubleSide }),
+      // Fase 21: o cruzamento usa o mesmo asfalto liso dos leitos (era um disco cinza chapado)
+      cruz: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaAsfalto(), roughness: 0.92 }), 'Asphalt033', 4, 0.85),
       poste: new THREE.MeshStandardMaterial({ color: '#5d6266', roughness: 0.6, metalness: 0.4 }),
       lampada: new THREE.MeshStandardMaterial({ color: '#2b2b2b', emissive: new THREE.Color('#ffb04a'), emissiveIntensity: 0 }),
       pilar: new THREE.MeshStandardMaterial({ color: '#a8a39a', roughness: 0.9 }),
@@ -454,6 +676,7 @@ export function Vias({ hm }: { hm: Heightmap }) {
     return {
       ...poste,
       pilar: new THREE.BoxGeometry(1, 1, 1),
+      balaustre: new THREE.BoxGeometry(0.08, 1.0, 0.08).translate(0, 0.5, 0),
       zebra: new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
       hasteSem: mergeGeos([new THREE.CylinderGeometry(0.07, 0.1, 5.1, 6).translate(0, 2.55, 0), new THREE.BoxGeometry(0.28, 0.9, 0.22).translate(0, 4.9, 0.1)]),
       lampSem: new THREE.BoxGeometry(0.16, 0.16, 0.06).translate(0, 5.1, 0.24),
@@ -507,6 +730,12 @@ export function Vias({ hm }: { hm: Heightmap }) {
           <mesh geometry={b.calcadoes} material={mats.calcadao} receiveShadow />
           <mesh geometry={b.laterais} material={mats.lateral} receiveShadow castShadow />
           <mesh geometry={b.cruzamentos} material={mats.cruz} receiveShadow />
+          <mesh geometry={b.muros} material={mats.muro} receiveShadow castShadow />
+          <mesh geometry={b.banquetas} material={mats.grama} receiveShadow />
+          <mesh geometry={b.guardas} material={mats.guarda} />
+          <mesh geometry={b.ilhas} material={mats.ilha} receiveShadow />
+          <Instancias matrizes={b.balaustres} geometria={geos.balaustre} material={mats.guarda} sombra={false} />
+          <Instancias matrizes={b.portais} geometria={geos.pilar} material={mats.muro} />
           <Instancias matrizes={b.postes} geometria={geos.haste} material={mats.poste} />
           <Instancias matrizes={b.postes} geometria={geos.lampada} material={mats.lampada} sombra={false} />
           <Instancias matrizes={halos[i]} geometria={geos.halo} material={mats.halo} sombra={false} />

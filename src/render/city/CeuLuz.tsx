@@ -12,6 +12,34 @@ import { aplicarClima } from './climaVisual';
 import { alvoCamera } from './Camera';
 import { SOMBRA, useNivel } from '../qualidade';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { CSM } from 'three/examples/jsm/csm/CSM.js';
+
+/**
+ * Sombras em cascata (CSM, Fase 21): 2 cascatas em "alta" (2048) e em "média" (1024) (a "baixa" não projeta sombra). A luz única de
+ * antes cobria até 2 km com o mesmo mapa e as sombras de perto ficavam moles; agora a cascata perto da câmera tem texel
+ * de poucos centímetros. As luzes e o shader (`lights_fragment_begin`) são do CSM; cada material do mundo recebe os
+ * uniformes dele por `ligarCSM`, encadeado ao `onBeforeCompile` que o material já tinha (terreno, prédios…).
+ */
+const SEM_CSM = import.meta.env.DEV && (() => { try { return (localStorage.getItem("n27:desligar") ?? "").split(",").includes("CSM"); } catch { return false; } })();
+const CASCATAS: Record<string, number> = { alta: 2, media: 2 };
+const MAPA_CASCATA: Record<string, number> = { alta: 2048, media: 1024 };
+
+type MatCSM = THREE.Material & { userData: { csmId?: number; csmOriginal?: THREE.Material['onBeforeCompile']; csmChave?: () => string } };
+let proximoId = 1;
+function ligarCSM(csm: CSM, id: number, material: MatCSM) {
+  if (material.userData.csmId === id) return;
+  const original = 'csmOriginal' in material.userData ? material.userData.csmOriginal : material.onBeforeCompile;
+  const chaveOriginal = material.userData.csmChave ?? material.customProgramCacheKey;
+  material.onBeforeCompile = original as THREE.Material['onBeforeCompile'];
+  csm.setupMaterial(material);
+  const gancho = material.onBeforeCompile;
+  material.onBeforeCompile = function (this: THREE.Material, shader, renderer) { (original as THREE.Material['onBeforeCompile'] | undefined)?.call(this, shader, renderer); gancho.call(this, shader, renderer); };
+  material.customProgramCacheKey = () => `${chaveOriginal?.call(material) ?? ''}|csm${csm.cascades}`;
+  material.userData.csmId = id;
+  material.userData.csmOriginal = original as THREE.Material['onBeforeCompile'];
+  material.userData.csmChave = chaveOriginal as () => string;
+  material.needsUpdate = true;
+}
 
 /** Relógio visual: um dia completo ≈ 6 min a 1× (desacoplado do calendário, como no Cities). */
 const HORAS_POR_SEGUNDO = 24 / 360;
@@ -26,6 +54,25 @@ export function CeuLuz({ latitude }: { latitude: number }) {
   const fog = useMemo(() => new THREE.FogExp2('#bfd3e3', 0.00022), []);
   const dirTmp = useMemo(() => new THREE.Vector3(), []);
   const ultimoSky = useRef(0);
+  const csmRef = useRef<{ csm: CSM; id: number } | null>(null);
+  const ultimoVarre = useRef(0);
+  const tamanho = useThree((st) => st.size);
+  // dev: localStorage["n27:desligar"] = "CSM" volta à luz única de antes da Fase 21 (para medir o custo das cascatas)
+  const usaCSM = nivel in CASCATAS && !SEM_CSM;
+
+  useEffect(() => {
+    if (!usaCSM) return;
+    const csm = new CSM({
+      camera, parent: scene, cascades: CASCATAS[nivel], maxFar: 1800, mode: 'practical', shadowMapSize: MAPA_CASCATA[nivel],
+      shadowBias: -0.0004, lightDirection: new THREE.Vector3(-0.4, -1, -0.3).normalize(), lightIntensity: 3, lightNear: 1, lightFar: 5200, lightMargin: 320,
+    });
+    csm.fade = true;
+    for (const l of csm.lights) l.shadow.normalBias = 0.6;
+    csmRef.current = { csm, id: proximoId++ };
+    ultimoVarre.current = 0;
+    return () => { csmRef.current = null; csm.remove(); csm.dispose(); };
+  }, [usaCSM, nivel, camera, scene]);
+  useEffect(() => { csmRef.current?.csm.updateFrustums(); }, [tamanho]);
 
   useEffect(() => {
     scene.fog = fog;
@@ -66,6 +113,23 @@ export function CeuLuz({ latitude }: { latitude: number }) {
     if (st) ambiente.poluicaoAgua = st.poluicaoAgua;
     aplicarClima(st, dt);
 
+    const C = csmRef.current;
+    if (C) {
+      direcaoLuz(dirTmp);
+      C.csm.lightDirection.copy(dirTmp).negate();
+      for (const l of C.csm.lights) { l.color.copy(ambiente.corSol); l.intensity = ambiente.intensidadeSol; }
+      C.csm.update();
+      // materiais que entram depois (blocos de prédios, vias…) recebem o CSM em até meio segundo
+      ultimoVarre.current += dt;
+      if (ultimoVarre.current > 0.5) {
+        ultimoVarre.current = 0;
+        scene.traverse((o) => {
+          const m = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
+          if (!m || !(o as THREE.Mesh).isMesh) return;
+          for (const mat of Array.isArray(m) ? m : [m]) if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) ligarCSM(C.csm, C.id, mat as MatCSM);
+        });
+      }
+    }
     const L = sol.current;
     if (L) {
       direcaoLuz(dirTmp);
@@ -113,7 +177,7 @@ export function CeuLuz({ latitude }: { latitude: number }) {
       <Sky distance={30000} sunPosition={posSol} turbidity={6} rayleigh={1.4} mieCoefficient={0.006} mieDirectionalG={0.86} />
       {noite && <Stars radius={9000} depth={500} count={4000} factor={60} saturation={0} fade speed={0.3} />}
       <hemisphereLight ref={hemi} args={['#c6dbf2', '#5c5038', 0.9]} />
-      <directionalLight
+      {!usaCSM && <directionalLight
         key={nivel}
         ref={sol}
         castShadow={SOMBRA[nivel] > 0}
@@ -121,7 +185,7 @@ export function CeuLuz({ latitude }: { latitude: number }) {
         shadow-mapSize={[Math.max(512, SOMBRA[nivel]), Math.max(512, SOMBRA[nivel])]}
         shadow-bias={-0.00025}
         shadow-normalBias={0.8}
-      />
+      />}
     </>
   );
 }

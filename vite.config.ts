@@ -15,5 +15,5 @@ export default defineConfig({
   server: { headers: isolation, port: 5173 },
   preview: { headers: isolation },
   build: { target: 'es2022', chunkSizeWarningLimit: 2000 },
-  test: { environment: 'node', include: ['tests/**/*.test.ts'] },
+  test: { environment: 'node', include: ['tests/**/*.test.ts'], testTimeout: 30000 }, // o relevo procedural da simulação tem 2,25× mais células desde a Fase 20
 });

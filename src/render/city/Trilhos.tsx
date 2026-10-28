@@ -85,13 +85,20 @@ function amostra(t: Trajeto, s: number, p: THREE.Vector3, rumo: THREE.Vector3) {
 
 // ── geometrias ───────────────────────────────────────────────────────────────────
 
+/**
+ * Leito da via férrea (Fase 21): brita cinza-escura (e não o concreto claro que parecia uma calçada) com um dormente de
+ * madeira a cada 60 cm, mais comprido que os trilhos e com a brita aparecendo nas pontas. Ladrilho: 3,4 m × 0,6 m.
+ */
 function texturaBalastro(): THREE.CanvasTexture {
   const c = document.createElement('canvas');
-  c.width = 64; c.height = 64;
+  c.width = 128; c.height = 64;
   const x = c.getContext('2d')!;
-  x.fillStyle = '#7b766d'; x.fillRect(0, 0, 64, 64);
-  for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(${40 + Math.random() * 90},${40 + Math.random() * 90},${35 + Math.random() * 80},0.55)`; x.fillRect(Math.random() * 64, Math.random() * 64, 2, 2); }
-  x.fillStyle = '#3f3a33'; x.fillRect(4, 24, 56, 9); // dormente
+  x.fillStyle = '#625d56'; x.fillRect(0, 0, 128, 64);
+  for (let i = 0; i < 900; i++) { const v = 40 + Math.random() * 90; x.fillStyle = `rgba(${v},${v * 0.97},${v * 0.92},0.7)`; x.fillRect(Math.random() * 128, Math.random() * 64, 1 + Math.random() * 3, 1 + Math.random() * 2); }
+  // dormente: 2,6 m de comprimento (76% da largura) × 26 cm, madeira escura com veio
+  x.fillStyle = '#463729'; x.fillRect(15, 20, 98, 17);
+  x.fillStyle = 'rgba(20,14,9,0.5)'; for (let i = 0; i < 7; i++) x.fillRect(16 + Math.random() * 96, 21 + Math.random() * 15, 8 + Math.random() * 20, 1);
+  x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(15, 37, 98, 2); // sombra sob o dormente
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.ClampToEdgeWrapping; t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
   return t;
@@ -169,7 +176,7 @@ export function Trilhos({ hm }: { hm: Heightmap }) {
         let j = i;
         while (j + 1 < n && t.ys[j + 1] >= t.hs[j + 1] - 3.5) j++;
         if (j > i) {
-          fita(t, i, j, -1.75, 1.75, 0, lp, ln, lu, li, 1.9);
+          fita(t, i, j, -1.7, 1.7, 0, lp, ln, lu, li, 0.6);
           fita(t, i, j, -0.78, -0.62, 0.14, rp, rn, ru, ri, 40);
           fita(t, i, j, 0.62, 0.78, 0.14, rp, rn, ru, ri, 40);
         }

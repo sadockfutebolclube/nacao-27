@@ -264,3 +264,12 @@ Os trilhos vêm do OSM (a prefeitura só publica ônibus no GTFS). `railway=subw
 
 ## D-087 · Cota dos trilhos por nível e suavização
 O OSM só diz se o trecho é túnel, chão ou ponte. A cota é `h − 16 m` (túnel), `h + 0,3` (chão) ou `h + 7` (viaduto), com média numa janela de ±9 amostras (72 m) onde o nível muda, para formar rampas. A via só é desenhada onde `y > h − 3,5`, o resto é túnel sob o terreno.
+
+## D-088 · Copernicus GLO-30 e máscara de água pelo próprio DEM
+Terrarium/SRTM tinha buracos de −30 m no mar e a correção pela linha de costa do OSM votava regiões inteiras do continente como mar (paredões de 180 m ao lado de morros). O Copernicus vem com água em 0 m: terra = acima de 0,3 m, o resto é mar/lagoa. A correção do OSM fica só para quando falta ladrilho. Filtros no gerador, não no jogo: Hampel 5×5, gaussiana σ = 1,5 e inclinação ≤ 1,2 (a água é fixa, nunca entra na média).
+
+## D-089 · Terraplenagem em tempo de carga, perfil preso ao terreno
+A grade de 16 m não conhece as ruas. Em vez de gravar o corte no arquivo (as vias do jogador também mudam o mapa), `terrenoReal` escava depois de somar os picos: núcleo = pista + calçada + 1,5 m (mínimo 17 m: a interpolação entre duas células vizinhas exige as duas inteiras no perfil), transição de 8 m, alvo 35 cm abaixo do perfil. O perfil (`suavizarPerfil`) fica a no máximo 4 m do bruto: a primeira versão limitava a rampa a 16% e abria cortes de 90 m em encosta íngreme. O mesmo perfil é usado pelo desenho (`perfilVias.ts`), então asfalto e terreno concordam.
+
+## D-090 · Rotatória só com junction=roundabout
+O que parecia rotatória em avenida reta era o disco de calçada que o desenho punha em todo cruzamento de grau ≥ 3. Agora o cruzamento é uma caixa de asfalto rente ao leito e a rotatória (ilha central em calçada) só nasce de um anel `junction=roundabout` fechado, circular (desvio ≤ 20% do raio) e de 8 a 40 m; ways partidas se juntam antes de validar. O que sobra (`junction=circular`, raio fora da faixa, anel aberto) vai para `rotatoriasDescartadas` no arquivo e aparece no painel F3.

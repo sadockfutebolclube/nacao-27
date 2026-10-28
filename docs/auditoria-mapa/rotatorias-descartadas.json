@@ -1,0 +1,212 @@
+[
+ {
+  "id": 93942579,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2612.1,
+  "z": -4442.1
+ },
+ {
+  "id": 130480594,
+  "nome": "Praça Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2383.1,
+  "z": -4428.9
+ },
+ {
+  "id": 167229875,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 708.3,
+  "z": -3682.4
+ },
+ {
+  "id": 237330072,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 725.3,
+  "z": -3662.5
+ },
+ {
+  "id": 295768759,
+  "nome": "",
+  "motivo": "junction=circular não é rotatória",
+  "x": 2762.3,
+  "z": 910.7
+ },
+ {
+  "id": 361495762,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 713.2,
+  "z": -3631.3
+ },
+ {
+  "id": 361495763,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 659.1,
+  "z": -3654.2
+ },
+ {
+  "id": 361650137,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -720.9,
+  "z": -5051.1
+ },
+ {
+  "id": 361650138,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -661.1,
+  "z": -5024
+ },
+ {
+  "id": 361650139,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -650.3,
+  "z": -5081.4
+ },
+ {
+  "id": 372935999,
+  "nome": "",
+  "motivo": "junction=circular não é rotatória",
+  "x": 2774.5,
+  "z": 925.8
+ },
+ {
+  "id": 380438007,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -694.8,
+  "z": -5016
+ },
+ {
+  "id": 762695808,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 675.5,
+  "z": -3686.8
+ },
+ {
+  "id": 786402282,
+  "nome": "Praça da Cruz Vermelha",
+  "motivo": "junction=circular não é rotatória",
+  "x": 679,
+  "z": -3619.5
+ },
+ {
+  "id": 791616367,
+  "nome": "Praça Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2406.1,
+  "z": -4464.5
+ },
+ {
+  "id": 791616379,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2627.7,
+  "z": -4475.1
+ },
+ {
+  "id": 791616380,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2575.6,
+  "z": -4464.2
+ },
+ {
+  "id": 791616381,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2600.7,
+  "z": -4488.3
+ },
+ {
+  "id": 793640973,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -637.3,
+  "z": -5052.2
+ },
+ {
+  "id": 793640976,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -698.1,
+  "z": -5096.1
+ },
+ {
+  "id": 794502555,
+  "nome": "Praça Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2382.6,
+  "z": -4470
+ },
+ {
+  "id": 794502556,
+  "nome": "Praça Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2362.5,
+  "z": -4454
+ },
+ {
+  "id": 794502557,
+  "nome": "Praça Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2411.7,
+  "z": -4445.6
+ },
+ {
+  "id": 799278876,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2626,
+  "z": -4452.6
+ },
+ {
+  "id": 858468985,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2588,
+  "z": -4443.6
+ },
+ {
+  "id": 858468986,
+  "nome": "Avenida Pedro II",
+  "motivo": "junction=circular não é rotatória",
+  "x": -2628.8,
+  "z": -4461.1
+ },
+ {
+  "id": 1265285416,
+  "nome": "Praça Santo Cristo",
+  "motivo": "junction=circular não é rotatória",
+  "x": -643.1,
+  "z": -5039.8
+ },
+ {
+  "id": 208933270,
+  "nome": "",
+  "x": -5376.8,
+  "z": -5685,
+  "motivo": "raio 6.4 m fora de 8–40 m"
+ },
+ {
+  "id": 208933271,
+  "nome": "",
+  "x": -5548.7,
+  "z": -5865.1,
+  "motivo": "raio 6.4 m fora de 8–40 m"
+ },
+ {
+  "id": 208933613,
+  "nome": "",
+  "x": -5586.1,
+  "z": -5833,
+  "motivo": "raio 7.5 m fora de 8–40 m"
+ }
+]

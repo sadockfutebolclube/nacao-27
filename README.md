@@ -77,6 +77,9 @@ Outros comandos:
 - Prédios reais com a planta verdadeira, fachadas fotográficas, telhas, laje e janelas que acendem à noite; céu HDRI, asfalto, calçadas e terreno fotográficos (materiais CC0 do ambientCG e do Poly Haven, em `public/assets/`; para baixar de novo: `npm run fetch-assets` e depois `scripts/comprimir-materiais.ps1`).
 - **Vista Google 3D** (painel Visual): mostra a cidade nos Photorealistic 3D Tiles do Google, ao vivo. Precisa de uma chave sua da Map Tiles API (Google Cloud, com faturamento): ponha `VITE_GOOGLE_MAPS_KEY=...` no `.env.local` ou digite na tela (fica só no navegador). O jogo não baixa nem guarda nada do Google.
 
+### Relevo e ruas auditados (Fase 19)
+- O relevo vem do **Copernicus DEM GLO-30**, filtrado (sem espetos nem paredões), e o terreno acompanha cada rua (corte e aterro): nada de asfalto flutuando ou enterrado. Rotatória só onde o OSM diz que é rotatória. **F3** liga o wireframe, as normais do terreno e a lista de ruas com problema.
+
 ### Metrô, trem, VLT e bonde (Fase 18)
 - O **metrô** (Linhas 1, 2 e 4), a **SuperVia**, o **VLT**, o **Bonde de Santa Teresa** e o trem do **Corcovado** existem no mapa, do OpenStreetMap: via com dormentes, túneis sob os morros, viadutos com pilares, estações com nome e trens circulando na cor da linha. São cenário: não entram na simulação.
 

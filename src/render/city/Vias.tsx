@@ -215,12 +215,27 @@ export function construir(hm: Heightmap): MalhaVias {
     if (!grau) continue;
     const y = roadBaseY(hm, n.x, n.z);
     const { calc, cruz } = bloco(n.x, n.z);
-    if (grau >= 3) {
-      disco(calc, n.x, y + 0.16, n.z, hwMax + 1.5 + swMax, 28);
-      disco(cruz, n.x, y + 0.19, n.z, hwMax + 1.5, 28);
-    } else {
-      disco(cruz, n.x, y + 0.03, n.z, hwMax, 20);
+    // Fase 19: cruzamento é só a caixa de asfalto rente ao leito (antes: disco de calçada elevado, que parecia
+    // rotatória no meio de avenida reta). Rotatória de verdade vem do OSM (`junction=roundabout`), abaixo.
+    void calc; void swMax;
+    disco(cruz, n.x, y + 0.03, n.z, grau >= 3 ? hwMax + 1.5 : hwMax, grau >= 3 ? 28 : 20);
+  }
+
+  // rotatórias validadas (anel fechado de 8–40 m do OSM): ilha central em calçada, na cota média do anel
+  const rot = mundo.real?.vias.rotatorias ?? [];
+  for (let k = 0; k + 2 < rot.length; k += 3) {
+    const [rx, rz, rr] = [rot[k], rot[k + 1], rot[k + 2]];
+    let soma = 0, cont = 0, hwAnel = 3.5;
+    for (const p of perfis.values()) {
+      for (let i = 0; i < p.n; i += 2) {
+        const d = Math.hypot(p.x[i] - rx, p.z[i] - rz);
+        if (Math.abs(d - rr) < 3) { soma += p.y[i]; cont++; hwAnel = Math.max(hwAnel, larguraVia(p.edge) / 2); }
+      }
     }
+    if (!cont) continue;
+    const { calc } = bloco(rx, rz);
+    const raioIlha = rr - hwAnel - 0.4;
+    if (raioIlha > 1.5) disco(calc, rx, soma / cont + 0.17, rz, raioIlha, 32);
   }
 
   // semáforos nos cruzamentos marcados e faixas de pedestre (nas esquinas e no meio das quadras)
@@ -397,13 +412,15 @@ export function Vias({ hm }: { hm: Heightmap }) {
   }, [malha]);
 
   const mats = useMemo(() => {
-    const comum = { roughness: 0.92, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
+    // ordem de profundidade (Fase 19): terreno (+2) < água < calçada (−2) < asfalto (−3) < faixas (−6)
+    const comum = { roughness: 0.92, metalness: 0, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 };
+    const comumCalcada = { ...comum, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
     return {
       // Fase 12: asfalto e calçada fotográficos (ambientCG) por cima das faixas pintadas
       rua: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaRua() }), 'Asphalt033', 4, 0.85),
       avenida: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaAvenida() }), 'Asphalt033', 4, 0.85),
-      calcada: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, map: texturaCalcada(), roughness: 0.85 }), 'PavingStones046', 2.4, 0.75),
-      calcadao: new THREE.MeshStandardMaterial({ ...comum, map: texturaCalcadao(), roughness: 0.7 }),
+      calcada: comDetalhe(new THREE.MeshStandardMaterial({ ...comumCalcada, map: texturaCalcada(), roughness: 0.85 }), 'PavingStones046', 2.4, 0.75),
+      calcadao: new THREE.MeshStandardMaterial({ ...comumCalcada, map: texturaCalcadao(), roughness: 0.7 }),
       lateral: new THREE.MeshStandardMaterial({ color: '#9b958a', roughness: 0.95 }),
       cruz: comDetalhe(new THREE.MeshStandardMaterial({ ...comum, color: '#3e4042', roughness: 0.9 }), 'Asphalt033', 4, 0.85),
       poste: new THREE.MeshStandardMaterial({ color: '#5d6266', roughness: 0.6, metalness: 0.4 }),
@@ -421,7 +438,7 @@ export function Vias({ hm }: { hm: Heightmap }) {
   // um material por tipo de sinalização presente na cidade (faixas × mão única), criado quando aparece
   const leitoMats = useMemo(() => {
     const m = new Map<string, THREE.MeshStandardMaterial>([['rua', mats.rua], ['avenida', mats.avenida]]);
-    const comum = { roughness: 0.92, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
+    const comum = { roughness: 0.92, metalness: 0, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 };
     for (const b of malha) for (const k of Object.keys(b.leitos)) {
       if (m.has(k)) continue;
       const faixas = Number(k.slice(0, -1)), mao = k.endsWith('u');

@@ -25,6 +25,44 @@ export const PALETAS: Record<Bioma, Paleta> = {
   pantanal: { grama: '#7ea34a', grama2: '#94b45a', mata: '#3e6b2b', solo: '#6c5a3a', areia: '#d6c69c', rocha: '#7a776e', fundo: '#8f8662' },
 };
 
+/**
+ * Mapa de normais do terreno (Fase 19): 2048² texels (8 m) com a normal do relevo interpolado em bicúbica
+ * (Catmull-Rom), calculada DEPOIS do relevo filtrado e escavado. As normais por vértice vêm de diferenças de 16 m e
+ * dão facetas nas encostas; o mapa suaviza o sombreado entre os vértices. RGB = (nx, nz, ny)·0,5 + 0,5, em mundo.
+ */
+const TEX_NORMAIS = 2048;
+function cr(p0: number, p1: number, p2: number, p3: number, t: number): [number, number] {
+  const a = -p0 + p2, b = 2 * p0 - 5 * p1 + 4 * p2 - p3, c = -p0 + 3 * p1 - 3 * p2 + p3;
+  return [0.5 * (2 * p1 + a * t + b * t * t + c * t * t * t), 0.5 * (a + 2 * b * t + 3 * c * t * t)];
+}
+export function texturaNormaisTerreno(hm: Heightmap): THREE.DataTexture {
+  const n = TEX_NORMAIS, dados = new Uint8Array(n * n * 4);
+  const h = hm.h, passo = MAP_SIZE / (n - 1);
+  const at = (i: number, j: number) => h[Math.min(HM_RES, Math.max(0, j)) * HM_VERTS + Math.min(HM_RES, Math.max(0, i))];
+  const vx = [0, 0, 0, 0], dx = [0, 0, 0, 0];
+  for (let ty = 0; ty < n; ty++) {
+    const fz = (ty * passo) / HM_STEP, j = Math.min(HM_RES - 1, Math.floor(fz)), tz = fz - j;
+    for (let tx = 0; tx < n; tx++) {
+      const fx = (tx * passo) / HM_STEP, i = Math.min(HM_RES - 1, Math.floor(fx)), tt = fx - i;
+      for (let r = 0; r < 4; r++) {
+        const jj = j - 1 + r;
+        const [v, d] = cr(at(i - 1, jj), at(i, jj), at(i + 1, jj), at(i + 2, jj), tt);
+        vx[r] = v; dx[r] = d;
+      }
+      const gx = cr(dx[0], dx[1], dx[2], dx[3], tz)[0] / HM_STEP, gz = cr(vx[0], vx[1], vx[2], vx[3], tz)[1] / HM_STEP;
+      const l = Math.hypot(gx, 1, gz), o = (ty * n + tx) * 4;
+      dados[o] = Math.round((-gx / l * 0.5 + 0.5) * 255);
+      dados[o + 1] = Math.round((-gz / l * 0.5 + 0.5) * 255);
+      dados[o + 2] = Math.round((1 / l * 0.5 + 0.5) * 255);
+      dados[o + 3] = 255;
+    }
+  }
+  const t = new THREE.DataTexture(dados, n, n, THREE.RGBAFormat);
+  t.colorSpace = THREE.NoColorSpace; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
+  return t;
+}
+
 /** células por bloco do terreno (precisa dividir HM_RES: 1024 / 128 = 8 × 8 blocos) */
 const CHUNK = 128;
 
@@ -94,12 +132,14 @@ function construirChunk(hm: Heightmap, ci: number, cj: number, p: Paleta, nz: (x
   return g;
 }
 
-export function criarMaterialTerreno(): THREE.MeshStandardMaterial {
-  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 });
+export function criarMaterialTerreno(normais?: THREE.Texture): THREE.MeshStandardMaterial {
+  // polygonOffset positivo: o terreno nunca cobre asfalto, calçada nem faixa (ordem: terreno < água < calçada < asfalto < faixas)
+  const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 });
   // Fase 12: capim, terra e rocha fotográficos (ambientCG, CC0) como detalhe sobre a paleta do bioma
   const grama = texturasPiso('Grass004'), terra = texturasPiso('Ground103'), rocha = texturasPiso('Rock064');
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, uniformsTerreno, {
+      tMacroN: { value: normais ?? null }, uMacroN: { value: normais ? 1 : 0 }, uMapa: { value: MAP_SIZE },
       tGrama: { value: grama.map }, tTerra: { value: terra.map }, tRocha: { value: rocha.map },
       tGramaN: { value: grama.normalMap }, tTerraN: { value: terra.normalMap }, tRochaN: { value: rocha.normalMap },
     });
@@ -112,7 +152,8 @@ varying vec3 vMundo;
 varying float vInclT;
 varying vec3 vNmT;
 uniform float uSecura, uMolhado, uGeada;
-uniform sampler2D tGrama, tTerra, tRocha, tGramaN, tTerraN, tRochaN;
+uniform sampler2D tGrama, tTerra, tRocha, tGramaN, tTerraN, tRochaN, tMacroN;
+uniform float uMacroN, uMapa;
 ${GLSL_DETALHE}
 float wGramaT = 0.0, wRochaT = 0.0;
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -141,6 +182,11 @@ diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.32, 1.04, 0.5
 diffuseColor.rgb *= 1.0 - 0.2 * uMolhado;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.93), uGeada * verde * 0.6 * d2);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+if (uMacroN > 0.5) {
+  // normal do relevo bicúbico (mundo → vista) no lugar da normal facetada por vértice
+  vec3 mn = texture2D(tMacroN, (vMundo.xz + uMapa * 0.5) / uMapa).xzy * 2.0 - 1.0;
+  normal = normalize((viewMatrix * vec4(normalize(mn), 0.0)).xyz);
+}
 {
   vec3 nT = normalize(mix(mix(normalDetalhe(tTerraN, vMundo.xz, 4.0), normalDetalhe(tGramaN, vMundo.xz, 2.6), wGramaT), normalDetalhe(tRochaN, vMundo.xz, 7.0), wRochaT * pow(abs(vNmT.y), 4.0)));
   vec3 tT = normalize((viewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
@@ -155,7 +201,14 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.93), uGeada * verde *
 }
 
 export function Terreno({ hm }: { hm: Heightmap }) {
-  const material = useMemo(criarMaterialTerreno, []);
+  const normais = useMemo(() => {
+    const t0 = performance.now();
+    const t = texturaNormaisTerreno(hm);
+    const ms = Math.round(performance.now() - t0);
+    if (ms > 250) console.warn(`[lento] terreno: mapa de normais: ${ms} ms`);
+    return t;
+  }, [hm]);
+  const material = useMemo(() => criarMaterialTerreno(normais), [normais]);
   const chunks = useMemo(() => {
     const rng = new Rng(hm.seed ^ 0x5eed);
     const noise = createNoise2D(() => rng.next());
@@ -165,7 +218,7 @@ export function Terreno({ hm }: { hm: Heightmap }) {
     for (let cj = 0; cj < nc; cj++) for (let ci = 0; ci < nc; ci++) out.push(construirChunk(hm, ci, cj, p, noise));
     return out;
   }, [hm]);
-  useEffect(() => () => { chunks.forEach((c) => c.dispose()); material.dispose(); }, [chunks, material]);
+  useEffect(() => () => { chunks.forEach((c) => c.dispose()); material.dispose(); normais.dispose(); }, [chunks, material, normais]);
 
   const contorno = useMemo(() => {
     const pts: [number, number, number][] = [];

@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## 1.9.0 — Fase 19: auditoria do relevo e das ruas (28/10/2026)
+
+### O que estava errado (medido com `npm run auditar-mapa`)
+- 2.559 vértices de terra a mais de 8 m da mediana dos vizinhos (até 178 m!) e declives de até 1.600%: o mar do OSM "vazava" para dentro do continente e abria paredões de 180 m ao lado de morros; rios e canais do OSM rebaixavam encostas a −3 m.
+- 18.409 seções de rua (10%) com a pista no ar e 31.914 (18%) com o morro por cima do asfalto.
+- 5.062 cruzamentos com um disco de calçada elevado que parecia rotatória no meio de avenida reta.
+
+### Relevo
+- Altitude do **Copernicus DEM GLO-30** (AWS Open Data, registrado em `data/SOURCES.md`) no lugar do Terrarium. Mar, baía e lagoas já vêm em 0 m e viram a máscara de água: a linha de costa do OSM deixa de decidir o mar.
+- Filtros (`src/world/relevo.ts`, puros e testados): remoção de outliers (Hampel 5×5), gaussiana σ = 1,5 célula só entre terra e terra, limite de inclinação de 50° (1,2) — 1,4 ao redor dos picos famosos. Rio e canal do OSM só rebaixam a baixada (< 8 m).
+- Normais calculadas depois do relevo filtrado e escavado; novo **mapa de normais do terreno** (2048², bicúbico) suaviza o sombreado entre os vértices.
+
+### Ruas
+- **Terraplenagem** (`src/world/escavar.ts`): cada rua ganha um perfil longitudinal suave (média móvel dupla, a no máximo 4 m do terreno) e o terreno numa faixa de pista + calçada + 1,5 m (e nunca menos que uma célula) vai para 35 cm abaixo do perfil, com transição de 8 m. Pontes, túneis e água ficam como estão. O desenho das vias usa o mesmo perfil.
+- Ordem de profundidade: terreno (offset +2) < água < calçada (−2) < asfalto (−3) < faixas (−6); plano próximo da câmera de 2 para 3 m.
+- **Rotatórias** só existem onde o OSM diz `junction=roundabout`: anel fechado (juntando ways partidas), círculo (desvio ≤ 20%) de 8 a 40 m. 8 validadas; 30 descartadas e registradas no arquivo (27 `junction=circular`, 3 com raio de 6–7 m). Cruzamento comum é só uma caixa de asfalto rente ao leito.
+
+### Depuração (F3)
+- F3 alterna wireframe + painel → wireframe + normais do terreno (verde; vermelho acima de 50°) → desligado. O painel lista trechos enterrados, flutuando e íngremes (maiores primeiro, botão "ir" leva a câmera) e as rotatórias descartadas com o motivo.
+
+### Antes → depois (Rio, `docs/auditoria-mapa/`)
+| | antes | depois |
+|---|---|---|
+| vértices a >8 m da mediana | 2.559 (máx. 178 m) | 334 (máx. 22 m) |
+| declive central máximo | 1.608% | 229% (cortes de rua e penhascos do litoral) |
+| seções com pista flutuando (>2,5 m) | 18.409 | 1.325 |
+| seções com morro sobre o asfalto (>1,2 m) | 31.914 | 2.116 |
+| maior vão / maior aterro sobre a rua | 46 m / 39 m | 11 m / 8 m |
+| rotatórias | 5.062 discos | 8 validadas, 30 descartadas |
+
+### Verificado
+- 10 testes novos (`tests/fase19.test.ts`: filtros, terraplenagem, relevo e ruas do Rio, rotatórias, fonte registrada); typecheck estrito; build ok. Prints antes/depois de Tijuca, Santa Teresa, Aterro do Flamengo e Zona Norte em `docs/auditoria-mapa/`.
+
+### Limitações
+- **Madureira não está no mapa**: o Rio do jogo cobre 16 × 16 km a partir do Cristo (lon −43,275 a −43,115) e Madureira fica a ~6 km a oeste da borda. A Zona Norte foi verificada em Vila Isabel/Grajaú. Estendê-lo é a fase "Barra e Zona Oeste".
+- O Copernicus é um modelo de superfície; a filtragem tira degraus e espetos, mas o relevo continua sendo o de 30 m (picos famosos ainda vêm da gaussiana de `PICOS_RIO`).
+- Restam 530 trechos com morro sobre o asfalto (>1,2 m) e 336 com vão (>2,5 m), na maioria perto de falésias e favelas em encosta; ficam listados no painel F3. Há rampas de rua acima de 100% nas encostas mais íngremes (a rua segue o terreno, que o limite de 50° ainda deixa a 2×).
+- O F4 (painel de desempenho) das regras globais ainda não existe.
+
 ## 1.8.0 — Fase 18: metrô, trem, VLT e bonde (28/10/2026)
 
 ### Trilhos de verdade

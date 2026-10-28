@@ -41,6 +41,10 @@ export const CidadeReal = z.object({
     semaforos: z.array(z.number()).optional(),
     /** Fase 14: faixas de pedestre no meio do quarteirão, [x, z, ângulo×1000 (direção da rua, atan2(tx, tz))] cada */
     faixasPed: z.array(z.number()).optional(),
+    /** Fase 19: rotatórias validadas do OSM (`junction=roundabout`, círculo fechado de 8–40 m) — [x, z, raio] cada */
+    rotatorias: z.array(z.number()).optional(),
+    /** Fase 19: o que foi descartado e por quê (painel de depuração F3) */
+    rotatoriasDescartadas: z.array(z.object({ nome: z.string(), motivo: z.string(), x: z.number(), z: z.number() })).optional(),
   }),
   /** [x, z, ângulo×1000, largura, profundidade, andares, tipo, aresta, índice do nome (−1 = sem nome)] por prédio */
   predios: z.array(z.number()),

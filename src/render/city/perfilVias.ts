@@ -4,6 +4,7 @@
  */
 import { edgeEnds, larguraVia, meiaVia, nodeDegree, sampleByLength, type RoadEdge, type RoadGraph } from '../../world/roads';
 import { roadBaseY, type Heightmap } from '../../world/terrain';
+import { suavizarPerfil } from '../../world/relevo';
 
 export interface Perfil {
   edge: RoadEdge;
@@ -99,18 +100,11 @@ export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil
       out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b) });
       continue;
     }
-    // suavização (média móvel) mantendo as pontas fixas para casar com os nós
+    // perfil longitudinal suave (o mesmo que a terraplenagem do relevo usou), pontas fixas para casar com os nós
+    const liso = suavizarPerfil(bruto, 3);
     for (let i = 0; i < n; i++) {
-      if (i === 0 || i === n - 1) { y[i] = bruto[i]; continue; }
-      let soma = 0, k = 0;
-      for (let d = -3; d <= 3; d++) {
-        const j = Math.min(n - 1, Math.max(0, i + d));
-        soma += bruto[j]; k++;
-      }
-      const t = Math.min(i, n - 1 - i) / 3;
-      y[i] = bruto[i] + (soma / k - bruto[i]) * Math.min(1, t);
       // nunca abaixo do terreno (evita asfalto enterrado)
-      y[i] = Math.max(y[i], bruto[i] - 0.15);
+      y[i] = i === 0 || i === n - 1 ? bruto[i] : Math.max(liso[i], bruto[i] - 0.15);
     }
     out.set(e.id, { edge: e, n, x, y, z, tx, tz, s, comprimento: length, cortaA: raio(e.a), cortaB: raio(e.b) });
   }

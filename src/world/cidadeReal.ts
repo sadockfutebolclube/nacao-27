@@ -9,6 +9,8 @@ import { BUILD_HALF, HM_STEP, HM_VERTS, MAP_SIZE } from './constants';
 import type { RoadEdge as RoadEdgeNovo, RoadGraph } from './roads';
 import { arquetipo, Zone } from '../sim/catalog';
 import { DENSIDADE_MATA, waterDistance, type Heightmap } from './terrain';
+import { escavarVias } from './escavar';
+import { limitarInclinacao } from './relevo';
 
 /** Projeção do jogo (a mesma do gerador): x leste, z sul, em metros a partir do centro do mapa da cidade. */
 export function projetar(c: CidadeReal, lat: number, lon: number): [number, number] {
@@ -72,6 +74,10 @@ export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed:
         const dx = -half + i * HM_STEP - px, dz = -half + j * HM_STEP - pz;
         h[k] = Math.max(h[k], pk.alt * Math.exp(-(dx * dx + dz * dz) / (2 * pk.sigma * pk.sigma)));
       }
+      // o pico sobe de uma vez: alisa o que passar de 55° (tangente 1,4) na vizinhança, sem mexer no resto
+      const terra = new Uint8Array(h.length);
+      for (let k = 0; k < h.length; k++) terra[k] = h[k] >= 0.5 ? 1 : 0;
+      limitarInclinacao(h, HM_VERTS, HM_STEP, 1.4, terra, 200, { i0, i1, j0, j1 });
     }
   }
   // Fase 13: no litoral, praia em rampa e mar que aprofunda com a distância da costa (o relevo de 16 m
@@ -84,6 +90,8 @@ export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed:
       else if (ateAgua[k] < 64 && h[k] < 8) h[k] = Math.min(h[k], 0.5 + ateAgua[k] * 0.07);
     }
   }
+  // Fase 19: terraplenagem — o terreno acompanha o perfil de cada rua (corte e aterro), sem pontes, túneis nem água
+  if (c.vias.arestas.length) escavarVias(h, grafoReal(c, () => ''));
   return { h, forest, waterDist: waterDistance(h), bioma, terreno, seed };
 }
 

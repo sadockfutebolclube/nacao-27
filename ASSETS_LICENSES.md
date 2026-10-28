@@ -53,6 +53,7 @@ Os arquivos derivados em `public/data/cidades/` são uma base derivada do OpenSt
 ## Transporte e Censo do Rio (Fase 17)
 | Dado | Fonte | Termos |
 |---|---|---|
+| Altitude do relevo (`public/data/cidades/3304557.json`) | Copernicus DEM GLO-30 (ESA/Airbus), bucket AWS Open Data `copernicus-dem-30m` — ver `data/SOURCES.md` | Copernicus DEM: uso livre com atribuição | “© DLR e.V. 2010–2014 e © Airbus Defence and Space GmbH 2014–2018, fornecido sob COPERNICUS pela União Europeia e pela ESA” |
 | Linhas, itinerários, frequências e paradas de ônibus e BRT (`public/data/rio/onibus.json`, 0,65 MB) | GTFS da Secretaria Municipal de Transportes (SMTR) — Prefeitura do Rio, via Data.Rio e Mobility Database (feed mdb-1791) | dados abertos da Prefeitura; **conferir o termo de uso (Data.Rio) antes de distribuir publicamente** |
 | População, domicílios e contorno dos bairros (`public/data/rio/bairros.json`, 66 KB) | Censo Demográfico 2022 (IBGE, divulgação preliminar de 21/03/2024) agregado por bairro pelo Instituto Pereira Passos — Prefeitura do Rio, via Data.Rio | dados abertos; IBGE e Prefeitura devem ser citados |
 

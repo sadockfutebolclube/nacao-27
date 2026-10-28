@@ -22,6 +22,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CidadeReal, CAMPOS_PREDIO } from '../src/data/cidadeReal.ts';
 import { Terrarium } from './lib/terrarium.ts';
+import { Copernicus } from './lib/copernicus.ts';
+import { limitarInclinacao, removerOutliers, suavizarGaussiano } from '../src/world/relevo.ts';
 import { extrairRegiao, REGIAO_UF, type AlvoCidade } from './lib/geofabrik.ts';
 import { prediosMS } from './lib/msbuildings.ts';
 import { existsSync } from 'node:fs';
@@ -355,6 +357,69 @@ function corrigirMarPelaCosta(alt: Float32Array, natureza: ElOSM[], xz: (lat: nu
   console.log(`    linha de costa: ${(total * PASSO * PASSO / 1e6).toFixed(1)} km² de mar, ${corrigidas} células corrigidas`);
 }
 
+// ── relevo filtrado (Fase 19) ────────────────────────────────────────────────────
+
+/**
+ * O Copernicus é um modelo de SUPERFÍCIE de 30 m: prédios, copas e pedreiras viram degraus e espetos. Terra = acima
+ * de 0,3 m (mar e lagoas vêm em 0). Tira os outliers (Hampel 5×5), alisa com gaussiana de σ = 1,5 célula só entre
+ * terra e terra, limita a inclinação a 50° (tangente 1,2) e garante terra ≥ 0,8 m, água em 0.
+ */
+function tratarRelevo(alt: Float32Array) {
+  const terra = new Uint8Array(alt.length);
+  for (let k = 0; k < alt.length; k++) terra[k] = alt[k] > 0.3 ? 1 : 0;
+  const trocados = removerOutliers(alt, RES, terra, 5);
+  suavizarGaussiano(alt, RES, terra, 1.5);
+  const lim = limitarInclinacao(alt, RES, PASSO, 1.2, terra, 300);
+  for (let k = 0; k < alt.length; k++) alt[k] = terra[k] ? Math.max(alt[k], 0.8) : 0;
+  console.log(`    relevo filtrado: ${trocados} espetos removidos, gaussiana σ=1,5, inclinação ≤ 1,2 (${lim.ajustados} vértices em ${lim.iteracoes} iterações)`);
+}
+
+// ── rotatórias (Fase 19) ─────────────────────────────────────────────────────────
+
+/**
+ * Só vira rotatória a via com `junction=roundabout` cujo desenho é um círculo fechado de 8 a 40 m de raio. O resto
+ * (`junction=circular`, anéis abertos, "rotatórias" de calçada, cruzamentos comuns) é descartado e registrado.
+ */
+function rotatoriasValidas(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
+  const validas: number[] = [];
+  const descartadas: { id: number; nome: string; motivo: string; x: number; z: number }[] = [];
+  const centro = (pts: P[]): [number, number] => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+  for (const w of ways) {
+    const j = w.tags?.junction;
+    if (j === 'circular') { const [x, z] = centro(w.geometry!.map((q) => xz(q.lat, q.lon))); descartadas.push({ id: w.id, nome: w.tags?.name ?? '', motivo: 'junction=circular não é rotatória', x: r1(x), z: r1(z) }); }
+  }
+  // o OSM costuma partir o anel em duas ou mais ways: junta as pontas que se tocam antes de validar
+  const rs = ways.filter((w) => w.tags?.junction === 'roundabout');
+  const usados = new Set<number>();
+  for (const w of rs) {
+    if (usados.has(w.id)) continue;
+    usados.add(w.id);
+    const nodes = [...w.nodes!], pts = w.geometry!.map((q) => xz(q.lat, q.lon));
+    for (let guarda = 0; guarda < 8 && nodes[0] !== nodes[nodes.length - 1]; guarda++) {
+      const ponta = nodes[nodes.length - 1];
+      const prox = rs.find((o) => !usados.has(o.id) && (o.nodes![0] === ponta || o.nodes![o.nodes!.length - 1] === ponta));
+      if (!prox) break;
+      usados.add(prox.id);
+      const pp = prox.geometry!.map((q) => xz(q.lat, q.lon)), nn = prox.nodes!;
+      if (nn[0] === ponta) { nodes.push(...nn.slice(1)); pts.push(...pp.slice(1)); }
+      else { nodes.push(...nn.slice(0, -1).reverse()); pts.push(...pp.slice(0, -1).reverse()); }
+    }
+    const [cx0, cz0] = centro(pts);
+    const ref = { id: w.id, nome: w.tags?.name ?? '', x: r1(cx0), z: r1(cz0) };
+    if (!(nodes[0] === nodes[nodes.length - 1] && pts.length >= 6)) { descartadas.push({ ...ref, motivo: 'anel não fecha (way partida sem par ou curta)' }); continue; }
+    const u = pts.slice(0, -1);
+    const [cx, cz] = centro(u);
+    const ds = u.map((p) => Math.hypot(p[0] - cx, p[1] - cz));
+    const raio = ds.reduce((a, d) => a + d, 0) / ds.length;
+    const desvio = Math.sqrt(ds.reduce((a, d) => a + (d - raio) ** 2, 0) / ds.length);
+    if (raio < 8 || raio > 40) { descartadas.push({ ...ref, motivo: `raio ${raio.toFixed(1)} m fora de 8–40 m` }); continue; }
+    if (desvio > raio * 0.2) { descartadas.push({ ...ref, motivo: `não é círculo (desvio ${desvio.toFixed(1)} m em ${raio.toFixed(1)} m)` }); continue; }
+    if (Math.abs(cx) > BUILD - 10 || Math.abs(cz) > BUILD - 10) { descartadas.push({ ...ref, motivo: 'fora da área construível' }); continue; }
+    validas.push(r1(cx), r1(cz), r1(raio));
+  }
+  return { validas, descartadas };
+}
+
 // ── principal ──────────────────────────────────────────────────────────────────
 
 interface Mun { ibge: string; nome: string; lat: number; lon: number; capital: boolean; uf: string }
@@ -382,13 +447,19 @@ async function gerar(m: Mun, terr: Terrarium) {
   await sleep(1000);
   const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub|coastline)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
 
-  // ── relevo
+  // ── relevo (Fase 19: Copernicus GLO-30 filtrado; Terrarium só onde faltar ladrilho)
   const alt = new Float32Array(RES * RES);
+  const cop = new Copernicus(join(ROOT, 'data', 'cache', 'dem'));
+  await cop.preparar(ma0, ma1, mo0, mo1);
+  let doCopernicus = 0;
   for (let j = 0; j < RES; j++) for (let i = 0; i < RES; i++) {
     const [la, lo] = latlon(-HALF + i * PASSO, -HALF + j * PASSO);
-    alt[j * RES + i] = await terr.altitude(la, lo);
+    let v = cop.altitude(la, lo);
+    if (Number.isFinite(v)) doCopernicus++; else v = await terr.altitude(la, lo);
+    alt[j * RES + i] = v;
   }
-  corrigirMarPelaCosta(alt, natureza, xz);
+  if (doCopernicus > alt.length * 0.9) { console.log(`    relevo: Copernicus GLO-30 (${Math.round((100 * doCopernicus) / alt.length)}% das células)`); tratarRelevo(alt); }
+  else { console.log('    relevo: Terrarium (sem ladrilho do Copernicus)'); corrigirMarPelaCosta(alt, natureza, xz); }
   const mar = alt.filter((v) => v <= 0.5).length / alt.length;
   const litoral = mar > 0.02;
   const terra = [...alt].filter((v) => v > 0.5).sort((a, b) => a - b);
@@ -431,7 +502,8 @@ async function gerar(m: Mun, terr: Terrarium) {
     let h = alt[k] - base;
     if (litoral && alt[k] <= 0.5) h = Math.min(h, -3);
     else if (!litoral) h = Math.max(h, 2);
-    if (agua[k]) h = Math.min(h, -2.5);
+    // Fase 19: rio, canal e lagoa do OSM só rebaixam a baixada; em encosta o traçado (córrego, canal em galeria) abria paredões de 180 m
+    if (agua[k] && alt[k] < 8) h = Math.min(h, -2.5);
     alturas[k] = Math.round(Math.max(-30, Math.min(3200, h)) * 10);
   }
 
@@ -451,6 +523,9 @@ async function gerar(m: Mun, terr: Terrarium) {
   // ── ruas
   const ways = vias.filter((e) => e.type === 'way' && e.tags?.highway && e.geometry && e.nodes && e.geometry.length >= 2);
   const g = montarVias(ways, xz);
+  const rot = rotatoriasValidas(ways, xz);
+  console.log(`    rotatórias: ${rot.validas.length / 3} validadas, ${rot.descartadas.length} descartadas`);
+  await writeFile(join(ROOT, 'data', 'cache', 'rotatorias-descartadas.json'), JSON.stringify(rot.descartadas, null, 1));
   // amostras das arestas para achar a rua mais próxima de cada prédio
   const amostras = new Map<string, { x: number; z: number; e: number; tx: number; tz: number }[]>();
   const nA = g.arestas.length / 8;
@@ -618,7 +693,7 @@ async function gerar(m: Mun, terr: Terrarium) {
   const dados = CidadeReal.parse({
     versao: 1, ibge: m.ibge, nome: m.nome, uf: m.uf, lat: m.lat, lon: m.lon, geradoEm: new Date().toISOString(), base: Math.round(base * 10) / 10, litoral,
     passo: PASSO, res: RES, alturas: toB64(new Uint8Array(alturas.buffer)), verde: toB64(verde),
-    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed }, predios, nomesPredios,
+    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed, rotatorias: rot.validas, rotatoriasDescartadas: rot.descartadas.map(({ nome, motivo, x, z }) => ({ nome, motivo, x, z })) }, predios, nomesPredios,
     ...(() => {
       // bairros únicos pelo nome (mantém o 'suburb' se houver os dois), com a posição no mapa
       const porNome = new Map<string, { nome: string; x: number; z: number; t: number }>();

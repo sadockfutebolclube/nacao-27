@@ -12,6 +12,16 @@ import { BUILD_HALF } from '../../world/constants';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 
 let controlsRef: MapControlsImpl | null = null;
+let hmRef: Heightmap | null = null;
+/** Leva a câmera para um ponto do mapa (painel F3): olha de ~160 m, de sudeste, na altitude do terreno. */
+export function irPara(x: number, z: number, dist = 160) {
+  const c = controlsRef;
+  if (!c) return;
+  const y = hmRef ? Math.max(0, sampleHeight(hmRef, x, z)) : 0;
+  c.target.set(x, y, z);
+  c.object.position.set(x + dist * 0.5, y + dist * 0.6, z + dist * 0.8);
+  c.update();
+}
 const alvoPadrao = new THREE.Vector3();
 export const alvoCamera = () => (controlsRef ? controlsRef.target : alvoPadrao);
 
@@ -21,6 +31,8 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
   const teclas = useRef(new Set<string>());
   const ferramenta = useGame((s) => s.ferramenta.tipo);
   const tmp = useMemo(() => ({ f: new THREE.Vector3(), r: new THREE.Vector3(), off: new THREE.Vector3() }), []);
+
+  useEffect(() => { hmRef = hm; return () => { hmRef = null; }; }, [hm]);
 
   useEffect(() => {
     const [x, z] = inicio;

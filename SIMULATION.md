@@ -682,3 +682,14 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Desenho** (`render/city/Trilhos.tsx`): trajetos reamostrados a cada 8 m com a cota de D-087; fitas de lastro (textura de dormente) e trilhos só fora do túnel fundo; pilares nos viadutos; estações em instâncias, orientadas ao trilho; nomes (`etiqueta`, tipo 2) até 16 por vez a 1,1 km.
 - **Trens**: `MATERIAL` por tipo (velocidade, intervalo em min, vagões, comprimento); número de trens por trajeto = comprimento ÷ (v × intervalo), de 1 a 6, só em trajetos ≥ 500 m; ida e volta com fase deslocada; cada vagão acompanha o trajeto pela posição e inclinação; cor da linha clareada por `instanceColor`.
 - **Testes** (`tests/fase18.test.ts`).
+
+# Parte XVIII — Auditoria do relevo e das ruas (Fase 19)
+
+- **DEM** (`scripts/lib/copernicus.ts`): ladrilhos GeoTIFF de 1° do bucket `copernicus-dem-30m` lidos com `geotiff`, interpolação bilinear; `scripts/fetch-cidades.ts` amostra a grade de 16 m, marca terra (> 0,3 m), filtra (`removerOutliers`, `suavizarGaussiano`, `limitarInclinacao` de `src/world/relevo.ts`) e grava terra ≥ 0,8 m / água em −3 m.
+- **Carga** (`world/cidadeReal.ts`): grade do arquivo → picos famosos (gaussianas, com `limitarInclinacao` 1,4 na vizinhança) → `escavarVias` → distância à água.
+- **Terraplenagem** (`world/escavar.ts`): para cada trecho sem `nivel`, amostras de 3 m, `suavizarPerfil` (±6 amostras, duas passadas, ≤ 4 m do bruto, rampa ≤ 35% onde der); células a < núcleo recebem peso 1, a < núcleo + 8 m peso decrescente (smoothstep); média ponderada dos alvos de várias ruas × peso máximo. Água/praia (< 0,5 m) intocadas. ~190 ms por chamada (roda no worker e na tela).
+- **Mapa de normais** (`Terreno.tsx`): 2048² RGB = (nx, nz, ny), Catmull-Rom nas duas direções; o fragment shader troca a normal facetada pela do mapa antes do detalhe PBR.
+- **Rotatórias**: `rotatoriasValidas` em `fetch-cidades.ts` → `vias.rotatorias` [x, z, raio] e `vias.rotatoriasDescartadas`; ilha desenhada em `Vias.tsx` na cota média do anel.
+- **Depuração**: `render/city/DebugMapa.tsx` (F3: wireframe, normais), `estadoDebug.ts` (`diagnosticarVias`: enterrada > 1,2 m, flutuando > 2,5 m, rampa > 18%), `ui/PainelDebugMapa.tsx`.
+- **Medição**: `npm run auditar-mapa [-- --json]` (relevo e ruas, mesmos números antes e depois); `docs/auditoria-mapa/{antes,depois}.json` e prints.
+- **Testes** (`tests/fase19.test.ts`).

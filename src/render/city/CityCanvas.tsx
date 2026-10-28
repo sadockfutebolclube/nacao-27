@@ -21,6 +21,7 @@ import { Praia } from './Praia';
 import { Bairros } from './Bairros';
 import { Onibus } from './Onibus';
 import { Trilhos } from './Trilhos';
+import { DebugMapa } from './DebugMapa';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -96,7 +97,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
     <Canvas
       shadows={{ type: THREE.PCFShadowMap }}
       dpr={DPR[nivel]}
-      camera={{ fov: 45, near: 2, far: 30000, position: [0, 400, 600] }}
+      camera={{ fov: 45, near: 3, far: 30000, position: [0, 400, 600] }}
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance', logarithmicDepthBuffer: false }}
       onCreated={(estado) => {
         // gancho de depuração só em desenvolvimento
@@ -121,6 +122,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Veiculos') && <Veiculos />}
         {liga('Onibus') && <Onibus hm={hm} />}
         {liga('Trilhos') && <Trilhos hm={hm} />}
+        <DebugMapa hm={hm} />
         {liga('Pedestres') && <Pedestres hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}

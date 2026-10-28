@@ -675,3 +675,10 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Camada Transporte**: `LineSegments` com a cor de cada linha, 7 m acima do relevo.
 - **Censo** (`scripts/fetch-censo.ts`, `data/bairros.ts` → `bairros.json`): contornos simplificados a 15 m (anéis fechados divididos no ponto mais distante antes do Douglas–Peucker); `bairroCensoEm(x, z)`, `densidadeBairro`; camada `bairros` pinta os prédios por log10(hab./km²) de 2,7 a 4,7.
 - **Testes** (`tests/fase17.test.ts`).
+
+# Parte XVII — Metrô, trem e VLT (Fase 18)
+
+- **Dados** (`scripts/lib/geofabrik.ts` → cache `-trilhos.json`; `scripts/fetch-trilhos.ts` → `public/data/rio/trilhos.json`): vias `railway` (menos pátios, desvios e ramais de serviço) e estações (`railway=station|halt|tram_stop|subway_entrance`, `public_transport=station`). As vias se encadeiam pelos nós em comum, cadeias com menos de 150 m caem, cada trajeto é cortado onde sai do terreno (±8150 m) e simplificado a 4 m mantendo as mudanças de nível. Formato: `linhas[{id,tipo,nome,cor,trajetos:[[x,z,nivel,…]]}]` (nível −1 túnel, 0 chão, 1 viaduto; vale o do ponto de chegada) e `estacoes[{nome,tipo,x,z}]` (tipo = o da linha mais perto, a 140 m; nomes repetidos a menos de 150 m viram um).
+- **Desenho** (`render/city/Trilhos.tsx`): trajetos reamostrados a cada 8 m com a cota de D-087; fitas de lastro (textura de dormente) e trilhos só fora do túnel fundo; pilares nos viadutos; estações em instâncias, orientadas ao trilho; nomes (`etiqueta`, tipo 2) até 16 por vez a 1,1 km.
+- **Trens**: `MATERIAL` por tipo (velocidade, intervalo em min, vagões, comprimento); número de trens por trajeto = comprimento ÷ (v × intervalo), de 1 a 6, só em trajetos ≥ 500 m; ida e volta com fase deslocada; cada vagão acompanha o trajeto pela posição e inclinação; cor da linha clareada por `instanceColor`.
+- **Testes** (`tests/fase18.test.ts`).

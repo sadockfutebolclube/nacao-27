@@ -655,7 +655,7 @@ async function main() {
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).
   const porRegiao = new Map<string, Mun[]>();
   for (const m of alvo) {
-    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`))) continue;
+    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-bairros.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-trilhos.json`))) continue;
     const r = REGIAO_UF[m.uf];
     porRegiao.set(r, [...(porRegiao.get(r) ?? []), m]);
   }

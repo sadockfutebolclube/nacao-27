@@ -38,7 +38,7 @@ Kenney (CC0), Quaternius (CC0), Freesound (CC0/CC-BY — atribuir aqui).
 ## Dados geográficos das cidades reais (Fase 11)
 | Dado | Fonte | Licença | Atribuição exigida |
 |---|---|---|---|
-| Ruas, nomes, prédios (tipo, andares, nomes), água, vegetação, uso do solo | OpenStreetMap, via extratos regionais da Geofabrik (`scripts/lib/geofabrik.ts`) ou Overpass | ODbL 1.0 | “© colaboradores do OpenStreetMap” — exibida no jogo |
+| Ruas, nomes, prédios (tipo, andares, nomes), água, vegetação, uso do solo, trilhos e estações de metrô/trem/VLT/bonde | OpenStreetMap, via extratos regionais da Geofabrik (`scripts/lib/geofabrik.ts`) ou Overpass | ODbL 1.0 | “© colaboradores do OpenStreetMap” — exibida no jogo |
 | Contornos de prédios detectados por satélite (onde o OSM não tem) | Microsoft Global ML Building Footprints (`scripts/lib/msbuildings.ts`) | ODbL 1.0 | “© Microsoft” — exibida no jogo |
 | Relevo | Tiles Terrarium (Mapzen/Tilezen no AWS Open Data: SRTM, GMTED2010, ETOPO1) | domínio público / atribuição | “SRTM/Mapzen” — exibida no jogo |
 

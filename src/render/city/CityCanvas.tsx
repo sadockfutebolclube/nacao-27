@@ -20,6 +20,7 @@ import { Marcos } from './Marcos';
 import { Praia } from './Praia';
 import { Bairros } from './Bairros';
 import { Onibus } from './Onibus';
+import { Trilhos } from './Trilhos';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -119,6 +120,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('TransporteRender') && <TransporteRender hm={hm} />}
         {liga('Veiculos') && <Veiculos />}
         {liga('Onibus') && <Onibus hm={hm} />}
+        {liga('Trilhos') && <Trilhos hm={hm} />}
         {liga('Pedestres') && <Pedestres hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}

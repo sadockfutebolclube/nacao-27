@@ -258,3 +258,9 @@ O ônibus anda suave pelo itinerário do GTFS e a posição é corrigida só no 
 
 ## D-085 · Bairros por raster de 32 m
 Os 165 polígonos do IPP viram um raster de 32 m (512²) preenchido por varredura de linhas com regra par-ímpar. A consulta de qualquer lote ou prédio é um acesso a vetor, a camada de densidade e a ficha não custam nada por quadro, e o centro de cada bairro (para o nome no mapa) sai da média das próprias células, sempre dentro do bairro.
+
+## D-086 · Trilhos do OSM, trens só como cenário
+Os trilhos vêm do OSM (a prefeitura só publica ônibus no GTFS). `railway=subway|light_rail|rail|tram|rack|funicular|monorail` viram metrô, trem, VLT, bonde e cremalheira; `tram` é separado em bonde e VLT pela parada rotulada mais próxima (network/operator), e a bitola larga da MRS (carga) é descartada. Os trens não entram na simulação: seriam um sistema novo de passageiros e horários que não muda o jogo de governo; ficam como cenário vivo, com a frota dada pelo intervalo real de cada linha.
+
+## D-087 · Cota dos trilhos por nível e suavização
+O OSM só diz se o trecho é túnel, chão ou ponte. A cota é `h − 16 m` (túnel), `h + 0,3` (chão) ou `h + 7` (viaduto), com média numa janela de ±9 amostras (72 m) onde o nível muda, para formar rampas. A via só é desenhada onde `y > h − 3,5`, o resto é túnel sob o terreno.

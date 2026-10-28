@@ -15,7 +15,8 @@ import { alvoCamera } from './Camera';
 const ALCANCE = [5200, 1500];
 const MAX_VISIVEIS = 36;
 
-function etiqueta(texto: string, tipo: number): { tex: THREE.CanvasTexture; w: number; h: number } {
+/** Etiqueta de texto em canvas: tipo 0 bairro, 1 comunidade, 2 estação de trem/metrô. */
+export function etiqueta(texto: string, tipo: number): { tex: THREE.CanvasTexture; w: number; h: number } {
   const px = tipo === 0 ? 46 : 30;
   const c = document.createElement('canvas');
   const x = c.getContext('2d')!;
@@ -26,7 +27,7 @@ function etiqueta(texto: string, tipo: number): { tex: THREE.CanvasTexture; w: n
   x.textBaseline = 'middle'; x.textAlign = 'center';
   x.lineJoin = 'round'; x.lineWidth = 7; x.strokeStyle = 'rgba(8,16,14,0.85)';
   x.strokeText(texto, w / 2, h / 2 + 1);
-  x.fillStyle = tipo === 0 ? '#fff6dc' : '#bfe8d6';
+  x.fillStyle = tipo === 0 ? '#fff6dc' : tipo === 2 ? '#ffd9a0' : '#bfe8d6';
   x.fillText(texto, w / 2, h / 2 + 1);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;

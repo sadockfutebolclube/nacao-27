@@ -46,6 +46,9 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
   const sinais = new Map<string, { lat: number; lon: number; t: 's' | 'c' }[]>(alvos.map((a) => [a.ibge, []]));
   /** Fase 16: bairros (place=suburb/neighbourhood/quarter) dentro do mapa de cada cidade */
   const bairros = new Map<string, { nome: string; lat: number; lon: number; t: number }[]>(alvos.map((a) => [a.ibge, []]));
+  /** Fase 18: trilhos (metrô, trem, VLT, bonde, cremalheira) e estações no mapa de cada cidade */
+  const trilhos = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
+  const estacoes = new Map<string, { lat: number; lon: number; tags: Record<string, string> }[]>(alvos.map((a) => [a.ibge, []]));
   /** vias sem etiqueta dentro de algum mapa (podem ser contornos de lagos em relações) */
   const contornos = new Map<number, number[]>();
   let lidos = 0;
@@ -78,6 +81,11 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             if (nt?.name && /^(suburb|neighbourhood|quarter)$/.test(nt.place ?? '')) {
               for (const a of alvos) if (dentroBB(a.mapa, lat, lon)) bairros.get(a.ibge)!.push({ nome: nt.name, lat, lon, t: nt.place === 'suburb' ? 0 : 1 });
             }
+            if (nt && (/^(station|halt|tram_stop|subway_entrance)$/.test(nt.railway ?? '') || nt.public_transport === 'station' || nt.station)) {
+              const dica: Record<string, string> = {};
+              for (const k of ['name', 'railway', 'station', 'network', 'operator', 'public_transport', 'subway', 'light_rail', 'train', 'tram', 'colour', 'ref']) if (nt[k]) dica[k] = nt[k];
+              for (const a of alvos) if (dentroBB(a.mapa, lat, lon)) estacoes.get(a.ibge)!.push({ lat, lon, tags: dica });
+            }
             if (nt && (nt.highway === 'traffic_signals' || nt.highway === 'crossing' || nt.crossing)) {
               for (const a of alvos) if (dentroBB(a.construivel, lat, lon)) sinais.get(a.ibge)!.push({ lat, lon, t: nt.highway === 'traffic_signals' ? 's' : 'c' });
             }
@@ -86,7 +94,8 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             const temTag = Object.keys(t).length > 0;
             const viaPredio = !!t.building || (!!t.highway && RE_VIA.test(t.highway)) || /^(residential|commercial|retail|industrial)$/.test(t.landuse ?? '');
             const nat = /^(water|wood|scrub|coastline)$/.test(t.natural ?? '') || /^(river|canal|riverbank)$/.test(t.waterway ?? '') || /^(forest|reservoir|basin|grass|meadow)$/.test(t.landuse ?? '') || /^(park|nature_reserve|garden)$/.test(t.leisure ?? '');
-            if (!viaPredio && !nat && temTag) continue;
+            const trilho = /^(subway|light_rail|rail|tram|rack|funicular|monorail)$/.test(t.railway ?? '') && !/^(yard|siding|spur|crossover)$/.test(t.service ?? '');
+            if (!viaPredio && !nat && !trilho && temTag) continue;
             if (!it.refs!.some((r) => idx.has(r))) continue;
             if (!temTag) { contornos.set(it.id, it.refs!); continue; }
             const g = geometria(it.refs!);
@@ -95,6 +104,11 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             for (const a of alvos) {
               if (viaPredio && cruza(a.construivel, ...g.bb)) viasPredios.get(a.ibge)!.push(el);
               if (nat && cruza(a.mapa, ...g.bb)) natureza.get(a.ibge)!.push(el);
+              if (trilho && cruza(a.mapa, ...g.bb)) {
+                const dica: Record<string, string> = {};
+                for (const k of ['railway', 'name', 'ref', 'colour', 'operator', 'network', 'tunnel', 'bridge', 'layer', 'usage', 'electrified', 'line', 'route']) if (t[k]) dica[k] = t[k];
+                trilhos.get(a.ibge)!.push({ ...el, tags: dica });
+              }
             }
             // contorno etiquetado também pode ser membro de relação
             contornos.set(it.id, it.refs!);
@@ -121,5 +135,6 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
     await writeFile(join(saida, `${a.ibge}-natureza.json`), JSON.stringify(natureza.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-sinais.json`), JSON.stringify(sinais.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-bairros.json`), JSON.stringify(bairros.get(a.ibge)));
+    await writeFile(join(saida, `${a.ibge}-trilhos.json`), JSON.stringify({ vias: trilhos.get(a.ibge), estacoes: estacoes.get(a.ibge) }));
   }
 }

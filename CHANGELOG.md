@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 1.8.0 — Fase 18: metrô, trem, VLT e bonde (28/10/2026)
+
+### Trilhos de verdade
+- Os trilhos e as estações vêm do OpenStreetMap (extrato Geofabrik, `npm run fetch-cidades -- --refazer` regrava o cache e `npm run fetch-trilhos` gera `public/data/rio/trilhos.json`): 9 linhas e 136 estações dentro do mapa.
+- **Metrô** (Linhas 1, 2 e 4, nas cores oficiais), **SuperVia**, **VLT Carioca**, **Bonde de Santa Teresa**, trem do **Corcovado** e monotrilho da Vila Santa Cecília. Trens de carga (MRS) ficam de fora.
+- Túneis de verdade: o metrô e o trecho de túnel do trem correm 16 m abaixo do relevo e só aparecem onde saem para a superfície; viadutos sobem 7 m e ganham pilares; as rampas entre os níveis são suaves.
+- Via permanente com lastro, dormentes e dois trilhos.
+
+### Estações e trens
+- Metrô: quiosque de entrada laranja com cobertura escura. SuperVia: plataforma longa com cobertura azul. VLT, bonde e cremalheira: plataformas e abrigos curtos na cor da linha.
+- Nome da estação flutuando perto da câmera (até 16 por vez, a 1,1 km).
+- Trens andando de ponta a ponta e voltando, na cor da linha: quanto mais curto o intervalo (metrô ≈4,5 min, SuperVia ≈9, VLT ≈7, bonde ≈14), mais trens por trajeto. Composições de 6 vagões (metrô), 8 (trem), 7 (VLT), 1 (bonde), 2 (cremalheira); velocidades de 4 a 15 m/s; seguem a velocidade do jogo.
+
+### Verificado
+- 4 testes novos (`tests/fase18.test.ts`: classificação, níveis, cores, estações perto de trilho, bonde x VLT); typecheck estrito. No navegador: quiosque e nome da estação de Botafogo; via, plataforma e trem azul da SuperVia em Maracanã.
+
+### Limitações
+- Os trens são cenário: não carregam passageiros, não têm horário nem entram na simulação (caixa, tarifa, deslocamento da população).
+- As composições andam em ida e volta no mesmo trajeto, sem respeitar sinais nem parar nas estações; trajetos soltos do OSM (trechos sem ligação) viram trens separados.
+- O metrô não tem plataforma subterrânea desenhada: só a entrada na superfície e o túnel (que fica sob o terreno).
+- Mapa de 16 km: a SuperVia além de Deodoro/Realengo e o Metrô da Linha 4 fora do mapa não entram. Dados © colaboradores do OpenStreetMap (ODbL).
+
 ## 1.7.0 — Fase 17: ônibus reais e Censo 2022 (27/10/2026)
 
 ### Ônibus nas linhas de verdade

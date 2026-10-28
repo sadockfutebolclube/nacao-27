@@ -396,3 +396,18 @@ O relevo de satélite (30 m) erra a posição horizontal na borda de um paredão
 
 ## D-129 · Expansão para o noroeste adiada para uma fase própria
 Cobrir Madureira, Méier, Penha, Ilha do Governador e o Galeão pede um domínio de ~22 × 22 km (hoje 12,3 × 12,3 km edificáveis): ~3,2× a área, ~500 mil prédios e uma grade de raster de 5.500², com as constantes de mapa (MAP_SIZE, BUILD_HALF, HM_RES…) usadas em 27 arquivos e números fixos (8192, 3072, 1536) espalhados. Sem streaming por chunks na simulação e no desenho, o heap (já ~1 GB) e o tempo de geração (22 s) não fecham. Fica como fase própria com ordem: (1) mapa configurável em um só lugar; (2) extrator parametrizado; (3) streaming de prédios e vias; (4) medir tempo, memória e fps.
+
+## D-130 · Tráfego no Worker, snapshot de 20 Hz, desenho só interpola
+O prompt pedia tudo no Worker. `Trafego` é puro e determinístico (teste sem Worker); o Worker roda a 20 Hz num `setInterval` próprio, independente do tick do dia; o desenho mantém os dois últimos snapshots e interpola (um intervalo de atraso, 50 ms).
+
+## D-131 · Líder pela lista da faixa, grade espacial só para consultas radiais
+Cada veículo conhece o vizinho da própria faixa (lista ordenada por `link × faixa × s`) e, na ponta do trecho, o primeiro da faixa seguinte. A grade de 16 m serve a abrir passagem e conflitos; ordenar ~3.000 veículos por passo custa menos do que procurar vizinhos por distância.
+
+## D-132 · Regra assimétrica no MOBIL
+Sem ela, um caminhão lento na direita "cedia" a faixa ao carro de trás indo para a esquerda (a gentileza do MOBIL superava o ganho próprio). Para a esquerda só vai quem ganha com isso; para a direita vale o viés de manter a direita.
+
+## D-133 · Reserva da faixa de destino só na entrada
+Reservar cedo (a 14 m) zerou o fluxo (84% parados: impasses cíclicos). Ficou reserva de 0,8 s no momento da entrada mais a regra de espaço na saída: sobreposição em 0,06% dos pares.
+
+## D-134 · Viaturas de ocorrência viram veículos do tráfego
+A Fase 26/27 desenhava as viaturas por um caminho próprio. Agora o desenho pede (`emergencia`) e o Worker conduz: assim elas furam a fila de verdade e os outros abrem passagem. A compressão de tempo (chegada em eta × 2,2 s) continua.

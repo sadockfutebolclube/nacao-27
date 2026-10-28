@@ -16,6 +16,8 @@ import { calcadaVia, larguraVia, type RoadEdge } from '../../world/roads';
 import { roadBaseY, sampleHeight, sampleWaterDist, type Heightmap } from '../../world/terrain';
 import { alturaOriginal, Classe, regradeDe } from '../../world/regrade';
 import { ambiente } from './ambiente';
+import { CICLO_SEM, eixoSemaforo, faseSemaforo } from '../../sim/trafego/semaforo';
+import { trafegoEstado } from '../../sim/trafegoEstado';
 import { estatLateral } from './estadoDebug';
 import { clima } from './climaVisual';
 import { amostrarPerfil, construirPerfis, type Perfil } from './perfilVias';
@@ -214,15 +216,8 @@ interface MalhaBloco {
 }
 type MalhaVias = MalhaBloco[];
 
-/** Fase do semáforo (Fase 14): ciclo de 40 s; cada eixo tem 16 s de verde, 4 de amarelo e 20 de vermelho, defasados em 20 s. */
-export const CICLO_SEM = 40;
-/** eixo da aproximação pela direção (a rua que cruza tem o outro eixo) */
-export const eixoSemaforo = (tx: number, tz: number) => (Math.abs(tx) > Math.abs(tz) ? 0 : 1);
-/** 0 verde, 1 amarelo, 2 vermelho */
-export function faseSemaforo(eixo: number, t: number): 0 | 1 | 2 {
-  const u = (t + eixo * (CICLO_SEM / 2)) % CICLO_SEM;
-  return u < 16 ? 0 : u < 20 ? 1 : 2;
-}
+/** Fases do semáforo: as mesmas do Worker de tráfego (Fase 29), em src/sim/trafego/semaforo.ts */
+export { CICLO_SEM, eixoSemaforo, faseSemaforo };
 
 interface Acum { leitos: Record<string, Buffers>; calc: Buffers; calcadao: Buffers; lat: Buffers; cruz: Buffers; muro: Buffers; banqueta: Buffers; guarda: Buffers; ilha: Buffers; balaustres: THREE.Matrix4[]; portais: THREE.Matrix4[]; postes: THREE.Matrix4[]; pilares: THREE.Matrix4[]; palmeiras: THREE.Matrix4[]; zebras: THREE.Matrix4[]; hastesSem: THREE.Matrix4[]; lampSem: { m: THREE.Matrix4; eixo: number }[] }
 const novoAcum = (): Acum => ({ leitos: {}, calc: novo(), calcadao: novo(), lat: novo(), cruz: novo(), muro: novo(), banqueta: novo(), guarda: novo(), ilha: novo(), balaustres: [], portais: [], postes: [], pilares: [], palmeiras: [], zebras: [], hastesSem: [], lampSem: [] });
@@ -556,7 +551,7 @@ function Instancias({ matrizes, geometria, material, sombra = true }: { matrizes
   return <instancedMesh key={cap} ref={ref} args={[geometria, material, cap]} castShadow={sombra} receiveShadow />;
 }
 
-/** Tempo do semáforo (compartilhado com os carros): ambiente.tempo em segundos. */
+/** Tempo do semáforo: o do Worker de tráfego (as lâmpadas e os carros concordam); sem ele, ambiente.tempo. */
 const uSemTempo = { value: 0 };
 
 /** Lâmpada de semáforo: um bloco emissivo cuja cor (verde, amarelo, vermelho) sai da fase do eixo, calculada no shader. */
@@ -753,7 +748,7 @@ export function Vias({ hm }: { hm: Heightmap }) {
     mats.halo.color.copy(cor);
     mats.halo.opacity = n * (ambiente.luzSodio ? 0.5 : 0.42);
     mats.halo.visible = n > 0.02;
-    uSemTempo.value = ambiente.tempo;
+    uSemTempo.value = trafegoEstado.tempo >= 0 ? trafegoEstado.tempo : ambiente.tempo;
   });
 
   return (

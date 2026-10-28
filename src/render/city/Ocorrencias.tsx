@@ -10,17 +10,19 @@ import { Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { mundo, useGame } from '../../sim/bridge';
+import { enviarEmergencia, liberarCenaTrafego, mundo, useGame } from '../../sim/bridge';
+import { F, type PedidoEmergencia } from '../../sim/trafego/trafego';
+import { trafegoEstado } from '../../sim/trafegoEstado';
+import { percorrerTrafego } from './trafegoPose';
 import { DADOS } from '../../sim/faccoes/dados';
 import type { Ocorrencia } from '../../sim/faccoes/tipos';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { alvoCamera } from './Camera';
-import { novaCena, cenas, sirenes, type Cena } from './ocorrenciaEstado';
-import { amostrarPerfil, indiceDasVias, type AmostraVia, type Perfil } from './perfilVias';
+import { novaCena, cenas, sirenes } from './ocorrenciaEstado';
 import { ESPECIAIS } from '../../sim/especiais/dados';
 import { carregarModelo } from '../modelos/carregar';
 import { Conjunto } from '../modelos/conjunto';
-import { mergeGeos, perfisAtuais } from './Vias';
+import { mergeGeos } from './Vias';
 
 /** textura de chama (gota amarela no centro, laranja, borda transparente), gerada em canvas */
 function texturaChama(): THREE.CanvasTexture {
@@ -44,64 +46,10 @@ const MAX_VEIC = 40;
 const COM_COR = new Set(['police', 'suv', 'truck']);
 const chaveConj = (modelo: string, tint?: string) => (tint ? `${modelo}|${tint}` : modelo);
 
-interface Caminho { x: Float32Array; y: Float32Array; z: Float32Array; cum: Float32Array; comp: number }
-interface Veic { cena: number; modelo: string; tint?: string; v: number; caminho: Caminho; d: number; estado: 'espera' | 'chega' | 'parado' | 'sai'; inicioS: number; paradaD: number; fase: number; esquerda: boolean; inst: string }
-
 const COR_TIPO: Record<string, string> = { operacao: '#ff7a3c', confronto: '#ff3b3b', blitz: '#4aa3ff', roubo: '#ffd45e', incendio: '#ff8a1f', acidente: '#ffd45e', resgate: '#56d4a0', enchente: '#4aa3ff' };
 
-/** ponto do caminho a `d` metros do começo (posição e rumo) */
-function noCaminho(c: Caminho, d: number, out: { x: number; y: number; z: number; hx: number; hz: number }) {
-  const dd = Math.min(c.comp, Math.max(0, d));
-  let lo = 0, hi = c.cum.length - 1;
-  while (lo < hi - 1) { const m = (lo + hi) >> 1; if (c.cum[m] <= dd) lo = m; else hi = m; }
-  const seg = Math.max(1e-6, c.cum[hi] - c.cum[lo]), f = (dd - c.cum[lo]) / seg;
-  out.x = c.x[lo] + (c.x[hi] - c.x[lo]) * f; out.y = c.y[lo] + (c.y[hi] - c.y[lo]) * f; out.z = c.z[lo] + (c.z[hi] - c.z[lo]) * f;
-  const dx = c.x[hi] - c.x[lo], dz = c.z[hi] - c.z[lo], l = Math.hypot(dx, dz) || 1;
-  out.hx = dx / l; out.hz = dz / l;
-}
-
-/** Caminho de chegada: da ponta mais distante (~`comp` m) até o ponto mais perto da cena, pelas ruas. */
-function montarCaminho(x: number, z: number, comp: number, adj: Map<number, number[]>, rnd: () => number): Caminho | null {
-  const am: AmostraVia = { x: 0, y: 0, z: 0, tx: 0, tz: 0, largura: 0, edge: 0 };
-  if (!perfisAtuais.size || !indiceDasVias(perfisAtuais).perto(x, z, 140, am)) return null;
-  let pf: Perfil | undefined = perfisAtuais.get(am.edge);
-  if (!pf) return null;
-  // posição s do ponto mais perto da cena nesse trecho
-  let s0 = 0, bd = Infinity;
-  for (let i = 0; i < pf.n; i++) { const d = (pf.x[i] - x) ** 2 + (pf.z[i] - z) ** 2; if (d < bd) { bd = d; s0 = pf.s[i]; } }
-  // caminha "para fora" a partir da cena e depois inverte
-  const px: number[] = [], py: number[] = [], pz: number[] = [];
-  const p = { x: 0, y: 0, z: 0, tx: 0, tz: 0 };
-  let dir: 1 | -1 = rnd() < 0.5 ? 1 : -1, s = s0, total = 0;
-  const visitados = new Set<number>();
-  for (let guarda = 0; guarda < 14 && total < comp && pf; guarda++) {
-    visitados.add(pf.edge.id);
-    const fim = dir === 1 ? pf.comprimento : 0;
-    for (let q = s; dir === 1 ? q <= fim : q >= fim; q += dir * 4) {
-      amostrarPerfil(pf, q, p);
-      px.push(p.x); py.push(p.y + 0.05); pz.push(p.z);
-      total += px.length > 1 ? Math.hypot(px[px.length - 1] - px[px.length - 2], pz[pz.length - 1] - pz[pz.length - 2]) : 0;
-      if (total >= comp) break;
-    }
-    if (total >= comp) break;
-    const no: number = dir === 1 ? pf.edge.b : pf.edge.a;
-    const op: number[] = (adj.get(no) ?? []).filter((id) => !visitados.has(id) && perfisAtuais.has(id));
-    if (!op.length) break;
-    const prox: Perfil = perfisAtuais.get(op[Math.floor(rnd() * op.length)])!;
-    dir = prox.edge.a === no ? 1 : -1;
-    s = dir === 1 ? 0 : prox.comprimento;
-    pf = prox;
-  }
-  if (px.length < 3) return null;
-  // inverte: começa longe e termina na cena
-  px.reverse(); py.reverse(); pz.reverse();
-  const n = px.length, cum = new Float32Array(n);
-  for (let i = 1; i < n; i++) cum[i] = cum[i - 1] + Math.hypot(px[i] - px[i - 1], pz[i] - pz[i - 1]);
-  return { x: Float32Array.from(px), y: Float32Array.from(py), z: Float32Array.from(pz), cum, comp: cum[n - 1] };
-}
 
 export function Ocorrencias({ hm }: { hm: Heightmap }) {
-  const wv = useGame((s) => s.worldVersion);
   const camera = useThree((st) => st.camera);
   const geos = useMemo(() => ({ sirene: new THREE.BoxGeometry(1.15, 0.24, 0.5), chama: mergeGeos([new THREE.PlaneGeometry(2.6, 4).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 2).translate(0, 2, 0), new THREE.PlaneGeometry(2.6, 4).rotateY(Math.PI / 4).translate(0, 2, 0)]), fumaca: new THREE.IcosahedronGeometry(1, 1), lampejo: new THREE.BoxGeometry(0.5, 0.5, 0.5), cone: new THREE.ConeGeometry(0.28, 0.7, 8).translate(0, 0.35, 0), disco: new THREE.CylinderGeometry(1, 1, 0.12, 40) }), []);
   const mats = useMemo(() => ({
@@ -132,12 +80,7 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
   };
   useEffect(() => () => { criados.current.forEach((c) => c.dispose()); criados.current = []; }, []);
   const refs = useRef<Record<string, THREE.InstancedMesh | null>>({});
-  const adj = useMemo(() => {
-    const m = new Map<number, number[]>();
-    for (const e of mundo.roads.edges.values()) { (m.get(e.a) ?? m.set(e.a, []).get(e.a)!).push(e.id); (m.get(e.b) ?? m.set(e.b, []).get(e.b)!).push(e.id); }
-    return m;
-  }, [wv]);
-  const E = useRef({ visto: -1, veic: [] as Veic[], relogio: 0, rng: 9091, inicio: true });
+  const E = useRef({ visto: -1, relogio: 0, rng: 9091, inicio: true });
   const [rotulos, setRotulos] = useState<{ id: number; x: number; y: number; z: number; texto: string; cor: string }[]>([]);
   const tmp = useMemo(() => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), e: new THREE.Euler(), c: new THREE.Color(), eixo: new THREE.Vector3(0, 1, 0), p: { x: 0, y: 0, z: 0, hx: 0, hz: 1 } }), []);
   const rnd = () => { const e = E.current; e.rng = (e.rng * 1664525 + 1013904223) >>> 0; return e.rng / 4294967296; };
@@ -146,10 +89,10 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
 
   /** Cria a cena (e as viaturas) de uma ocorrência. */
   const iniciar = (oc: Ocorrencia) => {
-    const e = E.current;
     const cena = novaCena(oc, rnd);
     cenas.push(cena);
     const veiculos = DADOS.instituicoes.veiculos;
+    const pedido: PedidoEmergencia = { cena: oc.id, x: oc.x, z: oc.z, veiculos: [] };
     for (const r of oc.resposta) {
       const inst = DADOS.instituicoes.instituicoes[r.inst];
       const def = r.esp && inst.especializacao?.[r.esp] ? inst.especializacao[r.esp] : inst;
@@ -158,16 +101,11 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
       const modelo = ve.modelo;
       const tint = COM_COR.has(modelo) ? `#${new THREE.Color(def.cor).lerp(new THREE.Color('#ffffff'), 0.5).getHexString()}` : undefined;
       pedir(modelo, tint);
-      const caminho = montarCaminho(oc.x, oc.z, 360 + rnd() * 160, adj, rnd);
-      if (!caminho) continue;
-      const v = Math.min(20, Math.max(13, def.velocidade));
-      for (let k = 0; k < Math.min(2, r.viaturas); k++) {
-        // a chegada na cena acontece perto de eta × 2 s (compressão do tempo) — quem demora mais, chega depois
-        const chegada = Math.min(32, Math.max(3, r.etaMin * 2.2)) + k * 1.4;
-        const inicioS = Math.max(0, chegada - caminho.comp / v);
-        e.veic.push({ cena: oc.id, modelo, tint, v, caminho, d: 0, estado: 'espera', inicioS, paradaD: Math.max(8, caminho.comp - 11 - k * 6.5), fase: rnd() * 6, esquerda: k % 2 === 1, inst: r.inst });
-      }
+      const rotulo = `${modelo}|${tint ?? ''}|${r.inst}`;
+      // a viatura chega perto de eta × 2,2 s (compressão do tempo), no máximo 32 s
+      pedido.veiculos.push({ rotulo, n: Math.min(2, r.viaturas), chegadaS: Math.min(32, Math.max(3, r.etaMin * 2.2)) });
     }
+    if (pedido.veiculos.length) enviarEmergencia(pedido);
     const nomeTipo = DADOS.ocorrencias.tipos[oc.tipo].nome;
     const eta = oc.resposta.length ? Math.min(...oc.resposta.map((r) => r.etaMin)) : 0;
     setRotulos((l) => [...l, { id: oc.id, x: oc.x, y: Math.max(0, sampleHeight(hm, oc.x, oc.z)) + 14 + l.length * 4.5, z: oc.z, texto: `${nomeTipo}${eta ? ` · 1ª viatura em ${eta.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} min` : ''}`, cor: COR_TIPO[oc.tipo] ?? '#fff' }]);
@@ -212,13 +150,10 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
     // avança as cenas; quando acabam, saem do estado compartilhado (a reação dos NPCs termina) e as viaturas vão embora
     for (let i = cenas.length - 1; i >= 0; i--) {
       cenas[i].t += dt;
-      if (cenas[i].t > cenas[i].dur) { const id = cenas[i].id; cenas.splice(i, 1); setRotulos((l) => l.filter((r) => r.id !== id)); }
+      if (cenas[i].t > cenas[i].dur) { const id = cenas[i].id; cenas.splice(i, 1); liberarCenaTrafego(id); setRotulos((l) => l.filter((r) => r.id !== id)); }
     }
     sirenes.length = 0;
-    const ativos = new Set(cenas.map((c) => c.id));
-    const cenaDe = (id: number): Cena | undefined => cenas.find((c) => c.id === id);
-
-    const { m, q, v, s, e: eu, c, eixo, p } = tmp;
+    const { m, q, v, s, e: eu, c, eixo } = tmp;
     for (const cj of conjuntos.values()) cj.inicio();
     const cam = camera.position;
     const cont: Record<string, number> = { sirene: 0, chama: 0, fumaca: 0, lampejo: 0, cone: 0, disco: 0 };
@@ -232,32 +167,24 @@ export function Ocorrencias({ hm }: { hm: Heightmap }) {
     };
     const t = clock.elapsedTime;
 
-    // viaturas
-    for (let i = e.veic.length - 1; i >= 0; i--) {
-      const ve = e.veic[i];
-      const cena = cenaDe(ve.cena);
-      const t0 = cena ? cena.t : 1e9;
-      if (!ativos.has(ve.cena) && ve.estado !== 'sai') ve.estado = 'sai';
-      if (ve.estado === 'espera') { if (cena && cena.t >= ve.inicioS) ve.estado = 'chega'; else if (!cena) { e.veic.splice(i, 1); continue; } else continue; }
-      void t0;
-      if (ve.estado === 'chega') { ve.d += ve.v * dt; if (ve.d >= ve.paradaD) { ve.d = ve.paradaD; ve.estado = 'parado'; } }
-      else if (ve.estado === 'sai') { ve.d -= ve.v * dt; if (ve.d <= 0) { e.veic.splice(i, 1); continue; } }
-      noCaminho(ve.caminho, ve.d, p);
-      const yaw = Math.atan2(p.hx, p.hz) + (ve.estado === 'sai' ? Math.PI : 0);
-      // mão direita; parado: de lado, como estacionado no local
-      const lado = ve.estado === 'parado' ? (ve.esquerda ? -3.2 : 3) : 2.4;
-      const x = p.x - p.hz * lado, z = p.z + p.hx * lado;
-      const y = p.y;
-      const cj = conjuntos.get(chaveConj(ve.modelo, ve.tint));
-      if (cj) cj.poe(x, y, z, yaw, 0, 0, Math.hypot(x - cam.x, y - cam.y, z - cam.z));
-      const alt = cj ? cj.modelo.tam.y : 1.9;
-      const meia = cj ? cj.modelo.tam.x * 0.22 : 0.38;
-      const fase = Math.sin((t * DADOS.ocorrencias.reacao.sirene.frequenciaHz + ve.fase) * Math.PI * 2) > 0;
-      // barra de luz: vermelho/azul alternando (cada lado de um tom); a sirene só quando está em movimento ou no local de atendimento
-      c.set(fase ? '#ff2a2a' : '#1a0000'); poe('sirene', [x - Math.cos(yaw) * meia, y + alt, z + Math.sin(yaw) * meia], [1, 1, 1], yaw, c);
-      c.set(fase ? '#001a40' : '#2a7bff'); poe('sirene', [x + Math.cos(yaw) * meia, y + alt, z - Math.sin(yaw) * meia], [1, 1, 1], yaw, c);
-      if (ve.estado !== 'parado') sirenes.push({ x, z, yaw });
-    }
+    // viaturas: o tráfego do Worker dirige (IDM, faixa da esquerda, os outros abrem passagem); aqui só se desenha, com a barra de luz
+    percorrerTrafego((pv) => {
+      if (pv.rotulo <= 0) return;
+      const rot = trafegoEstado.rotulos[pv.rotulo - 1];
+      if (!rot) return;
+      const [modelo, tint] = rot.split('|');
+      const cj = conjuntos.get(chaveConj(modelo, tint || undefined));
+      if (!cj) return;
+      cj.poe(pv.x, pv.y, pv.z, pv.yaw, 0, 0, Math.hypot(pv.x - cam.x, pv.y - cam.y, pv.z - cam.z));
+      if (pv.flags & F.SIRENE) {
+        const alt = cj.modelo.tam.y, meia = cj.modelo.tam.x * 0.22;
+        const fase = Math.sin((t * DADOS.ocorrencias.reacao.sirene.frequenciaHz + pv.id * 0.37) * Math.PI * 2) > 0;
+        // barra de luz: vermelho/azul alternando (cada lado de um tom)
+        c.set(fase ? '#ff2a2a' : '#1a0000'); poe('sirene', [pv.x - Math.cos(pv.yaw) * meia, pv.y + alt, pv.z + Math.sin(pv.yaw) * meia], [1, 1, 1], pv.yaw, c);
+        c.set(fase ? '#001a40' : '#2a7bff'); poe('sirene', [pv.x + Math.cos(pv.yaw) * meia, pv.y + alt, pv.z - Math.sin(pv.yaw) * meia], [1, 1, 1], pv.yaw, c);
+        if (pv.v > 1) sirenes.push({ x: pv.x, z: pv.z, yaw: pv.yaw });
+      }
+    });
 
     // efeitos de cada cena
     for (const cena of cenas) {

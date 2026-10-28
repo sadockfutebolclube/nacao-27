@@ -6,6 +6,8 @@
 import type { FromWorker, ToWorker } from './protocol';
 import { Simulation } from './simulation';
 import { deUF } from '../data/nomes';
+import { Rede } from './trafego/rede';
+import { Trafego } from './trafego/trafego';
 import type { BairroCenso } from '../data/bairros';
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -23,6 +25,43 @@ let fatias: ReturnType<typeof setTimeout> | null = null;
 let lastWorldVersion = -1;
 /** versões dos dados de renderização já enviados */
 let vistos = { terr: -1, fav: -1, lin: -1, tran: -1 };
+
+/** Fase 29: tráfego microscópico (IDM + MOBIL) a 20 Hz, independente do tick do dia; o mundo só recebe o snapshot dos veículos */
+const MS_TRAFEGO = 50;
+let trafego: Trafego | null = null;
+let trafegoVersao = -1;
+let timerTrafego: ReturnType<typeof setInterval> | null = null;
+let focoTrafego = { x: 0, z: 0, raio: 1600, alvo: 0, onibus: false };
+let pedidosPendentes: import('./trafego/trafego').PedidoEmergencia[] = [];
+
+function garantirTrafego(): Trafego | null {
+  if (!sim) return null;
+  if (!trafego || trafegoVersao !== sim.worldVersion) {
+    if (sim.graph.edges.size === 0) return null;
+    trafego = new Trafego(Rede.de(sim.graph), { cap: 3200, seed: 777 });
+    trafegoVersao = sim.worldVersion;
+    for (const p of pedidosPendentes) trafego.emergencia(p);
+  }
+  return trafego;
+}
+
+function passoTrafego() {
+  if (speed <= 0 || !sim) return;
+  const t = garantirTrafego();
+  if (!t) return;
+  t.foco = { x: focoTrafego.x, z: focoTrafego.z, raio: focoTrafego.raio };
+  t.alvo = focoTrafego.alvo; t.comOnibus = focoTrafego.onibus;
+  t.step((MS_TRAFEGO / 1000) * Math.min(2, 0.6 + speed * 0.4));
+  const snap = t.snapshot();
+  const { ativos, ms, parados, trocas, ultrapassagens, emergencias } = t.stats;
+  post({ type: 'trafego', tempo: t.tempo, dados: snap.dados, n: snap.n, rotulos: t.rotulos.slice(), stats: { ativos, ms, parados, trocas, ultrapassagens, emergencias } }, [snap.dados.buffer]);
+}
+
+function ligarTrafego() {
+  if (timerTrafego) return;
+  timerTrafego = setInterval(() => { try { passoTrafego(); } catch (e) { post({ type: 'error', msg: e instanceof Error ? `tráfego: ${e.message}
+${e.stack}` : String(e) }); } }, MS_TRAFEGO);
+}
 
 function post(msg: FromWorker, transfer: Transferable[] = []) {
   self.postMessage(msg, transfer);
@@ -76,6 +115,7 @@ function loop() {
 
 function setSpeed(s: number) {
   speed = s;
+  ligarTrafego();
   if (timer) { clearTimeout(timer); timer = null; }
   if (speed > 0) timer = setTimeout(loop, MS_POR_TICK_1X / speed);
   agendarFatias();
@@ -83,6 +123,7 @@ function setSpeed(s: number) {
 
 function novaSimulacao(s: Simulation) {
   sim = s;
+  trafego = null; trafegoVersao = -1; pedidosPendentes = [];
   sim.orcamentoMs = ORCAMENTO_MS;
   // Fase 26: o Censo dá os polígonos de bairro para as facções (cidade real do Rio)
   if (s.real?.ibge === '3304557') {
@@ -131,6 +172,18 @@ self.onmessage = (ev: MessageEvent<ToWorker>) => {
         break;
       case 'foco':
         sim?.definirFoco(msg.x, msg.z, msg.raio);
+        break;
+      case 'trafego':
+        focoTrafego = { x: msg.x, z: msg.z, raio: msg.raio, alvo: msg.alvo, onibus: msg.onibus };
+        break;
+      case 'emergencia':
+        pedidosPendentes.push(msg.pedido);
+        if (pedidosPendentes.length > 40) pedidosPendentes.shift();
+        trafego?.emergencia(msg.pedido);
+        break;
+      case 'cena-fim':
+        trafego?.liberarCena(msg.cena);
+        pedidosPendentes = pedidosPendentes.filter((p) => p.cena !== msg.cena);
         break;
       case 'orcamento':
         if (sim) sim.orcamentoMs = msg.ms > 0 ? msg.ms : Infinity;

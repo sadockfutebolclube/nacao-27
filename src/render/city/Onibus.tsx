@@ -3,6 +3,7 @@
  * com a cor da linha, na frequência do horário (viagens por hora de um dia útil), e é encaixado no eixo da
  * rua mais próxima (cota certa em túnel e viaduto). O BRT (MOBI-Rio) usa o articulado. As paradas viram
  * abrigos de ponto de ônibus. Na camada "Transporte" os itinerários aparecem desenhados no mapa.
+ * Fase 29: o ônibus PARA nos pontos (freia na aproximação, fica 6–14 s parado e arranca) e respeita o semáforo do Worker de tráfego.
  * Dados: Prefeitura do Rio (SMTR) via Data.Rio — public/data/rio/onibus.json (npm run fetch-gtfs).
  */
 import { useFrame, useThree } from '@react-three/fiber';
@@ -11,6 +12,8 @@ import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
 import { roadBaseY, sampleHeight, type Heightmap } from '../../world/terrain';
 import { ambiente } from './ambiente';
+import { eixoSemaforo, faseSemaforo } from '../../sim/trafego/semaforo';
+import { trafegoEstado } from '../../sim/trafegoEstado';
 import { alvoCamera } from './Camera';
 import { indiceDasVias, type AmostraVia } from './perfilVias';
 import { geoBrt, geoOnibus, materialVeiculo } from './Veiculos';
@@ -23,9 +26,12 @@ interface DadosOnibus { linhas: LinhaDados[]; nomesParadas: string[]; paradas: n
 
 /** trecho de itinerário pronto para andar: pontos, distâncias acumuladas e caixa */
 interface Trecho { linha: number; tipo: number; cor: THREE.Color; xs: Float32Array; zs: Float32Array; cum: Float32Array; comp: number; minx: number; maxx: number; minz: number; maxz: number }
-interface Onibus { ativo: boolean; trecho: number; s: number; v: number; cor: THREE.Color; tipo: number; id: number; semente: number }
+interface Onibus { ativo: boolean; trecho: number; s: number; v: number; cor: THREE.Color; tipo: number; id: number; semente: number; /** velocidade atual (m/s) */ cur: number; /** s de parada restantes */ parada: number; /** ponto onde parou por último (não para de novo nele) */ ult: number }
 
 const MAX = 160;
+/** ponto de ônibus: células de 40 m com os pontos (x, z) do GTFS */
+const CEL_PARADA = 40;
+const celP = (x: number, z: number) => Math.floor(x / CEL_PARADA) * 100003 + Math.floor(z / CEL_PARADA);
 const RAIO = 1500;
 
 /** Peso de uma linha na hora: viagens por hora (com um mínimo para as de madrugada não sumirem à noite). */
@@ -61,6 +67,20 @@ function ponto(t: Trecho, s: number, out: { x: number; z: number; hx: number; hz
   out.hx = dx / l; out.hz = dz / l;
 }
 
+/** nós com semáforo, em células de 24 m (refeito quando o grafo muda) */
+const cacheSem = new WeakMap<object, Map<number, { x: number; z: number }[]>>();
+function semaforosPerto(x: number, z: number): { x: number; z: number }[] {
+  let g = cacheSem.get(mundo.roads);
+  if (!g) {
+    g = new Map();
+    for (const n of mundo.roads.nodes.values()) if (n.semaforo) { const k = Math.floor(n.x / 24) * 100003 + Math.floor(n.z / 24); (g.get(k) ?? g.set(k, []).get(k)!).push(n); }
+    cacheSem.set(mundo.roads, g);
+  }
+  const out: { x: number; z: number }[] = [];
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const n of g.get((Math.floor(x / 24) + i) * 100003 + Math.floor(z / 24) + j) ?? []) out.push(n);
+  return out;
+}
+
 export function Onibus({ hm }: { hm: Heightmap }) {
   const real = mundo.real;
   const [dados, setDados] = useState<DadosOnibus | null>(null);
@@ -78,6 +98,11 @@ export function Onibus({ hm }: { hm: Heightmap }) {
   }, [real]);
 
   const trechos = useMemo(() => (dados ? preparar(dados) : []), [dados]);
+  const gradeParadas = useMemo(() => {
+    const g = new Map<number, number[]>();
+    if (dados) for (let i = 0; i + 2 < dados.paradas.length; i += 3) (g.get(celP(dados.paradas[i], dados.paradas[i + 1])) ?? g.set(celP(dados.paradas[i], dados.paradas[i + 1]), []).get(celP(dados.paradas[i], dados.paradas[i + 1]))!).push(i);
+    return g;
+  }, [dados]);
   const geos = useMemo(() => ({ onibus: geoOnibus(), brt: geoBrt(), abrigo: geoAbrigo() }), []);
   const uNoite = useMemo(() => ({ value: 0 }), []);
   const mats = useMemo(() => ({ corpo: materialVeiculo(uNoite), abrigo: new THREE.MeshStandardMaterial({ color: '#2f6db5', roughness: 0.6, metalness: 0.2 }) }), [uNoite]);
@@ -159,7 +184,7 @@ export function Onibus({ hm }: { hm: Heightmap }) {
 
     // quantos ônibus: a frequência da hora nas linhas por perto (cada viagem leva ~1 h) × fração do trajeto no raio
     const alvo = Math.max(8, Math.min(MAX, Math.round(e.pesoTotal * 0.3)));
-    while (e.pool.length < alvo) e.pool.push({ ativo: false, trecho: 0, s: 0, v: 8, cor: new THREE.Color(), tipo: 0, id: 0, semente: 0 });
+    while (e.pool.length < alvo) e.pool.push({ ativo: false, trecho: 0, s: 0, v: 8, cor: new THREE.Color(), tipo: 0, id: 0, semente: 0, cur: 8, parada: 0, ult: -1 });
     if (e.pool.length > alvo) e.pool.length = alvo;
 
     const sorteia = (b: Onibus) => {
@@ -172,7 +197,7 @@ export function Onibus({ hm }: { hm: Heightmap }) {
         const vi = Math.floor(rand() * t.xs.length);
         if (Math.hypot(t.xs[vi] - a.x, t.zs[vi] - a.z) < RAIO) {
           b.trecho = ti; b.s = Math.max(0, t.cum[vi] - rand() * 20); b.tipo = t.tipo; b.cor.copy(t.cor);
-          b.v = t.tipo === 1 ? 7 + rand() * 4 : 5 + rand() * 4; b.ativo = true;
+          b.v = t.tipo === 1 ? 7 + rand() * 4 : 5 + rand() * 4; b.cur = b.v; b.parada = 0; b.ult = -1; b.ativo = true;
           b.id = registro.novoId(); b.semente = 1 + Math.floor(rand() * 1_000_000_000);
           return;
         }
@@ -183,7 +208,32 @@ export function Onibus({ hm }: { hm: Heightmap }) {
     for (const b of e.pool) {
       if (b.ativo) {
         const t = trechos[b.trecho];
-        b.s += b.v * dt;
+        // pontos de ônibus: a até ~28 m à frente e do lado da pista, freia; parado, espera e arranca; no vermelho, para antes do nó
+        ponto(t, Math.min(b.s, t.comp), p);
+        let alvoV = b.v;
+        if (b.parada > 0) { b.parada -= dt; alvoV = 0; }
+        else {
+          let melhor = -1, dm = 28;
+          const c0x = Math.floor((p.x - 30) / CEL_PARADA), c1x = Math.floor((p.x + 30) / CEL_PARADA), c0z = Math.floor((p.z - 30) / CEL_PARADA), c1z = Math.floor((p.z + 30) / CEL_PARADA);
+          for (let cx = c0x; cx <= c1x; cx++) for (let cz = c0z; cz <= c1z; cz++) for (const i of gradeParadas.get(cx * 100003 + cz) ?? []) {
+            if (i === b.ult) continue;
+            const dx = dados.paradas[i] - p.x, dz = dados.paradas[i + 1] - p.z, d = Math.hypot(dx, dz);
+            if (d < dm && dx * p.hx + dz * p.hz > 0) { dm = d; melhor = i; }
+          }
+          if (melhor >= 0) {
+            alvoV = Math.min(b.v, 0.8 + dm * 0.3);
+            if (dm < 3.5 && b.cur < 2) { b.parada = 6 + rand() * 8; b.ult = melhor; }
+          }
+          if (trafegoEstado.tempo >= 0 && alvoV > 0.5) {
+            // semáforo à frente (nó do trecho mais perto): a mesma fase do Worker
+            for (const sem of semaforosPerto(p.x + p.hx * 14, p.z + p.hz * 14)) {
+              if (faseSemaforo(eixoSemaforo(p.hx, p.hz), trafegoEstado.tempo) !== 0 && Math.hypot(sem.x - p.x, sem.z - p.z) < 16) { alvoV = 0; break; }
+            }
+          }
+        }
+        // aceleração e frenagem suaves
+        b.cur += Math.max(-2.2 * dt, Math.min(1.2 * dt, alvoV - b.cur));
+        b.s += b.cur * dt;
         ponto(t, Math.min(b.s, t.comp), p);
         if (b.s >= t.comp || Math.hypot(p.x - a.x, p.z - a.z) > RAIO * 1.6) b.ativo = false;
       }

@@ -2,6 +2,8 @@
  * Ponte entre a thread principal e o Worker. Dados volumosos (lotes, estado por lote) ficam
  * em `mundo` (mutável, sem re-render); a UI assina só versões e estatísticas via Zustand.
  */
+import { limparTrafego, receberTrafego } from './trafegoEstado';
+import type { PedidoEmergencia } from './trafego/trafego';
 import { medir } from '../render/medir';
 import { definirPerfSim } from './estadoPerf';
 import type { CidadeReal } from '../data/cidadeReal';
@@ -162,6 +164,9 @@ function tratar(ev: MessageEvent<FromWorker>) {
       useGame.setState((s) => ({ ...versoes, stats: m.stats, noticias, stateVersion: s.stateVersion + 1 }));
       break;
     }
+    case 'trafego':
+      receberTrafego(m);
+      break;
     case 'cmdResult':
       pendentes.get(m.id)?.(m);
       pendentes.delete(m.id);
@@ -196,6 +201,7 @@ export function iniciarSimulacao(init: SimInit | null, save: SaveData | null, re
 }
 
 export function pararSimulacao() {
+  limparTrafego();
   worker?.terminate();
   worker = null;
   pendentes.clear();
@@ -203,6 +209,10 @@ export function pararSimulacao() {
 
 /** A câmera avisa o worker onde está olhando: o que está perto roda a simulação completa, o resto em LOD. */
 export function enviarFoco(x: number, z: number, raio: number) { post({ type: 'foco', x, z, raio }); }
+/** Fase 29: foco do tráfego (câmera), quantos veículos manter e se a frota genérica tem ônibus */
+export function enviarTrafego(x: number, z: number, raio: number, alvo: number, onibus: boolean) { post({ type: 'trafego', x, z, raio, alvo, onibus }); }
+export function enviarEmergencia(pedido: PedidoEmergencia) { post({ type: 'emergencia', pedido }); }
+export function liberarCenaTrafego(cena: number) { post({ type: 'cena-fim', cena }); }
 
 /** Orçamento de CPU por passo da simulação (ms); 0 = síncrono (painel F4). */
 export function definirOrcamento(ms: number) { post({ type: 'orcamento', ms }); }

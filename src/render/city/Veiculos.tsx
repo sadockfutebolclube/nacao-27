@@ -7,22 +7,21 @@
  * A quantidade acompanha população e empregos simulados.
  */
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { Rng } from '../../sim/core/rng';
-import { mundo, useGame } from '../../sim/bridge';
-import { faixasVia, larguraVia, ROAD_SPECS } from '../../world/roads';
+import { enviarTrafego, mundo, useGame } from '../../sim/bridge';
+import { F } from '../../sim/trafego/trafego';
 import { ambiente } from './ambiente';
-import { amostrarPerfil } from './perfilVias';
 import { onibusEstado } from './onibusEstado';
-import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
-import { alvoCamera } from './Camera';
 import { mergeGeos } from './Vias';
+import { alvoCamera } from './Camera';
 import { registro } from '../../entidades/registro';
-import { fatorTransito, sireneAte } from './ocorrenciaEstado';
-import { DADOS as DADOS_SEG } from '../../sim/faccoes/dados';
+import { percorrerTrafego } from './trafegoPose';
+import { trafegoEstado } from '../../sim/trafegoEstado';
 
 const MAX = 700;
+/** dev: window.__n27trafego.dev.alvo = 1500 força mais veículos (engarrafamento para teste) */
+const devTrafego = { alvo: 0 };
 
 /**
  * 0 sedã · 1 ônibus · 2 moto · 3 hatch · 4 táxi · 5 utilitário/caminhão leve
@@ -31,7 +30,7 @@ const MAX = 700;
 type Tipo = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 const TIPOS = 12;
 /** veículos grandes: andam na faixa da direita e não dividem a pista como um carro */
-const GRANDES = new Set<number>([1, 5, 8, 9, 11]);
+export const GRANDES = new Set<number>([1, 5, 8, 9, 11]);
 
 const paleta = (cs: string[]) => cs.map((c) => new THREE.Color(c));
 const CORES: Record<Tipo, THREE.Color[]> = {
@@ -82,7 +81,6 @@ export function sortearTipo(r: number, avenida: boolean, faixas: number, semOnib
 
 /** largura × altura × comprimento (m) de cada tipo, para a caixa do clique */
 const DIM: Record<number, [number, number, number]> = { 0: [1.8, 1.5, 4.5], 1: [2.5, 3.1, 12.2], 2: [0.8, 1.5, 1.9], 3: [1.7, 1.5, 4], 4: [1.8, 1.5, 4.5], 5: [2, 2.6, 6.6], 6: [1.9, 1.7, 4.6], 7: [1.9, 1.8, 5], 8: [2, 2.3, 5], 9: [2.55, 3.1, 18.2], 10: [1.9, 1.8, 5], 11: [2.5, 3.2, 7.5] };
-interface Carro { edge: number; s: number; dir: 1 | -1; v: number; tipo: Tipo; faixa: number; cor: number; ativo: boolean; id: number; semente: number; vel: number; rumo: number; cede: boolean }
 
 // ── geometria ────────────────────────────────────────────────────────────────
 
@@ -411,192 +409,118 @@ export function materialVeiculo(uNoite: { value: number }) {
 
 // ── componente ───────────────────────────────────────────────────────────────
 
+/**
+ * Fase 29: os carros NÃO são mais simulados aqui. O Worker roda o tráfego microscópico (IDM + MOBIL, faixas, prioridade, semáforo,
+ * rotatória, ultrapassagem, ambulância furando a fila) e manda 20 snapshots por segundo; este componente só interpola, põe cada
+ * veículo no asfalto e desenha (corpo, faróis, lanternas e freio, pisca-pisca). As viaturas de ocorrência saem daqui e são desenhadas
+ * por Ocorrencias.tsx (modelos 3D reais), a partir dos mesmos snapshots.
+ */
 export function Veiculos() {
-  const wv = useGame((s) => s.worldVersion);
-  const tv = useGame((s) => s.transitoVersion);
   const refs = {
     corpos: useRef<(THREE.InstancedMesh | null)[]>([]),
-    luzF: useRef<THREE.InstancedMesh>(null), luzT: useRef<THREE.InstancedMesh>(null),
+    luzF: useRef<THREE.InstancedMesh>(null), luzT: useRef<THREE.InstancedMesh>(null), luzP: useRef<THREE.InstancedMesh>(null),
   };
   const geos = useMemo(() => ({
     corpos: [geoSedan(false), geoOnibus(), geoMoto(), geoHatch(), geoSedan(true), geoCaminhao(), geoSuv(), geoPicape(), geoVan(), geoBrt(), geoViatura(), geoLixo()],
     luz: new THREE.BoxGeometry(1.5, 0.18, 0.12),
+    pisca: new THREE.BoxGeometry(0.22, 0.16, 0.14),
   }), []);
   const uNoite = useMemo(() => ({ value: 0 }), []);
   const mats = useMemo(() => ({
     corpo: materialVeiculo(uNoite),
     luzF: new THREE.MeshBasicMaterial({ color: '#fff3d0', toneMapped: false }),
     luzT: new THREE.MeshBasicMaterial({ color: '#ff2a1a', toneMapped: false }),
+    luzP: new THREE.MeshBasicMaterial({ color: '#ffb020', toneMapped: false }),
   }), [uNoite]);
-  useEffect(() => () => { geos.corpos.forEach((g) => g.dispose()); geos.luz.dispose(); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
+  useEffect(() => () => { geos.corpos.forEach((g) => g.dispose()); geos.luz.dispose(); geos.pisca.dispose(); Object.values(mats).forEach((m) => m.dispose()); }, [geos, mats]);
 
-  const rng = useMemo(() => new Rng(777), []);
-  const carros = useRef<Carro[]>([]);
-  const adj = useMemo(() => {
-    const m = new Map<number, number[]>();
-    for (const e of mundo.roads.edges.values()) {
-      (m.get(e.a) ?? m.set(e.a, []).get(e.a)!).push(e.id);
-      (m.get(e.b) ?? m.set(e.b, []).get(e.b)!).push(e.id);
-    }
-    return m;
-  }, [wv]);
-
-  // Fase 13/14: com o Rio inteiro, os carros nascem só nos trechos perto da câmera (raio de 1,6 km);
-  // o centro é reavaliado quando a câmera anda 350 m
-  const [centro, setCentro] = useState<[number, number]>(() => { const a = alvoCamera(); return [a.x, a.z]; });
-  const ultimaChecagem = useRef(0);
-  const RAIO_CARROS = 1600;
-  // sorteio de arestas proporcional ao volume do modelo de tráfego (com piso para ruas vazias)
-  const sorteio = useMemo(() => {
-    const ids: number[] = [], acum: number[] = [];
-    let t = 0;
-    for (const e of mundo.roads.edges.values()) {
-      const a = mundo.roads.nodes.get(e.a);
-      if (a && Math.hypot(a.x - centro[0], a.z - centro[1]) > RAIO_CARROS) continue;
-      const vc = mundo.transito.get(e.id) ?? 0;
-      t += 0.15 + vc * (e.type === 'avenida' ? 3 : 1);
-      ids.push(e.id); acum.push(t);
-    }
-    return { ids, acum, total: t };
-  }, [wv, tv, centro]);
-
-  useEffect(() => {
-    // trechos mudaram: reposiciona carros cuja aresta sumiu
-    for (const c of carros.current) if (!mundo.roads.edges.has(c.edge)) c.ativo = false;
-  }, [wv]);
-
-  const tmp = useMemo(() => ({ p: { x: 0, y: 0, z: 0, tx: 0, tz: 0 }, m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), off: new THREE.Vector3(), eixo: new THREE.Vector3(0, 1, 0), n: new Int32Array(TIPOS) }), []);
-
-  // dados vivos para a ficha do carro clicado
+  /** id do veículo no tráfego → id do registro de entidades (a ficha do clique) e os dados vivos dele */
+  const regIds = useRef(new Map<number, number>());
+  const vivos = useRef(new Map<number, { semente: number; tipo: number; vel: number; rumo: number }>());
   useEffect(() => registro.fonte('carro', (id) => {
-    for (const c of carros.current) if (c.ativo && c.id === id) return { semente: c.semente, tipoVeiculo: c.tipo, velocidade: c.vel, rumo: c.rumo, linha: null, lotacao: Math.round(8 + ((c.semente % 100) / 100) * 40) };
-    return null;
+    const d = vivos.current.get(id);
+    return d ? { semente: d.semente, tipoVeiculo: d.tipo, velocidade: d.vel, rumo: d.rumo, linha: null, lotacao: Math.round(8 + ((d.semente % 100) / 100) * 40) } : null;
   }), []);
 
-  useFrame((_, dtReal) => {
+  // dev: window.__n27trafego.poses() lista os veículos (x, z, v, flags, tipo) para achar filas e trocas de faixa
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    (window as unknown as { __n27trafego: unknown }).__n27trafego = {
+      estado: trafegoEstado,
+      dev: devTrafego,
+      poses: () => { const out: number[][] = []; percorrerTrafego((p) => { out.push([p.id, p.x, p.z, p.v, p.flags, p.tipo, p.rotulo]); }); return out; },
+    };
+  }, []);
+  const tmp = useMemo(() => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), v: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1), off: new THREE.Vector3(), eixo: new THREE.Vector3(0, 1, 0), n: new Int32Array(TIPOS) }), []);
+  const ultimoEnvio = useRef(0);
+
+  useFrame(() => {
     registro.iniciarQuadro('carro');
     const g = useGame.getState();
-    const dt = Math.min(0.05, dtReal) * (g.velocidade > 0 ? Math.min(2, 0.6 + g.velocidade * 0.4) : 0);
     const st = g.stats;
     const agoraMs = performance.now();
-    if (agoraMs - ultimaChecagem.current > 600) {
-      ultimaChecagem.current = agoraMs;
+    // foco e quantidade: o Worker mantém ~alvo veículos num raio de 1,6 km em volta da câmera
+    if (agoraMs - ultimoEnvio.current > 500) {
+      ultimoEnvio.current = agoraMs;
       const a = alvoCamera();
-      if (Math.hypot(a.x - centro[0], a.z - centro[1]) > 350) setCentro([a.x, a.z]);
+      const edges = mundo.roads.edges.size;
+      const viagens = st?.cidade.mobilidade.viagensDia ?? 0;
+      const porModelo = viagens > 0 ? 8 + (viagens * (st!.cidade.mobilidade.modal.carro + st!.cidade.mobilidade.modal.informal)) / 45 : 0;
+      const alvo = edges ? Math.min(MAX, Math.round(porModelo || 6 + (st ? st.populacao / 90 + st.empregos / 160 : 0)), edges * 8) : 0;
+      enviarTrafego(a.x, a.z, 1600, devTrafego.alvo || alvo, !onibusEstado.ativo);
     }
-    const edges = [...mundo.roads.edges.keys()];
-    const viagens = st?.cidade.mobilidade.viagensDia ?? 0;
-    const porModelo = viagens > 0 ? 8 + (viagens * (st!.cidade.mobilidade.modal.carro + st!.cidade.mobilidade.modal.informal)) / 45 : 0;
-    const alvo = edges.length ? Math.min(MAX, Math.round(porModelo || 6 + (st ? st.populacao / 90 + st.empregos / 160 : 0)), edges.length * 8) : 0;
-    const lista = carros.current;
-    // nasce/morre gradualmente
-    while (lista.length < alvo) lista.push({ edge: 0, s: 0, dir: 1, v: 0, tipo: 0, faixa: 0, cor: 0, ativo: false, id: 0, semente: 0, vel: 0, rumo: 0, cede: false });
-    if (lista.length > alvo) lista.length = alvo;
-
-    const { p, m, q, v, s, off, eixo, n } = tmp;
+    const { m, q, v, s, off, n } = tmp;
     const corpos = Array.from({ length: TIPOS }, (_, t) => refs.corpos.current[t] ?? null);
-    const lf = refs.luzF.current, lt = refs.luzT.current;
-    if (corpos.some((c) => !c) || !lf || !lt) return;
+    const lf = refs.luzF.current, lt = refs.luzT.current, lp = refs.luzP.current;
+    if (corpos.some((c) => !c) || !lf || !lt || !lp) return;
     n.fill(0);
-    let nL = 0;
+    let nF = 0, nT = 0, nP = 0;
     const noite = ambiente.noite;
+    const pisca = (agoraMs % 700) < 350;
+    vivos.current.clear();
 
-    for (let i = 0; i < lista.length; i++) {
-      const c = lista[i];
-      // carro que ficou para trás (a câmera andou) renasce perto dela
-      let longe = false;
-      if (c.ativo) {
-        const pl = perfisAtuais.get(c.edge);
-        if (pl) longe = Math.hypot(pl.x[pl.n >> 1] - centro[0], pl.z[pl.n >> 1] - centro[1]) > RAIO_CARROS * 1.5;
-      }
-      if (!c.ativo || longe || !perfisAtuais.has(c.edge)) {
-        if (!edges.length || !sorteio.ids.length) break;
-        {
-          const r = rng.next() * sorteio.total;
-          let lo = 0, hi = sorteio.acum.length - 1;
-          while (lo < hi) { const m = (lo + hi) >> 1; if (sorteio.acum[m] < r) lo = m + 1; else hi = m; }
-          c.edge = sorteio.ids[lo] ?? edges[0];
-        }
-        const pf = perfisAtuais.get(c.edge);
-        if (!pf) continue;
-        c.s = rng.range(0, pf.comprimento);
-        c.dir = pf.edge.maoUnica ? 1 : rng.chance(0.5) ? 1 : -1;
-        const r = rng.next();
-        c.tipo = sortearTipo(r, pf.edge.type === 'avenida', faixasVia(pf.edge), onibusEstado.ativo);
-        c.v = c.tipo === 1 ? 9 : c.tipo === 9 ? rng.range(10, 13) : c.tipo === 10 ? rng.range(12, 17) : GRANDES.has(c.tipo) ? rng.range(8, 12) : rng.range(9, 15);
-        c.faixa = GRANDES.has(c.tipo) ? 1 : rng.int(0, 1);
-        c.cor = rng.int(0, 9999);
-        c.id = registro.novoId(); c.semente = rng.int(1, 1_000_000_000);
-        c.ativo = true;
-      }
-      const pf = perfisAtuais.get(c.edge);
-      if (!pf) { c.ativo = false; continue; }
-      const lim = ROAD_SPECS[pf.edge.type].velocidade;
-      // congestionamento: curva BPR (1 + 0,15·(v/c)^4) — engarrafamento visível
-      const vc = mundo.transito.get(c.edge) ?? 0;
-      const lento = Math.max(0.12, 1 / (1 + 0.15 * Math.pow(vc, 4)));
-      // semáforo: no vermelho/amarelo o carro para antes da faixa (a distância varia por carro, formando fila)
-      let passa = 1;
-      const noFim = c.dir > 0 ? pf.edge.b : pf.edge.a;
-      if (mundo.roads.nodes.get(noFim)?.semaforo) {
-        const dNo = c.dir > 0 ? pf.comprimento - c.s : c.s;
-        const dParada = 7 + (c.cor % 4) * 5.5;
-        if (dNo <= dParada + 1.5 && dNo > dParada - 4) {
-          const tx = c.dir > 0 ? pf.tx[pf.n - 1] : -pf.tx[0], tz = c.dir > 0 ? pf.tz[pf.n - 1] : -pf.tz[0];
-          if (faseSemaforo(eixoSemaforo(tx, tz), ambiente.tempo) !== 0) passa = 0;
-        }
-      }
-      // Fase 26: viatura de sirene ligada por perto → o carro comum encosta e para; cena de ocorrência fecha/afunila a via
-      if (c.cede) passa = 0;
-      c.vel = Math.min(c.v, lim) * lento * passa * fatorTransito(pf.x[pf.n >> 1], pf.z[pf.n >> 1]);
-      c.s += c.dir * c.vel * dt;
-      if (c.s < 0 || c.s > pf.comprimento) {
-        // chegou ao nó: escolhe o próximo trecho (evita retorno se houver opção)
-        const no = c.s < 0 ? pf.edge.a : pf.edge.b;
-        // só entra em trecho que aceita esse sentido (mão única só pelo começo) e não é o de onde veio
-        const op = (adj.get(no) ?? []).filter((id) => {
-          if (id === c.edge) return false;
-          const pe = perfisAtuais.get(id)?.edge;
-          return !!pe && (!pe.maoUnica || pe.a === no);
-        });
-        if (!op.length) { c.ativo = false; continue; }
-        const prox = op[rng.int(0, op.length - 1)];
-        const np = perfisAtuais.get(prox);
-        if (!np) { c.ativo = false; continue; }
-        c.edge = prox;
-        if (np.edge.a === no) { c.dir = 1; c.s = 0.5; } else { c.dir = -1; c.s = np.comprimento - 0.5; }
-        continue;
-      }
-      amostrarPerfil(pf, c.s, p);
-      const largura = larguraVia(pf.edge);
-      const faixaOff = pf.edge.maoUnica ? (c.faixa ? largura * 0.2 : -largura * 0.2) : pf.edge.type === 'avenida' ? (c.faixa ? largura * 0.38 : largura * 0.2) : largura * 0.25;
-      // mão direita
-      const nx = -p.tz * c.dir, nz = p.tx * c.dir;
-      v.set(p.x + nx * faixaOff, p.y + 0.02, p.z + nz * faixaOff);
-      c.cede = sireneAte(p.x, p.z, DADOS_SEG.ocorrencias.reacao.viaturaCedePassagemM) >= 0;
-      c.rumo = Math.atan2(p.tx * c.dir, p.tz * c.dir);
-      q.setFromAxisAngle(eixo, c.rumo);
+    percorrerTrafego((p) => {
+      if (p.rotulo > 0) return; // viatura de ocorrência: Ocorrencias.tsx
+      const tipo = Math.min(TIPOS - 1, Math.max(0, p.tipo));
+      if (n[tipo] >= MAX) return;
+      v.set(p.x, p.y, p.z);
+      q.setFromAxisAngle(tmp.eixo, p.yaw);
       m.compose(v, q, s);
-      { const dm = DIM[c.tipo]; registro.publicar('carro', c.id, c.tipo === 1 || c.tipo === 9 ? 'onibus' : 'carro', v.x, v.y, v.z, c.rumo, dm[0], dm[1], dm[2]); }
-      const pal = CORES[c.tipo];
-      const im = corpos[c.tipo]!;
-      im.setMatrixAt(n[c.tipo], m); im.setColorAt(n[c.tipo], pal[c.cor % pal.length]);
-      n[c.tipo]++;
-      if (noite > 0.05 && nL < MAX) {
-        const lz = LUZES[c.tipo];
+      let rid = regIds.current.get(p.id);
+      if (rid === undefined) { rid = registro.novoId(); regIds.current.set(p.id, rid); if (regIds.current.size > 6000) regIds.current.clear(); }
+      const dm = DIM[tipo];
+      registro.publicar('carro', rid, tipo === 1 || tipo === 9 ? 'onibus' : 'carro', p.x, p.y, p.z, p.yaw, dm[0], dm[1], dm[2]);
+      vivos.current.set(rid, { semente: 1 + ((p.id * 2654435761) >>> 0) % 1_000_000_000, tipo, vel: p.v, rumo: p.yaw });
+      const pal = CORES[tipo as Tipo];
+      const im = corpos[tipo]!;
+      im.setMatrixAt(n[tipo], m); im.setColorAt(n[tipo], pal[p.cor % pal.length]);
+      n[tipo]++;
+      const lz = LUZES[tipo as Tipo];
+      // lanternas: acesas à noite e, de dia, quando o carro freia
+      if ((noite > 0.05 || (p.flags & F.FREIO)) && nT < MAX) {
+        off.set(0, lz.y + 0.05, lz.t).applyQuaternion(q).add(v);
+        m.compose(off, q, s.set(lz.l, 1, 1));
+        lt.setMatrixAt(nT++, m); s.set(1, 1, 1);
+      }
+      if (noite > 0.05 && nF < MAX) {
         off.set(0, lz.y, lz.f).applyQuaternion(q).add(v);
         m.compose(off, q, s.set(lz.l, 1, 1));
-        lf.setMatrixAt(nL, m);
-        off.set(0, lz.y + 0.05, lz.t).applyQuaternion(q).add(v);
-        m.compose(off, q, s);
-        lt.setMatrixAt(nL, m);
-        s.set(1, 1, 1);
-        nL++;
+        lf.setMatrixAt(nF++, m); s.set(1, 1, 1);
       }
-    }
+      // pisca-pisca na troca de faixa (lado da troca: PISCA_E = para a esquerda da marcha)
+      if ((p.flags & (F.PISCA_E | F.PISCA_D)) && pisca && nP + 2 <= MAX * 2) {
+        const lado = (p.flags & F.PISCA_D) ? -1 : 1;
+        const meia = dm[0] * 0.5 - 0.1;
+        for (const z of [lz.f - 0.15, lz.t + 0.15]) {
+          off.set(-lado * meia, lz.y + 0.12, z).applyQuaternion(q).add(v);
+          m.compose(off, q, s.set(1, 1, 1));
+          lp.setMatrixAt(nP++, m);
+        }
+      }
+    });
     for (let t = 0; t < TIPOS; t++) corpos[t]!.count = n[t];
-    lf.count = nL; lt.count = nL;
-    for (const im of [...corpos, lf, lt]) {
+    lf.count = nF; lt.count = nT; lp.count = nP;
+    for (const im of [...corpos, lf, lt, lp]) {
       if (!im) continue;
       im.instanceMatrix.needsUpdate = true;
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
@@ -613,6 +537,7 @@ export function Veiculos() {
       ))}
       <instancedMesh ref={refs.luzF} args={[geos.luz, mats.luzF, MAX]} frustumCulled={false} />
       <instancedMesh ref={refs.luzT} args={[geos.luz, mats.luzT, MAX]} frustumCulled={false} />
+      <instancedMesh ref={refs.luzP} args={[geos.pisca, mats.luzP, MAX * 2]} frustumCulled={false} />
     </group>
   );
 }

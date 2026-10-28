@@ -134,6 +134,7 @@ Sem isso o jogo usa só saves locais.
 - **Serviços** e **Segurança** na barra: clínicas da família, UPAs, hospitais, escolas, delegacias, batalhões e bases comunitárias. Equipamento lotado atende pior.
 - Muito emprego e pouca moradia barata? Surge uma **favela**. Clique nela para urbanizar (obra do Estado), regularizar ou remover. Zoneie **ZEIS** para moradia popular formal.
 - Camada **Território** (tecla **T**) mostra onde Milícia, CV, ADA e TCP mandam, com painel de facções, instituições e ocorrências (despacho, sirenes, reação da população); tudo balanceável em `src/data/seguranca/*.json`. **Operação policial** derruba o domínio na hora; uma base comunitária impede que ele volte.
+- **Tráfego** (Fase 29): os carros se enxergam (IDM), trocam de faixa (MOBIL), cedem a quem tem prioridade, ultrapassam em mão dupla e abrem passagem às viaturas das ocorrências; ônibus param nos pontos. Roda no Worker (F4 mostra o custo).
 - **Veículos especiais** (Fase 27): aviões no Santos Dumont e Galeão, helicópteros (turismo, imprensa, PM e Bombeiros nas ocorrências), caças, navios, barcas Rio–Niterói, jetskis e as viaturas do despacho, com modelos 3D reais (créditos em `assets/CREDITS.md`) e som espacial. Rotas e frotas em `src/data/veiculos/especiais.json`.
 - Palácio → **Secretarias**: doutrina de segurança, câmeras corporais, tempo integral, OS na saúde, renda estadual.
 

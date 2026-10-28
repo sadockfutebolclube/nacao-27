@@ -12,6 +12,7 @@ import type { PoliticaVans, ResumoTerritorio } from './city/territorio';
 import type { ResumoServicos } from './city/servicos';
 import type { ResumoMobilidade, TipoLinha } from './city/transporte';
 import type { StatusFavela } from './city/favelas';
+import type { PedidoEmergencia } from './trafego/trafego';
 
 export type ModoJogo = 'mandato' | 'sandbox';
 
@@ -159,6 +160,11 @@ export type ToWorker =
   | { type: 'save'; id: number }
   /** câmera: lotes a menos de `raio` m de (x, z) rodam a simulação completa todo dia; os outros, em LOD (Fase 23) */
   | { type: 'foco'; x: number; z: number; raio: number }
+  /** Fase 29: o tráfego microscópico só existe perto da câmera; `alvo` = quantos veículos manter, `onibus` = frota genérica com ônibus */
+  | { type: 'trafego'; x: number; z: number; raio: number; alvo: number; onibus: boolean }
+  /** Fase 29: viaturas a caminho de uma cena de ocorrência (Fase 26) */
+  | { type: 'emergencia'; pedido: PedidoEmergencia }
+  | { type: 'cena-fim'; cena: number }
   /** ms de CPU por passo para o trabalho pesado do dia; 0 = síncrono */
   | { type: 'orcamento'; ms: number }
   /** só desenvolvimento/testes: avança N dias de uma vez */
@@ -168,6 +174,8 @@ export type FromWorker =
   | { type: 'ready'; init: SimInit }
   | { type: 'world'; version: number; roads: RoadGraphJSON; lots: Float32Array; services: ServiceInst[] }
   | { type: 'state'; version: number; lotState: Float32Array; pollution: Float32Array; stats: Stats; news: Noticia[]; render: CidadeRender; perf: PerfSim }
+  /** Fase 29: veículos do tráfego (stride 10 floats; ver Trafego.snapshot), a cada 50 ms de relógio do mundo */
+  | { type: 'trafego'; tempo: number; dados: Float32Array; n: number; rotulos: string[]; stats: { ativos: number; ms: number; parados: number; trocas: number; ultrapassagens: number; emergencias: number } }
   | { type: 'cmdResult'; id: number; ok: boolean; msg?: string; custo?: number }
   | { type: 'saved'; id: number; save: SaveData }
   | { type: 'error'; msg: string };

@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## 1.18.0 — Fase 29: tráfego microscópico (IDM, MOBIL, faixas, cruzamentos, emergência) no Worker (28/10/2026)
+
+Prints em `docs/auditoria-trafego/` e a medição de 2 minutos no grafo real em `medicao-rio-2min-1500-veiculos.json`.
+
+### O que mudou
+- **Antes**: os carros só seguiam a rua, parando no vermelho e na sirene; não enxergavam uns aos outros (sem líder, sem faixa, sem troca) e rodavam na thread de desenho.
+- **Agora, no Worker** (`src/sim/trafego/`, 20 Hz, independente do tick do dia; o desenho só interpola dois snapshots):
+  - **IDM** (Treiber) para seguir o líder, com parâmetros por tipo de veículo (caminhão e ônibus aceleram e avançam mais devagar).
+  - **MOBIL** para trocar de faixa (incentivo, politeness 0,3, segurança do novo seguidor ≥ −3 m/s², viés para a direita; para a esquerda só quem ganha com isso). A lateral anda a 1,7 m/s (troca de ~2 s, com pisca-pisca no desenho).
+  - **Faixas reais**: as `lanes` do OSM divididas entre os dois sentidos; sem etiqueta, as do tipo da via (rua 1 por sentido, avenida 2); mão única usa todas.
+  - **Cruzamentos**: semáforo com as mesmas fases do desenho (agora o relógio das lâmpadas é o do Worker); sem semáforo, a via maior passa primeiro, entre iguais vale a da direita e quem vira à esquerda cede ao que vem de frente; ninguém entra no cruzamento sem espaço na saída; reserva da faixa de destino para fusões; quem espera mais de 12 s passa (sem impasse).
+  - **Rotatória**: anéis de mão única do grafo são detectados (≤ 12 trechos, ≤ 300 m); quem entra cede a quem circula e a velocidade cai a 7 m/s.
+  - **Ultrapassagem simples** em mão dupla de uma faixa por sentido, só com a faixa oposta livre numa janela de 150 m; quem vem de frente enxerga o que está ultrapassando.
+  - **Emergência**: a viatura sai da base, vai pela faixa da esquerda e passa devagar no vermelho; quem está à frente (70 m) encosta à direita ou muda para a direita; quem chega ao cruzamento espera. Ela estaciona na cena (Fase 26) e as outras viaturas passam por ela; quando a cena acaba, volta ao trânsito e some a 260 m.
+  - **Estrutura de dados**: veículos em arrays tipados; listas ordenadas por faixa (o líder é o vizinho da lista, ou o primeiro da faixa seguinte) e uma grade espacial de 16 m para consultas radiais.
+- **Ônibus param em pontos** (`Onibus.tsx`): freiam na aproximação (≤ 28 m), ficam 6–14 s parados e arrancam; respeitam o semáforo do Worker.
+- As viaturas de ocorrência (Fase 26/27) agora são veículos do tráfego e saem do mesmo snapshot (modelos 3D reais, sirene e barra de luz).
+- F4 mostra o tráfego (veículos, ms/passo, Hz, parados). Dev: `window.__n27trafego` (poses, estado, `dev.alvo`).
+
+### Medições
+- Rio real, 120 s de simulação, **1.500 veículos** a 1,3 km de Copacabana: **1,4–2,8 ms por passo** (pior 8,2 ms após a carga inicial), velocidade média 5,5 m/s, **0,06% dos pares com sobreposição > 0,5 m** (pior 7,4 m, em fusões).
+- No jogo: ~700 veículos no padrão, 0,9 ms/passo; com 1.500 (o dobro do máximo anterior), Worker 1,8–3,4 ms/passo e desenho com mediana de 14,8 ms (42 fps) numa medição; o painel embutido ficou oculto nas demais, então **não há comparação de fps antes × depois na mesma cena**.
+
+### Limites (honestos)
+- Rotatória: só prioridade e velocidade; não há conflito interno entre quem sai e quem circula além da regra de entrada. Curvas fechadas só reduzem a velocidade.
+- Virar à esquerda só cede ao tráfego que vem de frente; não há faixa de conversão nem escolha de faixa pela rota.
+- Ônibus de GTFS continuam fora do Worker (andam pelo itinerário do desenho): param nos pontos e no semáforo, mas os carros do Worker não os enxergam como obstáculo.
+- Velocidades vêm do tipo da via (11 e 16 m/s), não de `maxspeed` do OSM.
+- Sobreposições curtas de até 7 m ainda aparecem em fusões de ruas de alto fluxo.
+- Testes: `tests/fase29.test.ts` (10).
+
 ## 1.17.0 — Fase 28: São Januário / Vasco da Gama e continuação da 1B (28/10/2026)
 
 Prints em `docs/auditoria-sao-januario/` e `docs/auditoria-encostas/fase28-*`.

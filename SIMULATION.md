@@ -730,3 +730,6 @@ Por dia (fase "facções"): agrega população por unidade (Censo; fallback seto
 
 ## Fase 27 — veículos especiais (desenho, não altera a simulação)
 Frota = `quantidade` veículos na mesma viagem defasados em `cicloS / quantidade` (+ jitter determinístico). Viagem = rotas em sequência com `pausaS` parado entre elas, ou, se todas fechadas, uma rota por veículo. Posição(t) por spline Catmull-Rom sobre waypoints; v² linear entre pontos; rolagem = −(taxa de giro × v) / g. Helicópteros de ocorrência: estados `indo → órbita → volta` por cena (`ocorrenciaEstado.cenas`). Código: `src/sim/especiais/`, `src/render/modelos/`, `src/render/city/VeiculosEspeciais.tsx`, `src/audio/espacial.ts`.
+
+## Fase 29 — tráfego microscópico
+Passo de 0,05 s (subpassos ≤ 0,06 s), 20 Hz. Links = sentidos das arestas; faixas = `lanes` do OSM ÷ 2 (ou as do tipo). IDM: a = a_max·[1 − (v/v0)⁴ − (s_d/s)²], s_d = s0 + vT + vΔv/(2√(ab)) com s0 = 2 m, b = 2 m/s². MOBIL: p = 0,3, Δa_th = 0,15, b_safe = 3, viés à direita 0,12. Prioridade: semáforo (fases de `semaforo.ts`) → emergência cruzando → rotatória → via maior → direita → esquerda cede. Código: `src/sim/trafego/`; desenho: `Veiculos.tsx`, `trafegoPose.ts`, `Ocorrencias.tsx`; estado: `src/sim/trafegoEstado.ts`.

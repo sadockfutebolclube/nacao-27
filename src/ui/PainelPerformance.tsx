@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { definirOrcamento } from '../sim/bridge';
 import { usePerfSim } from '../sim/estadoPerf';
+import { trafegoEstado } from '../sim/trafegoEstado';
 
 const f1 = (v: number) => v.toFixed(1);
 const cor = (ms: number, lim: number) => (ms <= lim ? '#8fe08f' : ms <= lim * 2 ? '#ffd45e' : '#ff7a7a');
@@ -62,6 +63,7 @@ export function PainelPerformance() {
       </div>
       <div style={linha}><span>Desenho</span><span><b style={{ color: cor(1000 / Math.max(1, q.fps), 16.7) }}>{q.fps.toFixed(0)} fps</b> · p95 {f1(q.p95)} ms · pior {f1(q.max)} ms</span></div>
       {mem && <div style={linha}><span>Memória JS (página)</span><span>{(mem.usedJSHeapSize / 1048576).toFixed(0)} MB</span></div>}
+      <div style={linha}><span>Tráfego (worker, IDM + MOBIL)</span><span style={{ color: cor(trafegoEstado.stats.ms, 8) }}>{trafegoEstado.stats.ativos} veíc. · {f1(trafegoEstado.stats.ms)} ms/passo · {trafegoEstado.taxa.toFixed(0)} Hz · {trafegoEstado.stats.parados} parados</span></div>
       {!p && <div style={{ opacity: 0.7, marginTop: 6 }}>Aguardando o primeiro estado da simulação…</div>}
       {p && (
         <>

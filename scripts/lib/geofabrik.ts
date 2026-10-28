@@ -42,6 +42,8 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
   let n = 0;
   const viasPredios = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
   const natureza = new Map<string, ElOSM[]>(alvos.map((a) => [a.ibge, []]));
+  /** Fase 14: semáforos (s) e faixas de pedestre (c) dentro da área construível de cada cidade */
+  const sinais = new Map<string, { lat: number; lon: number; t: 's' | 'c' }[]>(alvos.map((a) => [a.ibge, []]));
   /** vias sem etiqueta dentro de algum mapa (podem ser contornos de lagos em relações) */
   const contornos = new Map<number, number[]>();
   let lidos = 0;
@@ -70,6 +72,10 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
             if (!caixas.some((b) => dentroBB(b, lat, lon))) continue;
             if (n * 2 + 2 > coords.length) { const c2 = new Float64Array(coords.length * 2); c2.set(coords); coords = c2; }
             idx.set(it.id, n); coords[n * 2] = lat; coords[n * 2 + 1] = lon; n++;
+            const nt = it.tags;
+            if (nt && (nt.highway === 'traffic_signals' || nt.highway === 'crossing' || nt.crossing)) {
+              for (const a of alvos) if (dentroBB(a.construivel, lat, lon)) sinais.get(a.ibge)!.push({ lat, lon, t: nt.highway === 'traffic_signals' ? 's' : 'c' });
+            }
           } else if (it.type === 'way') {
             const t = it.tags ?? {};
             const temTag = Object.keys(t).length > 0;
@@ -108,5 +114,6 @@ export async function extrairRegiao(pbf: string, alvos: AlvoCidade[], saida: str
   for (const a of alvos) {
     await writeFile(join(saida, `${a.ibge}-vias-predios.json`), JSON.stringify(viasPredios.get(a.ibge)));
     await writeFile(join(saida, `${a.ibge}-natureza.json`), JSON.stringify(natureza.get(a.ibge)));
+    await writeFile(join(saida, `${a.ibge}-sinais.json`), JSON.stringify(sinais.get(a.ibge)));
   }
 }

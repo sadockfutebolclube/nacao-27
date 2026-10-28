@@ -10,7 +10,7 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { Rng } from '../../sim/core/rng';
 import { mundo, useGame } from '../../sim/bridge';
-import { ROAD_SPECS } from '../../world/roads';
+import { calcadaVia, larguraVia } from '../../world/roads';
 import { acessibilidade } from '../acessibilidade';
 import { ambiente } from './ambiente';
 import { alvoCamera } from './Camera';
@@ -45,6 +45,7 @@ export function fatorHorario(hora: number): number {
 
 /** Trecho caminhável da calçada (s em metros), sem a área do cruzamento; null se curto demais. */
 export function trechoCaminhavel(pf: Perfil): [number, number] | null {
+  if (pf.edge.nivel === -1) return null; // túnel não tem calçada
   const ini = pf.cortaA + 0.5, fim = pf.comprimento - pf.cortaB - 0.5;
   return fim - ini > 1 ? [ini, fim] : null;
 }
@@ -55,8 +56,7 @@ export function trechoCaminhavel(pf: Perfil): [number, number] | null {
  */
 export function pontoCalcada(pf: Perfil, s: number, lado: 1 | -1, frac: number, out: { x: number; y: number; z: number; tx: number; tz: number }) {
   amostrarPerfil(pf, s, out);
-  const spec = ROAD_SPECS[pf.edge.type];
-  const d = lado * (spec.width / 2 + spec.sidewalk * frac);
+  const d = lado * (larguraVia(pf.edge) / 2 + calcadaVia(pf.edge) * frac);
   out.x += -out.tz * d;
   out.z += out.tx * d;
   out.y += ALTURA_CALCADA;

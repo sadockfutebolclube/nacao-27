@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
 import { TIPOS_LINHA } from '../../sim/city/transporte';
-import { ROAD_SPECS } from '../../world/roads';
+import { larguraVia } from '../../world/roads';
 import { roadBaseY, sampleHeight, type Heightmap } from '../../world/terrain';
 import { ambiente } from './ambiente';
 import { perfisAtuais } from './Vias';
@@ -216,7 +216,7 @@ function Transito() {
       if (vc < 0.5) c.copy(verde).lerp(amarelo, vc / 0.5);
       else if (vc < 0.85) c.copy(amarelo).lerp(laranja, (vc - 0.5) / 0.35);
       else c.copy(laranja).lerp(vermelho, Math.min(1, (vc - 0.85) / 0.4));
-      const hw = ROAD_SPECS[p.edge.type].width / 2 * 0.8;
+      const hw = larguraVia(p.edge) / 2 * 0.8;
       const base = pos.length / 3;
       for (let i = 0; i < p.n; i++) {
         const nx = -p.tz[i], nz = p.tx[i];

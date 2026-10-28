@@ -144,6 +144,23 @@ function obb(pts: P[]): { x: number; z: number; ang: number; w: number; d: numbe
 
 const AVENIDAS = /^(motorway|trunk|primary|secondary)(_link)?$/;
 
+/** Faixas totais (os dois sentidos) pela etiqueta `lanes` ou, sem ela, pela classe da via. */
+const FAIXAS_PADRAO: Record<string, number> = { motorway: 6, trunk: 4, primary: 4, secondary: 4, tertiary: 2, unclassified: 2, residential: 2, living_street: 1 };
+function atributosVia(t: Record<string, string>): { faixas: number; flags: number } {
+  const classe = t.highway.replace('_link', '');
+  const link = t.highway.endsWith('_link');
+  const mao = /^(yes|1|true)$/.test(t.oneway ?? '') || t.junction === 'roundabout' || (t.highway === 'motorway' && t.oneway !== 'no');
+  let faixas = parseInt(t.lanes ?? '', 10);
+  if (!Number.isFinite(faixas) || faixas < 1) faixas = mao ? Math.max(1, Math.round((FAIXAS_PADRAO[classe] ?? 2) / 2)) : (FAIXAS_PADRAO[classe] ?? 2);
+  // etiqueta `lanes` em via de mão única já é por sentido; em via de mão dupla é o total
+  if (link) faixas = Math.min(faixas, mao ? 2 : 2);
+  faixas = Math.max(1, Math.min(8, faixas));
+  let flags = mao ? 1 : 0;
+  if (t.bridge && t.bridge !== 'no') flags |= 2;
+  if (t.tunnel && /^(yes|flooded)$/.test(t.tunnel)) flags |= 4;
+  return { faixas, flags };
+}
+
 function montarVias(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
   const lim = BUILD - 10;
   const uso = new Map<number, number>();
@@ -159,10 +176,11 @@ function montarVias(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
   };
   const nomes: string[] = [];
   const idxNome = new Map<string, number>();
-  const arestas: { a: number; b: number; c: P; tipo: number; nome: number }[] = [];
+  const arestas: { a: number; b: number; c: P; tipo: number; nome: number; faixas: number; flags: number }[] = [];
 
   for (const w of ways) {
     const tipo = AVENIDAS.test(w.tags!.highway) ? 1 : 0;
+    const { faixas, flags } = atributosVia(w.tags!);
     const nome = w.tags!.name ?? w.tags!.ref ?? '';
     let ni = -1;
     if (nome) { ni = idxNome.get(nome) ?? nomes.length; if (ni === nomes.length) { nomes.push(nome); idxNome.set(nome, ni); } }
@@ -194,7 +212,7 @@ function montarVias(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
             const meio = r[Math.floor((ini + i) / 2)].p;
             const pa = nos[a - 1], pb = nos[b - 1];
             const c: P = i - ini >= 2 ? [2 * meio[0] - (pa[0] + pb[0]) / 2, 2 * meio[1] - (pa[1] + pb[1]) / 2] : [(pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2];
-            arestas.push({ a, b, c, tipo, nome: ni });
+            arestas.push({ a, b, c, tipo, nome: ni, faixas, flags });
           }
           ini = i;
         }
@@ -235,7 +253,7 @@ function montarVias(ways: ElOSM[], xz: (lat: number, lon: number) => P) {
     vistos.add(k);
     const ia = idF(a), ib = idF(b);
     km += Math.hypot(nos[a - 1][0] - nos[b - 1][0], nos[a - 1][1] - nos[b - 1][1]) / 1000;
-    arestasF.push(ia, ib, r1(e.c[0]), r1(e.c[1]), e.tipo, e.nome);
+    arestasF.push(ia, ib, r1(e.c[0]), r1(e.c[1]), e.tipo, e.nome, e.faixas, e.flags);
   }
   return { nos: nosF, arestas: arestasF, nomes, km };
 }
@@ -349,6 +367,13 @@ async function gerar(m: Mun, terr: Terrarium) {
   const bbM = `${ma0.toFixed(5)},${mo0.toFixed(5)},${ma1.toFixed(5)},${mo1.toFixed(5)}`;
   const vias = await overpass(`${m.ibge}-vias-predios`, `[out:json][timeout:240];(way["building"](${bbB});way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$"](${bbB});way["landuse"~"^(residential|commercial|retail|industrial)$"](${bbB}););out geom;`);
   await sleep(4000);
+  // Fase 14: semáforos e faixas de pedestre (só nos extratos da Geofabrik; pelo Overpass, a consulta abaixo)
+  let sinais: { lat: number; lon: number; t: 's' | 'c' }[] = [];
+  try { sinais = JSON.parse(await readFile(join(CACHE_OSM, `${m.ibge}-sinais.json`), 'utf8')); } catch {
+    const el = await overpass(`${m.ibge}-sinais`, `[out:json][timeout:240];(node["highway"="traffic_signals"](${bbB});node["highway"="crossing"](${bbB});node["crossing"](${bbB}););out;`).catch(() => []);
+    sinais = (el as unknown as { lat?: number; lon?: number; tags?: Record<string, string> }[]).filter((n) => n.lat !== undefined).map((n) => ({ lat: n.lat!, lon: n.lon!, t: n.tags?.highway === 'traffic_signals' ? 's' as const : 'c' as const }));
+  }
+  await sleep(1000);
   const natureza = await overpass(`${m.ibge}-natureza`, `[out:json][timeout:240];(way["natural"~"^(water|wood|scrub|coastline)$"](${bbM});relation["natural"="water"](${bbM});way["waterway"~"^(river|canal|riverbank)$"](${bbM});way["landuse"~"^(forest|reservoir|basin|grass|meadow)$"](${bbM});way["leisure"~"^(park|nature_reserve|garden)$"](${bbM}););out geom;`);
 
   // ── relevo
@@ -421,21 +446,22 @@ async function gerar(m: Mun, terr: Terrarium) {
   const ways = vias.filter((e) => e.type === 'way' && e.tags?.highway && e.geometry && e.nodes && e.geometry.length >= 2);
   const g = montarVias(ways, xz);
   // amostras das arestas para achar a rua mais próxima de cada prédio
-  const amostras = new Map<string, { x: number; z: number; e: number }[]>();
-  const nA = g.arestas.length / 6;
+  const amostras = new Map<string, { x: number; z: number; e: number; tx: number; tz: number }[]>();
+  const nA = g.arestas.length / 8;
   for (let k = 0; k < nA; k++) {
-    const a = g.arestas[k * 6] - 1, b = g.arestas[k * 6 + 1] - 1, cx = g.arestas[k * 6 + 2], cz = g.arestas[k * 6 + 3];
+    const a = g.arestas[k * 8] - 1, b = g.arestas[k * 8 + 1] - 1, cx = g.arestas[k * 8 + 2], cz = g.arestas[k * 8 + 3];
     const ax = g.nos[a * 2], az = g.nos[a * 2 + 1], bx = g.nos[b * 2], bz = g.nos[b * 2 + 1];
     const n = Math.max(2, Math.ceil(Math.hypot(bx - ax, bz - az) / 5));
     for (let s = 0; s <= n; s++) {
       const t = s / n, u = 1 - t;
       const x = u * u * ax + 2 * u * t * cx + t * t * bx, z = u * u * az + 2 * u * t * cz + t * t * bz;
       const key = `${Math.floor(x / 40)},${Math.floor(z / 40)}`;
-      (amostras.get(key) ?? amostras.set(key, []).get(key)!).push({ x, z, e: k + 1 });
+      const tgx = 2 * u * (cx - ax) + 2 * t * (bx - cx), tgz = 2 * u * (cz - az) + 2 * t * (bz - cz), tl = Math.hypot(tgx, tgz) || 1;
+      (amostras.get(key) ?? amostras.set(key, []).get(key)!).push({ x, z, e: k + 1, tx: tgx / tl, tz: tgz / tl });
     }
   }
   const ruaProxima = (x: number, z: number) => {
-    let melhor = { d: Infinity, x: 0, z: 0, e: 0 };
+    let melhor = { d: Infinity, x: 0, z: 0, e: 0, tx: 1, tz: 0 };
     for (let raio = 1; raio <= 4 && melhor.e === 0; raio++) {
       const cx = Math.floor(x / 40), cz = Math.floor(z / 40);
       for (let dx = -raio; dx <= raio; dx++) for (let dz = -raio; dz <= raio; dz++) for (const s of amostras.get(`${cx + dx},${cz + dz}`) ?? []) {
@@ -445,6 +471,38 @@ async function gerar(m: Mun, terr: Terrarium) {
     }
     return melhor;
   };
+
+  // ── semáforos (no cruzamento mais perto, até 22 m) e faixas de pedestre no meio de quarteirão
+  const semaforos = new Set<number>();
+  const faixasPed: number[] = [];
+  {
+    const nNos = g.nos.length / 2;
+    const grade = new Map<string, number[]>();
+    for (let i = 0; i < nNos; i++) { const k = `${Math.floor(g.nos[i * 2] / 30)},${Math.floor(g.nos[i * 2 + 1] / 30)}`; (grade.get(k) ?? grade.set(k, []).get(k)!).push(i); }
+    const noMaisPerto = (x: number, z: number) => {
+      let melhor = -1, dm = 22;
+      const cx = Math.floor(x / 30), cz = Math.floor(z / 30);
+      for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (const i of grade.get(`${cx + dx},${cz + dz}`) ?? []) {
+        const d = Math.hypot(g.nos[i * 2] - x, g.nos[i * 2 + 1] - z);
+        if (d < dm) { dm = d; melhor = i; }
+      }
+      return melhor;
+    };
+    const vistosPed = new Set<string>();
+    for (const sg of sinais) {
+      const [x, z] = xz(sg.lat, sg.lon);
+      if (Math.abs(x) > BUILD - 20 || Math.abs(z) > BUILD - 20) continue;
+      const no = noMaisPerto(x, z);
+      if (sg.t === 's' && no >= 0) { semaforos.add(no + 1); continue; }
+      if (no >= 0) continue; // faixa de pedestre em cruzamento: o jogo desenha junto com a esquina
+      const r = ruaProxima(x, z);
+      if (!r.e || r.d > 14) continue;
+      const k = `${Math.round(r.x / 12)},${Math.round(r.z / 12)}`;
+      if (vistosPed.has(k)) continue;
+      vistosPed.add(k);
+      faixasPed.push(r1(r.x), r1(r.z), Math.round(Math.atan2(r.tx, r.tz) * 1000));
+    }
+  }
 
   // ── prédios
   const predios: number[] = [];
@@ -554,9 +612,9 @@ async function gerar(m: Mun, terr: Terrarium) {
   const dados = CidadeReal.parse({
     versao: 1, ibge: m.ibge, nome: m.nome, uf: m.uf, lat: m.lat, lon: m.lon, geradoEm: new Date().toISOString(), base: Math.round(base * 10) / 10, litoral,
     passo: PASSO, res: RES, alturas: toB64(new Uint8Array(alturas.buffer)), verde: toB64(verde),
-    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes }, predios, nomesPredios,
+    vias: { nos: g.nos, arestas: g.arestas, nomes: g.nomes, campos: 8, semaforos: [...semaforos], faixasPed }, predios, nomesPredios,
     contornos: toB64(new Uint8Array(Int16Array.from(contornos).buffer)),
-    estat: { predios: predios.length / CAMPOS_PREDIO, comAndares, vias: g.arestas.length / 6, km: Math.round(g.km * 10) / 10 },
+    estat: { predios: predios.length / CAMPOS_PREDIO, comAndares, vias: g.arestas.length / 8, km: Math.round(g.km * 10) / 10 },
   });
   await mkdir(OUT, { recursive: true });
   const json = JSON.stringify(dados);
@@ -580,7 +638,7 @@ async function main() {
   // extrai tudo localmente de uma vez (mesmo formato de cache do Overpass).
   const porRegiao = new Map<string, Mun[]>();
   for (const m of alvo) {
-    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`))) continue;
+    if (existsSync(join(CACHE_OSM, `${m.ibge}-natureza.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-vias-predios.json`)) && existsSync(join(CACHE_OSM, `${m.ibge}-sinais.json`))) continue;
     const r = REGIAO_UF[m.uf];
     porRegiao.set(r, [...(porRegiao.get(r) ?? []), m]);
   }

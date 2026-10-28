@@ -47,6 +47,53 @@ export function texturaRua(): THREE.CanvasTexture {
   return finalizar(c);
 }
 
+/**
+ * Leito de via real (Fase 14) com a sinalização do número de faixas: bordas brancas contínuas, faixas
+ * tracejadas entre as faixas do mesmo sentido (4 m de traço, 12 m de vão) e, nas vias de mão dupla, o eixo
+ * amarelo — tracejado em duas faixas, duplo contínuo em quatro ou mais. v = 16 m por repetição.
+ */
+export function texturaFaixas(faixas: number, maoUnica: boolean): THREE.CanvasTexture {
+  const W = 64 * Math.max(2, Math.min(8, faixas)), H = 256;
+  const [c, ctx] = canvas(W, H);
+  ruido(ctx, W, H, [60, 62, 64], 22, 5 + faixas);
+  ctx.fillStyle = 'rgba(30,30,30,0.25)';
+  for (let i = 0; i < 50; i++) ctx.fillRect(Math.random() * W, Math.random() * H, 2 + Math.random() * 30, 1 + Math.random() * 3);
+  const branco = '#e8e6df', amarelo = '#e8b422', lw = 4;
+  ctx.fillStyle = branco;
+  ctx.fillRect(W * 0.035, 0, lw, H);
+  ctx.fillRect(W * 0.965 - lw, 0, lw, H);
+  const porSentido = maoUnica ? faixas : Math.max(1, Math.floor(faixas / 2));
+  const larg = maoUnica ? W : W / 2;
+  const ladoEsq = (ini: number, n: number, larguraTotal: number) => {
+    for (let k = 1; k < n; k++) {
+      const x = ini + (larguraTotal * k) / n;
+      ctx.fillStyle = branco;
+      ctx.fillRect(x - lw / 2, 0, lw, H * 0.25);
+    }
+  };
+  if (maoUnica) ladoEsq(0, porSentido, larg);
+  else {
+    ladoEsq(0, porSentido, larg);
+    ladoEsq(W / 2, porSentido, larg);
+    ctx.fillStyle = amarelo;
+    if (faixas >= 4) { ctx.fillRect(W / 2 - lw - 1, 0, lw, H); ctx.fillRect(W / 2 + 1, 0, lw, H); }
+    else ctx.fillRect(W / 2 - lw / 2, 0, lw, H * 0.5);
+  }
+  return finalizar(c);
+}
+
+/** Faixa de pedestre (zebra) para os cruzamentos. Largura u = 1 vira 3 m; as listras correm ao longo da rua. */
+export function texturaZebra(): THREE.CanvasTexture {
+  const W = 128, H = 128;
+  const [c, ctx] = canvas(W, H);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(236,234,226,0.92)';
+  for (let k = 0; k < 6; k++) ctx.fillRect(k * (W / 6) + 4, 0, W / 12, H);
+  const t = finalizar(c, false);
+  t.wrapS = THREE.ClampToEdgeWrapping;
+  return t;
+}
+
 /** Avenida com canteiro central gramado e faixas tracejadas. */
 export function texturaAvenida(): THREE.CanvasTexture {
   const W = 512, H = 256;

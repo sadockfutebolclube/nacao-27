@@ -30,8 +30,22 @@ export const PONTE_MULT = 4;
 
 export const halfRoad = (t: RoadType) => ROAD_SPECS[t].width / 2 + ROAD_SPECS[t].sidewalk;
 
-export interface RoadNode { id: number; x: number; z: number }
-export interface RoadEdge { id: number; a: number; b: number; cx: number; cz: number; type: RoadType; name: string }
+export interface RoadNode { id: number; x: number; z: number; /** Fase 14: cruzamento com semáforo */ semaforo?: boolean }
+export interface RoadEdge {
+  id: number; a: number; b: number; cx: number; cz: number; type: RoadType; name: string;
+  /** Fase 14 (vias reais): faixas totais, mão única e nível (+1 ponte/viaduto, −1 túnel); ausentes = padrão do tipo */
+  faixas?: number; maoUnica?: boolean; nivel?: -1 | 1;
+}
+
+/** Faixas totais da via (as da etiqueta do OSM nas vias reais, senão as do tipo). */
+export const faixasVia = (e: Pick<RoadEdge, 'type' | 'faixas'>) => e.faixas ?? ROAD_SPECS[e.type].lanes;
+/** Largura do leito (m): 3,2 m por faixa nas vias reais, com mínimo de 5 m (e um acostamento nas de mão dupla). */
+export const larguraVia = (e: Pick<RoadEdge, 'type' | 'faixas' | 'maoUnica'>) =>
+  e.faixas === undefined ? ROAD_SPECS[e.type].width : Math.max(5, Math.min(34, e.faixas * 3.2 + (e.maoUnica ? 0.6 : 1.4)));
+/** Largura de cada calçada (m): maior nas avenidas, menor em via de uma faixa. */
+export const calcadaVia = (e: Pick<RoadEdge, 'type' | 'faixas'>) => (e.faixas === undefined ? ROAD_SPECS[e.type].sidewalk : e.type === 'avenida' ? 3.5 : e.faixas <= 1 ? 1.6 : 2.2);
+/** Meia largura total (leito + calçada) — o que os lotes e equipamentos têm de respeitar. */
+export const meiaVia = (e: Pick<RoadEdge, 'type' | 'faixas' | 'maoUnica'>) => larguraVia(e) / 2 + calcadaVia(e);
 
 export interface RoadGraph {
   nodes: Map<number, RoadNode>;

@@ -228,3 +228,12 @@ Para o Rio caber no navegador, a renderização passou a montar e mostrar só o 
 
 ## D-075 · A costa do OSM manda no mar
 A altitude do Terrarium (SRTM/GMTED) tem terra falsa e buracos no mar perto da costa. O gerador usa a linha de costa do OSM para dividir a grade em regiões (terra × mar, por voto das sementes de cada lado), nivela o mar em −3 m e deixa a própria linha de costa como areia a 0,6 m. O jogo aprofunda o mar pela distância da costa.
+
+## D-076 · Atributos na via, não um tipo novo por classe
+As 33 referências a `ROAD_SPECS` ficaram: o tipo continua sendo `rua` ou `avenida` (as vias do jogador não mudam) e as vias reais ganham campos opcionais — faixas, mão única, nível. Helpers (`larguraVia`, `calcadaVia`, `meiaVia`) devolvem o padrão do tipo quando o campo falta, então saves e testes antigos continuam valendo. O arquivo da cidade tem `campos: 8` por aresta (6 nos antigos).
+
+## D-077 · Túnel e viaduto por relaxamento de cotas
+Em vez de modelar túneis e viadutos como objetos, a cota de cada nó que só toca túnel (ou só viaduto) vira a média dos vizinhos até os portais, que ficam na cota do terreno. O túnel é uma rampa reta que o relevo cobre sozinho; o viaduto é uma reta que nunca afunda no chão e ganha pilares pelo código que já existia.
+
+## D-078 · Semáforo com fase por eixo, sem estado
+A fase é função do tempo e do eixo da aproximação (|tx| > |tz|), igual no desenho da lâmpada (shader) e nos carros: nada para sincronizar nem salvar. As filas se formam porque cada carro para a uma distância diferente da faixa.

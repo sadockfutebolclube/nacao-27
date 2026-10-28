@@ -12,7 +12,7 @@ import { mundo, useGame } from '../../sim/bridge';
 import { LOT_STATE_STRIDE } from '../../sim/protocol';
 import { BUILD_HALF, MAP_SIZE } from '../../world/constants';
 import { LOT_STRIDE } from '../../world/lots';
-import { halfRoad, sampleByLength, edgeEnds } from '../../world/roads';
+import { meiaVia, sampleByLength, edgeEnds } from '../../world/roads';
 import { sampleForest, sampleHeight, sampleSlope, sampleWaterDist, type Heightmap } from '../../world/terrain';
 import { geoPalmeira, mergeGeos } from './Vias';
 
@@ -103,7 +103,7 @@ function gradeOcupacao(): Int32Array {
   const G = mundo.roads;
   for (const e of G.edges.values()) {
     const [p0, cc, p1] = edgeEnds(G, e);
-    const hw = halfRoad(e.type) + 2;
+    const hw = meiaVia(e) + 2;
     const { pts } = sampleByLength(p0, cc, p1, GRADE * 0.7);
     for (const p of pts) {
       for (let off = -hw; off <= hw; off += GRADE * 0.7) {

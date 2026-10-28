@@ -3,10 +3,10 @@
  * (src/data/cidadeReal.ts), grafo de ruas do OpenStreetMap e os prédios existentes como lotes fixos.
  * Puro e determinístico: o Worker e a renderização montam o mesmo mundo a partir do mesmo arquivo.
  */
-import { CAMPOS_ARESTA, CAMPOS_PREDIO, deBase64, type CidadeReal } from '../data/cidadeReal';
+import { CAMPOS_ARESTA, CAMPOS_PREDIO, deBase64, FLAG_VIA, type CidadeReal } from '../data/cidadeReal';
 import type { Bioma, Terreno } from '../data/schemas';
 import { BUILD_HALF, HM_STEP, HM_VERTS, MAP_SIZE } from './constants';
-import type { RoadGraph } from './roads';
+import type { RoadEdge as RoadEdgeNovo, RoadGraph } from './roads';
 import { arquetipo, Zone } from '../sim/catalog';
 import { DENSIDADE_MATA, waterDistance, type Heightmap } from './terrain';
 
@@ -58,11 +58,20 @@ export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed:
 export function grafoReal(c: CidadeReal, nomeSemNome: (i: number, avenida: boolean) => string): RoadGraph {
   const g: RoadGraph = { nodes: new Map(), edges: new Map(), nextNode: 1, nextEdge: 1 };
   const { nos, arestas, nomes } = c.vias;
-  for (let i = 0; i < nos.length / 2; i++) g.nodes.set(i + 1, { id: i + 1, x: nos[i * 2], z: nos[i * 2 + 1] });
-  const n = arestas.length / CAMPOS_ARESTA;
+  const semaforos = new Set(c.vias.semaforos ?? []);
+  for (let i = 0; i < nos.length / 2; i++) g.nodes.set(i + 1, { id: i + 1, x: nos[i * 2], z: nos[i * 2 + 1], ...(semaforos.has(i + 1) ? { semaforo: true } : {}) });
+  const campos = c.vias.campos ?? CAMPOS_ARESTA;
+  const n = arestas.length / campos;
   for (let i = 0; i < n; i++) {
-    const o = i * CAMPOS_ARESTA, av = arestas[o + 4] === 1;
-    g.edges.set(i + 1, { id: i + 1, a: arestas[o], b: arestas[o + 1], cx: arestas[o + 2], cz: arestas[o + 3], type: av ? 'avenida' : 'rua', name: arestas[o + 5] >= 0 ? nomes[arestas[o + 5]] : nomeSemNome(i, av) });
+    const o = i * campos, av = arestas[o + 4] === 1;
+    const e: RoadEdgeNovo = { id: i + 1, a: arestas[o], b: arestas[o + 1], cx: arestas[o + 2], cz: arestas[o + 3], type: av ? 'avenida' : 'rua', name: arestas[o + 5] >= 0 ? nomes[arestas[o + 5]] : nomeSemNome(i, av) };
+    if (campos >= 8) {
+      const flags = arestas[o + 7];
+      e.faixas = arestas[o + 6];
+      if (flags & FLAG_VIA.MAO_UNICA) e.maoUnica = true;
+      if (flags & FLAG_VIA.TUNEL) e.nivel = -1; else if (flags & FLAG_VIA.PONTE) e.nivel = 1;
+    }
+    g.edges.set(i + 1, e);
   }
   g.nextNode = nos.length / 2 + 1;
   g.nextEdge = n + 1;

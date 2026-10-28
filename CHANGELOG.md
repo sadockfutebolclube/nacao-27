@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 1.4.0 — Fase 14: ruas fiéis (27/10/2026)
+
+### Ruas do Rio como no OpenStreetMap
+- Cada trecho traz o número de faixas, mão única e nível: 14.978 trechos, 8.748 de mão única, 285 de ponte/viaduto e 94 de túnel (Major Rubens Vaz, Rebouças, Santa Bárbara…). A largura vem das faixas (3,2 m cada), a calçada da classe da via.
+- Sinalização por faixa: bordas brancas, traços entre faixas do mesmo sentido, eixo amarelo tracejado (2 faixas) ou duplo contínuo (4 ou mais).
+- Túneis: a rua entra no morro numa rampa reta entre as bocas, sem calçada, poste nem lotes por cima; pedestres não andam nela. Viadutos: reta sobre o vale, com pilares onde o vão passa de 3,5 m.
+- 910 semáforos reais: poste e luz que muda de fase (16 s verde, 4 s amarelo, 20 s vermelho, eixos defasados). Os carros param antes da faixa, formando fila.
+- Faixas de pedestre (zebra) nos cruzamentos semaforizados e 495 no meio das quadras.
+- Carros: andam só no sentido da mão única, nascem só nos trechos perto da câmera (raio de 1,6 km) e renascem quando ela anda.
+- Calçada de pedra portuguesa nas avenidas reais só perto do mar; palmeiras no canteiro só nas avenidas do jogador (nas reais cada pista é uma via).
+
+### Verificado
+- 95 testes (7 novos: atributos das vias, ciclo do semáforo, túnel sob o morro, viaduto, lotes sem túnel, arquivo do Rio); typecheck estrito; build ok. No navegador: avenida de 4 faixas com tracejado e zebra, túnel entrando no morro, sem erros no console.
+
+### Limitações
+- Ciclovias, rotatórias desenhadas e calçadas de pedestre isoladas (footway) ainda não entram.
+- Os carros formam fila no semáforo mas não desviam uns dos outros; não trocam de faixa.
+- Viadutos ainda não têm guarda-corpo desenhado, só a lateral e os pilares.
+
 ## 1.3.0 — Fase 13: só o Rio de Janeiro (27/10/2026)
 
 ### Foco

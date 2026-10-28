@@ -7,14 +7,15 @@
  * A quantidade acompanha população e empregos simulados.
  */
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Rng } from '../../sim/core/rng';
 import { mundo, useGame } from '../../sim/bridge';
-import { ROAD_SPECS } from '../../world/roads';
+import { larguraVia, ROAD_SPECS } from '../../world/roads';
 import { ambiente } from './ambiente';
 import { amostrarPerfil } from './perfilVias';
-import { perfisAtuais } from './Vias';
+import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
+import { alvoCamera } from './Camera';
 import { mergeGeos } from './Vias';
 
 const MAX = 700;
@@ -286,17 +287,24 @@ export function Veiculos() {
     return m;
   }, [wv]);
 
+  // Fase 13/14: com o Rio inteiro, os carros nascem só nos trechos perto da câmera (raio de 1,6 km);
+  // o centro é reavaliado quando a câmera anda 350 m
+  const [centro, setCentro] = useState<[number, number]>(() => { const a = alvoCamera(); return [a.x, a.z]; });
+  const ultimaChecagem = useRef(0);
+  const RAIO_CARROS = 1600;
   // sorteio de arestas proporcional ao volume do modelo de tráfego (com piso para ruas vazias)
   const sorteio = useMemo(() => {
     const ids: number[] = [], acum: number[] = [];
     let t = 0;
     for (const e of mundo.roads.edges.values()) {
+      const a = mundo.roads.nodes.get(e.a);
+      if (a && Math.hypot(a.x - centro[0], a.z - centro[1]) > RAIO_CARROS) continue;
       const vc = mundo.transito.get(e.id) ?? 0;
       t += 0.15 + vc * (e.type === 'avenida' ? 3 : 1);
       ids.push(e.id); acum.push(t);
     }
     return { ids, acum, total: t };
-  }, [wv, tv]);
+  }, [wv, tv, centro]);
 
   useEffect(() => {
     // trechos mudaram: reposiciona carros cuja aresta sumiu
@@ -309,6 +317,12 @@ export function Veiculos() {
     const g = useGame.getState();
     const dt = Math.min(0.05, dtReal) * (g.velocidade > 0 ? Math.min(2, 0.6 + g.velocidade * 0.4) : 0);
     const st = g.stats;
+    const agoraMs = performance.now();
+    if (agoraMs - ultimaChecagem.current > 600) {
+      ultimaChecagem.current = agoraMs;
+      const a = alvoCamera();
+      if (Math.hypot(a.x - centro[0], a.z - centro[1]) > 350) setCentro([a.x, a.z]);
+    }
     const edges = [...mundo.roads.edges.keys()];
     const viagens = st?.cidade.mobilidade.viagensDia ?? 0;
     const porModelo = viagens > 0 ? 8 + (viagens * (st!.cidade.mobilidade.modal.carro + st!.cidade.mobilidade.modal.informal)) / 45 : 0;
@@ -328,8 +342,14 @@ export function Veiculos() {
 
     for (let i = 0; i < lista.length; i++) {
       const c = lista[i];
-      if (!c.ativo || !perfisAtuais.has(c.edge)) {
-        if (!edges.length) break;
+      // carro que ficou para trás (a câmera andou) renasce perto dela
+      let longe = false;
+      if (c.ativo) {
+        const pl = perfisAtuais.get(c.edge);
+        if (pl) longe = Math.hypot(pl.x[pl.n >> 1] - centro[0], pl.z[pl.n >> 1] - centro[1]) > RAIO_CARROS * 1.5;
+      }
+      if (!c.ativo || longe || !perfisAtuais.has(c.edge)) {
+        if (!edges.length || !sorteio.ids.length) break;
         {
           const r = rng.next() * sorteio.total;
           let lo = 0, hi = sorteio.acum.length - 1;
@@ -339,7 +359,7 @@ export function Veiculos() {
         const pf = perfisAtuais.get(c.edge);
         if (!pf) continue;
         c.s = rng.range(0, pf.comprimento);
-        c.dir = rng.chance(0.5) ? 1 : -1;
+        c.dir = pf.edge.maoUnica ? 1 : rng.chance(0.5) ? 1 : -1;
         const r = rng.next();
         c.tipo = r < 0.07 ? 1 : r < 0.27 ? 2 : r < 0.34 ? 5 : r < 0.4 ? 4 : r < 0.68 ? 3 : 0;
         c.v = c.tipo === 1 ? 9 : c.tipo === 5 ? rng.range(8, 12) : rng.range(9, 15);
@@ -353,12 +373,29 @@ export function Veiculos() {
       // congestionamento: curva BPR (1 + 0,15·(v/c)^4) — engarrafamento visível
       const vc = mundo.transito.get(c.edge) ?? 0;
       const lento = Math.max(0.12, 1 / (1 + 0.15 * Math.pow(vc, 4)));
-      c.s += c.dir * Math.min(c.v, lim) * lento * dt;
+      // semáforo: no vermelho/amarelo o carro para antes da faixa (a distância varia por carro, formando fila)
+      let passa = 1;
+      const noFim = c.dir > 0 ? pf.edge.b : pf.edge.a;
+      if (mundo.roads.nodes.get(noFim)?.semaforo) {
+        const dNo = c.dir > 0 ? pf.comprimento - c.s : c.s;
+        const dParada = 7 + (c.cor % 4) * 5.5;
+        if (dNo <= dParada + 1.5 && dNo > dParada - 4) {
+          const tx = c.dir > 0 ? pf.tx[pf.n - 1] : -pf.tx[0], tz = c.dir > 0 ? pf.tz[pf.n - 1] : -pf.tz[0];
+          if (faseSemaforo(eixoSemaforo(tx, tz), ambiente.tempo) !== 0) passa = 0;
+        }
+      }
+      c.s += c.dir * Math.min(c.v, lim) * lento * dt * passa;
       if (c.s < 0 || c.s > pf.comprimento) {
         // chegou ao nó: escolhe o próximo trecho (evita retorno se houver opção)
         const no = c.s < 0 ? pf.edge.a : pf.edge.b;
-        const op = (adj.get(no) ?? []).filter((id) => id !== c.edge);
-        const prox = op.length ? op[rng.int(0, op.length - 1)] : c.edge;
+        // só entra em trecho que aceita esse sentido (mão única só pelo começo) e não é o de onde veio
+        const op = (adj.get(no) ?? []).filter((id) => {
+          if (id === c.edge) return false;
+          const pe = perfisAtuais.get(id)?.edge;
+          return !!pe && (!pe.maoUnica || pe.a === no);
+        });
+        if (!op.length) { c.ativo = false; continue; }
+        const prox = op[rng.int(0, op.length - 1)];
         const np = perfisAtuais.get(prox);
         if (!np) { c.ativo = false; continue; }
         c.edge = prox;
@@ -366,8 +403,8 @@ export function Veiculos() {
         continue;
       }
       amostrarPerfil(pf, c.s, p);
-      const largura = ROAD_SPECS[pf.edge.type].width;
-      const faixaOff = pf.edge.type === 'avenida' ? (c.faixa ? largura * 0.38 : largura * 0.2) : largura * 0.25;
+      const largura = larguraVia(pf.edge);
+      const faixaOff = pf.edge.maoUnica ? (c.faixa ? largura * 0.2 : -largura * 0.2) : pf.edge.type === 'avenida' ? (c.faixa ? largura * 0.38 : largura * 0.2) : largura * 0.25;
       // mão direita
       const nx = -p.tz * c.dir, nz = p.tx * c.dir;
       v.set(p.x + nx * faixaOff, p.y + 0.02, p.z + nz * faixaOff);

@@ -639,3 +639,12 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Ruas** (`render/city/Vias.tsx`): blocos de 1.024 m com leitos, calçadas, postes, pilares e palmeiras; só os de até 4,5 km da câmera ficam visíveis.
 - **Prédios gerados pelo jogo** (`Edificios.tsx`): só num raio de 2,5 km da câmera, com assinatura dos lotes do raio para não remontar sem mudança visível.
 - **Worker**: estado enviado no máximo a cada 250 ms; `tests/escala.test.ts` mede montagem (≈2,4 s), passo e tamanho do estado (6,9 MB).
+
+# Parte XIII — Ruas fiéis (Fase 14)
+
+- **Dados** (`scripts/fetch-cidades.ts`, `geofabrik.ts`): por aresta, faixas (etiqueta `lanes` ou padrão da classe), flags (1 mão única — `oneway`, rotatória, via expressa —, 2 `bridge`, 4 `tunnel`); semáforos (`highway=traffic_signals`, associados ao nó mais próximo até 22 m) e faixas de pedestre no meio de quarteirão (`highway=crossing`, 14 m da rua mais próxima, uma por 12 m).
+- **Modelo** (`world/roads.ts`): `RoadEdge.faixas/maoUnica/nivel`, `RoadNode.semaforo`; `larguraVia` = faixas × 3,2 m (+0,6 m de mão única, +1,4 m de mão dupla; 5–34 m), `calcadaVia` 3,5 m (avenida) / 2,2 m / 1,6 m (uma faixa).
+- **Cotas** (`render/city/perfilVias.ts`): nós de portal na cota do terreno; nós só de túnel/viaduto relaxam (400 iterações); túnel = min(terreno, rampa), viaduto = max(terreno, reta).
+- **Desenho** (`Vias.tsx`): leito por sinalização (`chaveLeito`: 'rua' | 'avenida' | '4d' | '3u'…), textura gerada por número de faixas; zebra e semáforos instanciados por bloco de 1 km; lâmpada com cor da fase no shader (`uSemTempo` = `ambiente.tempo`).
+- **Tráfego** (`Veiculos.tsx`): mão única respeitada na escolha do próximo trecho e no nascimento; parada antes do semáforo vermelho/amarelo a 7 + (cor mod 4) × 5,5 m do nó; nascimento em trechos a até 1,6 km da câmera.
+- **Testes** (`tests/fase14.test.ts`).

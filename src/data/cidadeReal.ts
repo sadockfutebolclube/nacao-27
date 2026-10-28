@@ -29,9 +29,18 @@ export const CidadeReal = z.object({
   vias: z.object({
     /** [x, z] por nó (id = índice + 1) */
     nos: z.array(z.number()),
-    /** [a, b, cx, cz, tipo (0 rua, 1 avenida), índice do nome] por aresta (id = índice + 1) */
+    /**
+     * [a, b, cx, cz, tipo (0 rua, 1 avenida), índice do nome] por aresta (id = índice + 1); com `campos` = 8 (Fase 14)
+     * vêm também [faixas totais, flags: 1 mão única · 2 ponte/viaduto · 4 túnel]
+     */
     arestas: z.array(z.number()),
     nomes: z.array(z.string()),
+    /** campos por aresta (6 nos arquivos antigos) */
+    campos: z.number().optional(),
+    /** Fase 14: ids dos nós (índice + 1) com semáforo */
+    semaforos: z.array(z.number()).optional(),
+    /** Fase 14: faixas de pedestre no meio do quarteirão, [x, z, ângulo×1000 (direção da rua, atan2(tx, tz))] cada */
+    faixasPed: z.array(z.number()).optional(),
   }),
   /** [x, z, ângulo×1000, largura, profundidade, andares, tipo, aresta, índice do nome (−1 = sem nome)] por prédio */
   predios: z.array(z.number()),
@@ -48,6 +57,7 @@ export type CidadeReal = z.infer<typeof CidadeReal>;
 
 export const CAMPOS_PREDIO = 9;
 export const CAMPOS_ARESTA = 6;
+export const FLAG_VIA = { MAO_UNICA: 1, PONTE: 2, TUNEL: 4 } as const;
 
 export interface PredioReal { x: number; z: number; angle: number; w: number; d: number; andares: number; tipo: number; aresta: number; nome: string | null }
 

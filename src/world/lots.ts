@@ -4,7 +4,7 @@
  * resolve conflitos (cruzamentos, curvas internas, água, encostas, equipamentos públicos).
  */
 import { BUILD_HALF, LOT_D, LOT_D_SHALLOW, LOT_W, RASTER_CELL, RASTER_RES } from './constants';
-import { edgeEnds, halfRoad, sampleByLength, type RoadGraph } from './roads';
+import { edgeEnds, meiaVia, sampleByLength, type RoadGraph } from './roads';
 import { sampleHeight, type Heightmap } from './terrain';
 
 export interface LotGeom {
@@ -64,8 +64,10 @@ export function forRectCells(f: Footprint, visit: (idx: number) => boolean | voi
 /** Rasteriza as vias (leito + calçada) como -1. */
 export function rasterizeRoads(g: RoadGraph, raster: Int32Array) {
   for (const e of g.edges.values()) {
+    // túnel e viaduto não têm calçada nem lotes ao lado (o leito não ocupa o chão)
+    if (e.nivel) continue;
     const [p0, c, p1] = edgeEnds(g, e);
-    const hw = halfRoad(e.type);
+    const hw = meiaVia(e);
     const { pts } = sampleByLength(p0, c, p1, 2);
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], b = pts[i];
@@ -103,8 +105,9 @@ export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], 
   }
   const edges = [...g.edges.values()].sort((a, b) => a.id - b.id);
   for (const e of edges) {
+    if (e.nivel) continue;
     const [p0, c, p1] = edgeEnds(g, e);
-    const hw = halfRoad(e.type);
+    const hw = meiaVia(e);
     const { pts, length } = sampleByLength(p0, c, p1, 1);
     if (length < LOT_W) continue;
     for (const side of [1, -1] as const) {

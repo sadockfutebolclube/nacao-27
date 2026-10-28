@@ -721,3 +721,6 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - `step()` agenda o trabalho do dia (`trabalhoPesado`) em `Orcamento` e roda até `orcamentoMs` (padrão do worker: 4 ms). O worker termina a fila em fatias entre os ticks. Fases: redes → serviços sociais → território → favelas → (semana) favelas + transporte → poluição → valor do solo → demanda → crescimento → agregados.
 - LOD: lotes fora do foco da câmera atualizam valor do solo e crime a cada 4º dia; o modo síncrono (`orcamentoMs = Infinity`) é completo.
 - F4 mostra passo, fila e custo por fase; `npm run medir-simulacao` mede os dois modos.
+
+## Fase 24 — pedestres (desenho, não altera a simulação)
+Densidade por célula de 64 m = Σ classes (peso × pico × Σ personas mistura × fração visível na hora/dia) + POIs. Ver `src/data/pedestres.json` e `src/render/city/densidade.ts`. O modelo agregado (F3) é Σ densidade × metros de via ÷ 100.

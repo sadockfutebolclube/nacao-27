@@ -10,6 +10,7 @@ import { HM_RES, HM_STEP, HM_VERTS, MAP_SIZE } from '../../world/constants';
 import type { Heightmap } from '../../world/terrain';
 import { alvoCamera } from './Camera';
 import { debugMapa, diagnosticarVias, useDebugMapa } from './estadoDebug';
+import { usePedDebug } from './estadoPedestres';
 import { perfisAtuais } from './Vias';
 
 const RAIO_NORMAIS = 240;
@@ -17,6 +18,7 @@ const RAIO_NORMAIS = 240;
 export function DebugMapa({ hm }: { hm: Heightmap }) {
   const { scene } = useThree();
   const d = useDebugMapa();
+  const calor = usePedDebug().mapaCalor;
   const originais = useRef(new Map<THREE.Material, boolean>());
   const linhas = useRef<THREE.LineSegments>(null);
   const t = useRef({ ult: 0, cx: 1e9, cz: 1e9 });
@@ -38,10 +40,10 @@ export function DebugMapa({ hm }: { hm: Heightmap }) {
 
   // wireframe em todas as malhas (blocos novos entram a cada segundo)
   useEffect(() => {
-    const ligar = d.modo > 0;
+    const ligar = d.modo > 0 && !calor; // com o mapa de calor de pedestres ligado, o wireframe sai do caminho
     const aplicar = () => scene.traverse((o) => {
       const m = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
-      if (!m || !(o as THREE.Mesh).isMesh || o === linhas.current) return;
+      if (!m || !(o as THREE.Mesh).isMesh || o === linhas.current || o.userData.semWireframe) return;
       for (const mat of Array.isArray(m) ? m : [m]) {
         if (!('wireframe' in mat)) continue;
         const w = mat as THREE.MeshStandardMaterial;
@@ -53,7 +55,7 @@ export function DebugMapa({ hm }: { hm: Heightmap }) {
     aplicar();
     const id = window.setInterval(aplicar, 1000);
     return () => { window.clearInterval(id); if (!ligar) restaurar(); };
-  }, [d.modo, scene]);
+  }, [d.modo, scene, calor]);
   useEffect(() => () => { for (const [m, v] of originais.current) (m as THREE.MeshStandardMaterial).wireframe = v; originais.current.clear(); }, []);
 
   const geo = useMemo(() => new THREE.BufferGeometry(), []);

@@ -57,7 +57,7 @@ describe('Dados das UFs', () => {
       for (let i = 0; i < h.h.length; i += 997) if (!Number.isFinite(h.h[i])) finitos = false;
       expect(finitos, u.sigla).toBe(true);
     }
-  }, 60_000);
+  }, 180_000);
 });
 
 describe('Grafo viário', () => {

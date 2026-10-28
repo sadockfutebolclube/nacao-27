@@ -1,0 +1,64 @@
+{
+  "_leia-me": "Densidade de pedestres dirigida por dados (Fase 24). densidade(célula, hora, dia) = Σ classes (peso da classe na célula × pico da classe × Σ personas (mistura da classe × fração visível da persona na hora)) + reforço dos POIs. Unidade do pico: pedestres por 100 m de via (soma das duas calçadas) com todo mundo visível. Editar este arquivo muda o jogo sem recompilar nada além do bundle.",
+  "celula": 64,
+  "atividades": {
+    "dorme": 0, "casa": 0, "desloca": 1, "trabalha": 0.16, "estuda": 0.03, "compra": 0.75, "passeia": 1, "corre": 1
+  },
+  "personas": {
+    "trabalhador": {
+      "util": [[0, "dorme"], [5.5, "casa"], [6.3, "desloca"], [7.7, "trabalha"], [12, "compra"], [13.2, "trabalha"], [17.3, "desloca"], [18.8, "compra"], [19.7, "casa"], [22.7, "dorme"]],
+      "fds": [[0, "dorme"], [8.5, "casa"], [10, "passeia"], [12.5, "compra"], [14.2, "passeia"], [17, "casa"], [19, "passeia"], [22, "casa"], [23.5, "dorme"]]
+    },
+    "estudante": {
+      "util": [[0, "dorme"], [5.8, "casa"], [6.3, "desloca"], [7, "estuda"], [12.2, "desloca"], [13.2, "casa"], [15, "passeia"], [17.5, "casa"], [22.3, "dorme"]],
+      "fds": [[0, "dorme"], [9.5, "casa"], [11, "passeia"], [13, "compra"], [14.5, "passeia"], [18, "casa"], [23, "dorme"]]
+    },
+    "aposentado": {
+      "util": [[0, "dorme"], [5, "casa"], [6, "passeia"], [8, "compra"], [9.7, "casa"], [16, "passeia"], [18, "casa"], [21, "dorme"]],
+      "fds": [[0, "dorme"], [5.5, "casa"], [6.5, "passeia"], [9, "compra"], [10.5, "casa"], [16, "passeia"], [18.5, "casa"], [21, "dorme"]]
+    },
+    "turista": {
+      "util": [[0, "dorme"], [8.5, "casa"], [9.5, "passeia"], [12, "compra"], [13.5, "passeia"], [18, "compra"], [19.5, "passeia"], [23, "casa"], [23.8, "dorme"]],
+      "fds": [[0, "dorme"], [8.5, "casa"], [9.5, "passeia"], [12, "compra"], [13.5, "passeia"], [18, "compra"], [19.5, "passeia"], [23.5, "casa"], [23.9, "dorme"]]
+    },
+    "esportista": {
+      "util": [[0, "dorme"], [5, "corre"], [8, "casa"], [16.5, "corre"], [19.5, "casa"], [21.5, "dorme"]],
+      "fds": [[0, "dorme"], [6, "corre"], [10.5, "casa"], [16, "corre"], [20, "casa"], [22, "dorme"]]
+    },
+    "ambulante": {
+      "visivel": { "trabalha": 1 },
+      "util": [[0, "dorme"], [5.5, "casa"], [6.3, "trabalha"], [19.5, "casa"], [21, "dorme"]],
+      "fds": [[0, "dorme"], [6, "casa"], [7, "trabalha"], [19, "casa"], [21, "dorme"]]
+    }
+  },
+  "classes": {
+    "centro":      { "pico": 75, "mistura": { "trabalhador": 0.62, "estudante": 0.06, "aposentado": 0.05, "turista": 0.12, "esportista": 0.01, "ambulante": 0.14 } },
+    "comercial":   { "pico": 26, "mistura": { "trabalhador": 0.57, "estudante": 0.1, "aposentado": 0.13, "turista": 0.05, "esportista": 0.01, "ambulante": 0.14 } },
+    "residencial": { "pico": 15, "mistura": { "trabalhador": 0.4, "estudante": 0.25, "aposentado": 0.22, "turista": 0.02, "esportista": 0.05, "ambulante": 0.04 } },
+    "industrial":  { "pico": 10, "mistura": { "trabalhador": 0.88, "estudante": 0.01, "aposentado": 0.01, "turista": 0, "esportista": 0.01, "ambulante": 0.05 } },
+    "servico":     { "pico": 22, "mistura": { "trabalhador": 0.45, "estudante": 0.2, "aposentado": 0.18, "turista": 0.04, "esportista": 0.03, "ambulante": 0.1 } },
+    "orla":        { "pico": 36, "mistura": { "trabalhador": 0.16, "estudante": 0.08, "aposentado": 0.14, "turista": 0.3, "esportista": 0.2, "ambulante": 0.12 } },
+    "praca":       { "pico": 20, "mistura": { "trabalhador": 0.08, "estudante": 0.2, "aposentado": 0.28, "turista": 0.18, "esportista": 0.2, "ambulante": 0.06 } },
+    "vazio":       { "pico": 0.6, "mistura": { "trabalhador": 0.3, "estudante": 0.1, "aposentado": 0.2, "turista": 0.1, "esportista": 0.3, "ambulante": 0 } }
+  },
+  "regiao": {
+    "_far": "índice de construção (área de piso / área da célula): abaixo de far0 a célula é vazia, acima de far1 é toda construída",
+    "far0": 0.12, "far1": 0.7,
+    "orlaDist0": 120, "orlaDist1": 420, "orlaPeso": 0.85,
+    "centros": ["Centro", "Saara", "Castelo", "Saúde", "Gamboa", "Lapa", "Cinelândia"],
+    "centroRaio": 1100,
+    "pracaPeso": 0.9
+  },
+  "pois": {
+    "parada":  { "pico": 14, "raio": 40, "curva": [[0, 0.02], [5, 0.25], [7, 1], [9, 0.55], [12, 0.45], [16, 0.55], [18, 1], [20, 0.45], [22, 0.12], [24, 0.02]], "espera": 0.6 },
+    "estacao": { "pico": 34, "raio": 80, "curva": [[0, 0.02], [5, 0.3], [7, 1], [9, 0.6], [12, 0.5], [16, 0.6], [18, 1], [20, 0.5], [22, 0.15], [24, 0.02]], "espera": 0.2 }
+  },
+  "fimDeSemana": { "centro": 0.3, "comercial": 0.8, "industrial": 0.25, "orla": 1.7, "praca": 1.5, "residencial": 1, "servico": 0.6, "vazio": 1 },
+  "comportamento": {
+    "espera": { "min": 25, "max": 80 },
+    "compra": { "min": 15, "max": 70 },
+    "sentado": { "min": 50, "max": 200 },
+    "trabalhando": { "min": 120, "max": 600 },
+    "chuva": 0.35
+  }
+}

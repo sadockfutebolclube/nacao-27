@@ -320,3 +320,14 @@ Com orçamento, 1 zona de origem em 4 por semana (as de índice ≡ semana mod 4
 
 ## D-105 · Binário por núcleo + tiles, com o JSON de reserva
 Tiles guardam o índice original do prédio (nada é reordenado: os índices nos saves continuam valendo). Ganho medido: −31% de bytes, decodificação equivalente ao JSON; o ganho de verdade vem com o carregamento por tile.
+
+# Parte XXII — Pedestres por dados (Fase 24)
+
+## D-106 · Densidade = f(classe da célula, rotina das personas), não população
+Quanto mais perto da realidade que o dado alcança: a classe vem do uso do solo, da água, do centro e das praças; a hora vem da rotina de cada persona (quem está dentro de prédio não conta). Pico por classe em pedestres/100 m de via. Tudo em `src/data/pedestres.json`.
+
+## D-107 · Modelo agregado separado do desenho
+O desenho só amostra a vizinhança da câmera; a contagem da cidade (Σ densidade × via) fica no modelo e é o que o painel mostra. Os pedestres não são simulados fora da câmera.
+
+## D-108 · Travessia só com faixa
+Zebras existem nos nós com semáforo e nas `faixasPed` do OSM. Sem semáforo, trecho que cruza a boca da rua vira meia-volta. Esquina com calçada contínua continua passando.

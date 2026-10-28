@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 1.13.0 — Fase 24: pedestres dirigidos por dados (28/10/2026)
+
+Prints antes/depois em `docs/auditoria-pedestres/`.
+
+### Causa raiz
+- A quantidade de pedestres era `população ÷ 18 × curva horária única`, limitada só pelo comprimento de calçada ÷ 3: toda calçada perto da câmera enchia igual, em qualquer lugar. Numa rua residencial do Laranjeiras às 3h apareciam ~15 pessoas em 47 m de rua (`antes-residencial-3h.jpg`).
+- Nas pontas da calçada, 40% dos becos sem saída e 20% das esquinas mandavam o pedestre atravessar o asfalto em linha reta, com ou sem faixa.
+
+### Mudanças
+- **Densidade por dados** (`src/render/city/densidade.ts` + `src/data/pedestres.json`): densidade(célula, hora, dia) = Σ classes (peso × pico × Σ personas mistura × fração visível) + reforço de POIs. Classes: centro, comercial, residencial, industrial, serviço, orla, praça, vazio — vindas dos prédios reais (tipo × área de piso por célula de 64 m), da distância da água, dos bairros do centro (OSM) e da vegetação de parque; dentro da água o peso é zero. POIs: paradas de ônibus (GTFS) e estações. Tudo editável no JSON.
+- **Rotina**: 6 personas (trabalhador, estudante, aposentado, turista, esportista, ambulante) com horários em dia útil e fim de semana (casa → trabalho/escola → comércio → casa). Dormir, ficar em casa, no trabalho ou na escola = dentro de um prédio: não é desenhado, só conta no modelo agregado.
+- **Estados** visíveis: andando, esperando ônibus (na parada), sentado (praça; pose nova no shader), comprando (na frente das lojas) e trabalhando (ambulante).
+- **Só em calçada**: a travessia da rua só acontece em nó com semáforo (que desenha a zebra); sem semáforo, se o trecho reto entre as duas calçadas passa sobre o asfalto da boca da rua, o pedestre dá meia-volta pela mesma calçada; beco sem saída: meia-volta, nunca atravessa.
+- **Câmera**: nasce e some por proximidade (raio 120–380 m); ao passar para uma zona mais vazia, parte do povo entra num prédio (a densidade manda, não o acaso). A contagem da cidade inteira vive no **modelo agregado** (Σ densidade × metros de via ÷ 100).
+- **F3**: slider de densidade global (0–3×), dia da semana forçado, mapa de calor (azul → vermelho, 0 → 40 pessoas / 100 m de via; o wireframe sai do caminho enquanto ele está ligado) e o modelo agregado (total na rua, desenhados, por estado). Dev: `window.__n27ped`.
+- Testes: `tests/fase24.test.ts` (18).
+
+### Limites conhecidos
+- Prédios que o jogador constrói não entram na classe da célula (só os prédios reais do arquivo); as personas não são rastreadas fora da câmera (o modelo é por densidade, não por agente).
+- Escadarias, trilhas e calçadões do OSM (`caminhos`) ainda não são rede de caminhada; na areia, quem anda/deita é o `Praia.tsx` (que já seguia fim de semana e calor).
+- Ainda sobram travessias sem semáforo em esquinas largas onde o trecho reto fica fora do asfalto das pernas medidas (1–8 de ~450 pedestres ativos nas medições de auditoria; antes: 13 de 17 travessias eram assim).
+
 ## 1.12.0 — Fase 23: simulação em orçamento e geração em 22 s (28/10/2026)
 
 Medições antes/depois em `docs/fase23-medicoes.md`.

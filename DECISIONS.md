@@ -237,3 +237,9 @@ Em vez de modelar túneis e viadutos como objetos, a cota de cada nó que só to
 
 ## D-078 · Semáforo com fase por eixo, sem estado
 A fase é função do tempo e do eixo da aproximação (|tx| > |tz|), igual no desenho da lâmpada (shader) e nos carros: nada para sincronizar nem salvar. As filas se formam porque cada carro para a uma distância diferente da faixa.
+
+## D-079 · Marcos procedurais ancorados nos dados
+Os marcos são formas feitas no código (extrusões, cones, anéis), sem baixar modelos: licença limpa, peso zero e orientação certa. Quando o OSM tem o prédio (Arcos da Lapa, Museu do Amanhã, Catedral), o modelo usa a posição, o tamanho e o ângulo dele e o prédio sai do desenho; quando não tem (Cristo, bondinho, Maracanã), vale a latitude/longitude. O Cristo é 1,7× maior que o real porque numa cidade de 12 km 38 m não aparecem.
+
+## D-080 · Picos por gaussiana em vez de outro relevo
+Trocar a fonte de altitude por uma de maior resolução (LiDAR da prefeitura) exigiria baixar e processar gigabytes. Uma gaussiana por pico, com a altitude real e um raio por morro, resolve o que aparece no jogo (silhueta do Pão de Açúcar, do Corcovado) e só vale onde o satélite é mais baixo.

@@ -104,12 +104,13 @@ export function criarMaterialTerreno(): THREE.MeshStandardMaterial {
       tGramaN: { value: grama.normalMap }, tTerraN: { value: terra.normalMap }, tRochaN: { value: rocha.normalMap },
     });
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vMundo;\nvarying float vInclT;')
-      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMundo = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvInclT = 1.0 - normalize(objectNormal).y;');
+      .replace('#include <common>', '#include <common>\nvarying vec3 vMundo;\nvarying float vInclT;\nvarying vec3 vNmT;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMundo = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvInclT = 1.0 - normalize(objectNormal).y;\nvNmT = normalize(objectNormal);');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying vec3 vMundo;
 varying float vInclT;
+varying vec3 vNmT;
 uniform float uSecura, uMolhado, uGeada;
 uniform sampler2D tGrama, tTerra, tRocha, tGramaN, tTerraN, tRochaN;
 ${GLSL_DETALHE}
@@ -121,7 +122,10 @@ float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
 // fotos de capim/terra/rocha escolhidas pela cor do bioma e pela declividade
 wGramaT = clamp((diffuseColor.g - max(diffuseColor.r, diffuseColor.b)) * 7.0, 0.0, 1.0);
 wRochaT = smoothstep(0.22, 0.42, vInclT);
-vec3 rzT = mix(mix(razaoDetalhe(tTerra, vMundo.xz, 4.0), razaoDetalhe(tGrama, vMundo.xz, 2.6), wGramaT), razaoDetalhe(tRocha, vMundo.xz, 7.0), wRochaT);
+// rocha em três projeções: nos paredões (Pão de Açúcar, Corcovado) a textura de cima esticaria em riscos
+vec3 wTri = pow(abs(vNmT), vec3(4.0)); wTri /= (wTri.x + wTri.y + wTri.z);
+vec3 rochaT = razaoDetalhe(tRocha, vMundo.zy, 7.0) * wTri.x + razaoDetalhe(tRocha, vMundo.xz, 7.0) * wTri.y + razaoDetalhe(tRocha, vMundo.xy, 7.0) * wTri.z;
+vec3 rzT = mix(mix(razaoDetalhe(tTerra, vMundo.xz, 4.0), razaoDetalhe(tGrama, vMundo.xz, 2.6), wGramaT), rochaT, wRochaT);
 diffuseColor.rgb *= mix(vec3(1.0), rzT, 0.9);
 // detalhe em várias escalas: manchas de capim, terra batida e "grão" fino
 float d1 = vn(vMundo.xz * 0.045);
@@ -138,7 +142,7 @@ diffuseColor.rgb *= 1.0 - 0.2 * uMolhado;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.93), uGeada * verde * 0.6 * d2);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 {
-  vec3 nT = normalize(mix(mix(normalDetalhe(tTerraN, vMundo.xz, 4.0), normalDetalhe(tGramaN, vMundo.xz, 2.6), wGramaT), normalDetalhe(tRochaN, vMundo.xz, 7.0), wRochaT));
+  vec3 nT = normalize(mix(mix(normalDetalhe(tTerraN, vMundo.xz, 4.0), normalDetalhe(tGramaN, vMundo.xz, 2.6), wGramaT), normalDetalhe(tRochaN, vMundo.xz, 7.0), wRochaT * pow(abs(vNmT.y), 4.0)));
   vec3 tT = normalize((viewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
   vec3 bT = normalize((viewMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz);
   tT = normalize(tT - dot(tT, normal) * normal);

@@ -16,6 +16,7 @@ import { CeuLuz } from './CeuLuz';
 import { ClimaFx } from './ClimaFx';
 import { Edificios } from './Edificios';
 import { PrediosReais } from './PrediosReais';
+import { Marcos } from './Marcos';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -105,6 +106,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Vias') && <Vias hm={hm} />}
         {liga('Edificios') && <Edificios hm={hm} />}
         {liga('PrediosReais') && <PrediosReais />}
+        {liga('Marcos') && <Marcos hm={hm} />}
         {liga('Equipamentos') && <Equipamentos hm={hm} />}
         {liga('Arvores') && <Arvores hm={hm} />}
         {liga('Favelas') && <Favelas hm={hm} />}

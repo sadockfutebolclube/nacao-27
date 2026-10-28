@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 1.5.0 — Fase 15: relevo, mar e marcos (27/10/2026)
+
+### Relevo
+- Os picos famosos sobem à altitude real: o satélite arredondava os cumes (Corcovado 584 m em vez de 704; Pão de Açúcar 290 em vez de 396; Morro da Urca 93 em vez de 224; Dois Irmãos 375 em vez de 533). A rocha íngreme usa textura em três projeções, sem os riscos esticados dos paredões.
+
+### Marcos 3D nas coordenadas reais
+- **Cristo Redentor** no Corcovado (1,7× maior para ser visto do alto), iluminado à noite.
+- **Bondinho do Pão de Açúcar**: estações em Praia Vermelha, Urca e no cume, cabo e quatro cabines que sobem e descem.
+- **Maracanã**: anel de arquibancada, teto e gramado 105 × 68 m com as marcações.
+- **Arcos da Lapa**: aqueduto de dois andares (27 arcos embaixo, 20 em cima) com o trilho do bondinho de Santa Teresa, no lugar e na orientação do prédio do OSM; a avenida passa por baixo.
+- **Museu do Amanhã** no píer, com as asas em balanço, e **Catedral Metropolitana** cônica com os quatro vitrais.
+- Os prédios do OSM que esses marcos substituem (e os do raio do Maracanã) deixam de ser desenhados.
+
+### Mar
+- Ondas que quebram em faixas paralelas à praia e avançam para a areia, somadas à espuma da costa.
+
+### Verificado
+- 100 testes (5 novos: projeção, picos, praia, marcos, outras cidades); typecheck estrito; build ok. No navegador: Cristo, Maracanã, Arcos, bondinho, Museu do Amanhã e a praia com ondas.
+
+### Limitações
+- Os modelos são feitos no código (formas simples), não escultura detalhada. O Cristo tem a escala exagerada.
+- Pedra da Gávea, Pico da Tijuca e a Floresta da Tijuca densa ficam em parte fora do mapa de 16 km; Escadaria Selarón, Theatro Municipal e Copacabana Palace ainda usam a caixa do OSM.
+- Reflexo e profundidade da Lagoa Rodrigo de Freitas e da Baía de Guanabara seguem o mesmo mar.
+
 ## 1.4.0 — Fase 14: ruas fiéis (27/10/2026)
 
 ### Ruas do Rio como no OpenStreetMap

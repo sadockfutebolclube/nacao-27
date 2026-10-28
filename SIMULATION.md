@@ -648,3 +648,12 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Desenho** (`Vias.tsx`): leito por sinalização (`chaveLeito`: 'rua' | 'avenida' | '4d' | '3u'…), textura gerada por número de faixas; zebra e semáforos instanciados por bloco de 1 km; lâmpada com cor da fase no shader (`uSemTempo` = `ambiente.tempo`).
 - **Tráfego** (`Veiculos.tsx`): mão única respeitada na escolha do próximo trecho e no nascimento; parada antes do semáforo vermelho/amarelo a 7 + (cor mod 4) × 5,5 m do nó; nascimento em trechos a até 1,6 km da câmera.
 - **Testes** (`tests/fase14.test.ts`).
+
+# Parte XIV — Relevo, mar e marcos (Fase 15)
+
+- **Picos** (`world/cidadeReal.ts → PICOS_RIO`): `h = max(h, alt · exp(−d² / 2σ²))` em terra (> 1,2 m), raio de 3σ; Corcovado 704 m (σ 240), Pão de Açúcar 396 (150), Urca 224 (130), Dois Irmãos 533 (230).
+- **Marcos** (`render/city/Marcos.tsx`, `pontosRio.ts`): âncoras por nome no arquivo do Rio e por lat/lon; `prediosOcultos` lista os prédios que um marco substitui (por nome e os num raio de 190 m do Maracanã); o desenho dos prédios pula esses índices.
+- **Bondinho**: cabo reto entre três pontos, cabines com 90 s de ida e volta, ligadas ao `ambiente.tempo`.
+- **Rocha**: sombreador do terreno mistura três projeções (zy, xz, xy) pelos pesos |n|⁴.
+- **Ondas**: faixas de espuma em `sin(prof × 3,2 − t × 1,1)`, onde `prof` cresce com a distância da costa; avançam para a praia.
+- **Testes** (`tests/fase15.test.ts`).

@@ -10,6 +10,24 @@ import type { RoadEdge as RoadEdgeNovo, RoadGraph } from './roads';
 import { arquetipo, Zone } from '../sim/catalog';
 import { DENSIDADE_MATA, waterDistance, type Heightmap } from './terrain';
 
+/** Projeção do jogo (a mesma do gerador): x leste, z sul, em metros a partir do centro do mapa da cidade. */
+export function projetar(c: CidadeReal, lat: number, lon: number): [number, number] {
+  const kx = 111_320 * Math.cos((c.lat * Math.PI) / 180), kz = 110_574;
+  return [(lon - c.lon) * kx, -(lat - c.lat) * kz];
+}
+
+/**
+ * Picos famosos (Fase 15): o relevo de satélite (SRTM, ~30 m) arredonda os cumes — o Corcovado sai com ~580 m e
+ * o Pão de Açúcar com ~290 m. Cada pico sobe até a altitude real com uma gaussiana (sigma em metros); onde o
+ * terreno já é mais alto, vale o do satélite.
+ */
+export const PICOS_RIO: { nome: string; lat: number; lon: number; alt: number; sigma: number }[] = [
+  { nome: 'Corcovado', lat: -22.9519, lon: -43.2105, alt: 704, sigma: 240 },
+  { nome: 'Pão de Açúcar', lat: -22.9487, lon: -43.1566, alt: 396, sigma: 150 },
+  { nome: 'Morro da Urca', lat: -22.9528, lon: -43.1632, alt: 224, sigma: 130 },
+  { nome: 'Dois Irmãos', lat: -22.9930, lon: -43.2420, alt: 533, sigma: 230 },
+];
+
 /** Relevo real: alturas do arquivo interpoladas para a grade do jogo, água rebaixada, verde do OSM. O arquivo cobre
  * a própria extensão ((res − 1) × passo, centrada na origem); fora dela vale a borda. */
 export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed: number): Heightmap {
@@ -39,6 +57,21 @@ export function terrenoReal(c: CidadeReal, terreno: Terreno, bioma: Bioma, seed:
       // fora da área construível, campo e mata do bioma onde o OSM não mapeou nada
       if (Math.abs(x) > BUILD_HALF || Math.abs(z) > BUILD_HALF) f = Math.max(f, Math.round(90 * fundo));
       forest[k] = f;
+    }
+  }
+  // picos famosos: só no Rio (o arquivo diz de qual cidade é)
+  if (c.ibge === '3304557') {
+    for (const pk of PICOS_RIO) {
+      const [px, pz] = projetar(c, pk.lat, pk.lon);
+      const raio = pk.sigma * 3;
+      const i0 = Math.max(0, Math.floor((px - raio + half) / HM_STEP)), i1 = Math.min(HM_VERTS - 1, Math.ceil((px + raio + half) / HM_STEP));
+      const j0 = Math.max(0, Math.floor((pz - raio + half) / HM_STEP)), j1 = Math.min(HM_VERTS - 1, Math.ceil((pz + raio + half) / HM_STEP));
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+        const k = j * HM_VERTS + i;
+        if (h[k] < 1.2) continue;
+        const dx = -half + i * HM_STEP - px, dz = -half + j * HM_STEP - pz;
+        h[k] = Math.max(h[k], pk.alt * Math.exp(-(dx * dx + dz * dz) / (2 * pk.sigma * pk.sigma)));
+      }
     }
   }
   // Fase 13: no litoral, praia em rampa e mar que aprofunda com a distância da costa (o relevo de 16 m

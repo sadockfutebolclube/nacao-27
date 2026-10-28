@@ -70,6 +70,10 @@ void main() {
 
   float espuma = smoothstep(1.3, 0.15, prof) * (0.55 + 0.45 * vn(vMundo.xz * 0.35 + uTempo * 0.6));
   espuma += smoothstep(2.6, 1.6, prof) * smoothstep(0.62, 0.8, vn(vMundo.xz * 0.12 - uTempo * 0.25)) * 0.5;
+  // Fase 15: ondas que quebram em faixas paralelas à praia (a profundidade cresce com a distância da costa) e avançam para ela
+  float fase = prof * 3.2 - uTempo * 1.1;
+  float quebra = smoothstep(0.7, 0.97, sin(fase)) * smoothstep(5.5, 1.0, prof) * smoothstep(0.25, 0.75, vn(vMundo.xz * 0.09 + 3.0));
+  espuma += quebra * 0.75;
   espuma *= 1.0 + 1.5 * uRessaca;
   // água barrenta depois de enchente (sedimento descendo dos rios)
   col = mix(col, vec3(0.32, 0.25, 0.15) * mix(1.0, 0.3, uNoite), uLama * 0.55 * smoothstep(12.0, 0.0, prof));

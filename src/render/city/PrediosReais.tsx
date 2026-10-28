@@ -25,6 +25,7 @@ import { ambiente } from './ambiente';
 import { clima } from './climaVisual';
 import { corCamada, useVersaoLenta } from './Edificios';
 import { estiloRegional } from './estilos';
+import { prediosOcultos } from './pontosRio';
 import { usePrediosReais } from './prediosReaisEstado';
 
 const BLOCO = 512;
@@ -156,7 +157,9 @@ function montarBloco(c: CidadeReal, chave: string, lod: Lod, sigla: string | und
   const lista = blocosDe(c).get(chave);
   if (!lista) return null;
   const A = new Acumulador();
+  const ocultos = prediosOcultos(c);
   for (const i of lista) {
+    if (ocultos.has(i)) continue; // um marco (Arcos da Lapa, Maracanã…) já representa este prédio
     const ap = aparencia(c, i, sigla);
     const { p } = ap;
     if (lod === 2 && p.andares < 4 && p.w * p.d < 1500) continue;

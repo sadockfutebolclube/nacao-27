@@ -21,6 +21,7 @@ import { useApp } from '../../app/store';
 import { GRUPOS, TERR_CELL, TERR_RES } from '../../sim/city/territorio';
 import { BUILD_HALF } from '../../world/constants';
 import { estiloRegional } from './estilos';
+import { bairroCensoEm, densidadeBairro } from '../../data/bairros';
 import { usePrediosReais } from './prediosReaisEstado';
 
 const VIDRO = ['#7b93a8', '#5f7a8c', '#8aa1a8', '#a7b6bf', '#6d8a99'];
@@ -206,6 +207,13 @@ export function corCamada(camada: Camada, st: ArrayLike<number>, o: number, c: T
       if (k < 0) return c.set('#9aa3a8');
       const F = mundo.territorioF[k] ?? 0, M = mundo.territorioM[k] ?? 0, forca = Math.max(F, M);
       return forca < 0.3 ? c.set('#cfd8dc') : c.set(F >= M ? GRUPOS[1].cor : GRUPOS[2].cor).lerp(new THREE.Color('#f5b942'), forca < 0.6 ? 0.5 : 0);
+    }
+    case 'bairros': {
+      // Fase 17: densidade demográfica do bairro (Censo 2022), de ~500 a ~40 mil hab./km² em escala logarítmica
+      const i = o / LOT_STATE_STRIDE, lo = i * LOT_STRIDE;
+      const b = lo + 1 < lotesRef.length ? bairroCensoEm(lotesRef[lo], lotesRef[lo + 1]) : null;
+      if (!b) return c.set('#9aa3a8');
+      return c.set(corRampa((Math.log10(Math.max(1, densidadeBairro(b))) - 2.7) / 2, alto));
     }
     case 'densidade': {
       const a = st[o + 1] ? arquetipoPorId(st[o + 1]) : null;

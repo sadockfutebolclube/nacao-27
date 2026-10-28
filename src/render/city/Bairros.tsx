@@ -4,8 +4,9 @@
  * tamanho fixo na tela (sprites sem atenuação) e some quando o prédio ou o morro está na frente.
  */
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { carregarCenso, censo } from '../../data/bairros';
 import { mundo } from '../../sim/bridge';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { alvoCamera } from './Camera';
@@ -40,13 +41,31 @@ export function Bairros({ hm }: { hm: Heightmap }) {
   const pool = useRef(new Map<number, THREE.Sprite>());
   const relogio = useRef(0);
 
+  // nomes oficiais (Censo/IPP) no centro do bairro; os nomes do OSM entram como comunidades (e como bairros que
+  // o Censo não tem, como Gragoatá e Boa Viagem, do outro lado da baía)
+  const [censoPronto, setCensoPronto] = useState(false);
+  useEffect(() => { carregarCenso().then(() => setCensoPronto(true)); }, []);
   const lista = useMemo(() => {
-    const b = real?.bairros, nomes = real?.nomesBairros;
-    if (!b || !nomes) return [];
     const out: { i: number; x: number; z: number; y: number; tipo: number; nome: string }[] = [];
-    for (let k = 0; k < b.length; k += 4) out.push({ i: k / 4, x: b[k], z: b[k + 1], y: Math.max(2, sampleHeight(hm, b[k], b[k + 1])), tipo: b[k + 2], nome: nomes[b[k + 3]] });
+    const oficiais = new Set<string>();
+    if (censoPronto && censo.bairros) {
+      censo.bairros.forEach((bb, k) => {
+        const c = censo.centros[k];
+        if (!c) return;
+        oficiais.add(bb.nome.toLowerCase());
+        out.push({ i: k, x: c[0], z: c[1], y: Math.max(2, sampleHeight(hm, c[0], c[1])), tipo: 0, nome: bb.nome });
+      });
+    }
+    const b = real?.bairros, nomes = real?.nomesBairros;
+    if (b && nomes) {
+      for (let k = 0; k < b.length; k += 4) {
+        const nome = nomes[b[k + 3]];
+        if (oficiais.has(nome.toLowerCase())) continue;
+        out.push({ i: 1000 + k / 4, x: b[k], z: b[k + 1], y: Math.max(2, sampleHeight(hm, b[k], b[k + 1])), tipo: b[k + 2], nome });
+      }
+    }
     return out;
-  }, [real, hm]);
+  }, [real, hm, censoPronto]);
 
   useEffect(() => () => {
     for (const s of pool.current.values()) { (s.material as THREE.SpriteMaterial).map?.dispose(); s.material.dispose(); }

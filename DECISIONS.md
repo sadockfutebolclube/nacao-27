@@ -249,3 +249,12 @@ Os banhistas são uma camada visual com lotação calculada por hora, temperatur
 
 ## D-082 · Ônibus sem GTFS por enquanto
 O GTFS oficial da prefeitura é a fonte certa para linhas, itinerários e paradas, mas o download não é scriptável aqui (páginas dinâmicas, sem link direto). Em vez de inventar linhas, os ônibus e o BRT nascem nas avenidas, que são onde o OSM os põe. Quando o arquivo estiver em `data/cache/gtfs/`, um script lê `shapes.txt` e liga cada linha às arestas.
+
+## D-083 · GTFS pelo espelho da Mobility Database
+D-082 (ônibus sem GTFS) caiu: o portal da prefeitura é dinâmico, mas o espelho `files.mobilitydatabase.org/mdb-1791/latest.zip` serve o mesmo feed da SMTR por um link direto. O script baixa o zip uma vez para `data/cache/gtfs/` (fora do repositório) e só o resultado enxuto (0,65 MB) entra em `public/data/rio/`. Escolhi o itinerário mais usado de cada sentido em dia útil e a corrida contínua mais longa dentro do mapa, simplificada a 5 m.
+
+## D-084 · Ônibus encaixados só na lateral
+O ônibus anda suave pelo itinerário do GTFS e a posição é corrigida só no deslocamento lateral até o eixo da rua mais próxima (normal da amostra de via), com a cota da amostra. Encaixar a posição inteira faria o ônibus pular de 3 em 3 m (o espaçamento das amostras).
+
+## D-085 · Bairros por raster de 32 m
+Os 165 polígonos do IPP viram um raster de 32 m (512²) preenchido por varredura de linhas com regra par-ímpar. A consulta de qualquer lote ou prédio é um acesso a vetor, a camada de densidade e a ficha não custam nada por quadro, e o centro de cada bairro (para o nome no mapa) sai da média das próprias células, sempre dentro do bairro.

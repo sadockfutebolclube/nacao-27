@@ -77,6 +77,10 @@ Outros comandos:
 - Prédios reais com a planta verdadeira, fachadas fotográficas, telhas, laje e janelas que acendem à noite; céu HDRI, asfalto, calçadas e terreno fotográficos (materiais CC0 do ambientCG e do Poly Haven, em `public/assets/`; para baixar de novo: `npm run fetch-assets` e depois `scripts/comprimir-materiais.ps1`).
 - **Vista Google 3D** (painel Visual): mostra a cidade nos Photorealistic 3D Tiles do Google, ao vivo. Precisa de uma chave sua da Map Tiles API (Google Cloud, com faturamento): ponha `VITE_GOOGLE_MAPS_KEY=...` no `.env.local` ou digite na tela (fica só no navegador). O jogo não baixa nem guarda nada do Google.
 
+### Ônibus reais e Censo (Fase 17)
+- Os ônibus e o BRT circulam nas **linhas de verdade** (GTFS da prefeitura), na cor de cada linha, com mais viagens nas horas de pico; as paradas viram abrigos. Na camada **Transporte** os itinerários aparecem no mapa.
+- A ficha de cada prédio traz o **Censo 2022** do bairro (moradores, variação desde 2010, densidade) e a camada **Bairros (Censo 2022)** pinta a cidade pela densidade. Para atualizar: `npm run fetch-gtfs` e `npm run fetch-censo`.
+
 ### Gente e frota do Rio (Fase 16)
 - A praia lota num sábado de sol (guarda-sóis, toalhas, ambulantes) e esvazia na chuva; há corredores na orla; a frota tem táxi com faixa azul, SUV, picape, van, BRT articulado, viatura da PM e caminhão da Comlurb; os nomes dos bairros aparecem sobre o mapa.
 

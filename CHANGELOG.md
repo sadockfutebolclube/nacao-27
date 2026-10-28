@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## 1.7.0 — Fase 17: ônibus reais e Censo 2022 (27/10/2026)
+
+### Ônibus nas linhas de verdade
+- O GTFS oficial da SMTR (Prefeitura) alimenta o jogo: 279 linhas dentro do mapa (248 de ônibus, 6 do BRT e 25 executivos), com o itinerário real de cada sentido, a cor da linha e as viagens por hora de um dia útil.
+- Cada ônibus segue o itinerário de uma linha, na cor dela, e é encaixado no eixo da rua mais próxima (na cota certa nos túneis e viadutos). Quanto mais viagens a linha tem na hora, mais ônibus: o movimento muda de madrugada para o horário de pico. O BRT usa o articulado.
+- 1.533 paradas viram abrigos de ponto, virados para a rua.
+- Camada **Transporte**: os itinerários aparecem desenhados no mapa, na cor de cada linha.
+- Os ônibus sorteados saem de cena quando as linhas reais carregam.
+
+### Censo 2022 por bairro
+- 165 bairros do Rio (63 dentro do mapa) com população 2010 e 2022, domicílios, área e contorno, do IPP/Prefeitura a partir do IBGE (divulgação preliminar de 21/03/2024; o total da cidade bate com os 6,21 milhões).
+- A ficha de um prédio mostra o bairro, os moradores, a variação desde 2010 e a densidade (Copacabana: 129 mil hab., −12% desde 2010, 31 mil hab./km²).
+- Nova camada **Bairros (Censo 2022)**: os prédios pintados pela densidade demográfica do bairro.
+- Os nomes dos bairros no mapa passam a ser os oficiais, no centro de cada um; os do OSM ficam para as comunidades.
+
+### Scripts
+- `npm run fetch-gtfs` e `npm run fetch-censo` baixam e geram `public/data/rio/onibus.json` e `bairros.json`.
+
+### Verificado
+- 108 testes (5 novos: linhas e paradas do GTFS, frota sem ônibus sorteados, índice de vias, raster de bairros, Censo); typecheck estrito; build ok. No navegador: ônibus na cor da linha no eixo da avenida, ficha com o Censo, camada de densidade.
+
+### Limitações
+- Metrô, trem e VLT não estão no GTFS da prefeitura (só ônibus e BRT): continuam fora.
+- Os ônibus não param nos pontos nem respeitam os semáforos; seguem o itinerário numa velocidade própria.
+- Das 498 linhas do feed, 219 ficam fora do mapa de 16 km (Zona Oeste, Baixada). Linhas que entram e saem do mapa usam o trecho contínuo mais longo dentro dele.
+- O Censo é a divulgação preliminar, agregada por bairro pelo IPP: pode diferir dos números finais do IBGE. A população simulada do jogo não é calibrada por bairro.
+- Licença dos dados: abertos da Prefeitura (Data.Rio) — conferir o termo de uso antes de distribuir o repositório publicamente.
+
 ## 1.6.0 — Fase 16: frota carioca, gente e bairros (27/10/2026)
 
 ### Frota

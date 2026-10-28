@@ -50,6 +50,12 @@ Os arquivos derivados em `public/data/cidades/` são uma base derivada do OpenSt
 | Fachadas Facade001, 005, 006, 014, 017, 018A/B, 019A/B, 020A/B; Plaster001, PaintedPlaster017, Concrete034; RoofingTiles006, 013A, 014A; Gravel043; Grass004, Ground103, Rock064; Asphalt033; PavingStones046, 128 (`public/assets/materiais/`, reduzidos a 1024/512 px) | ambientCG — https://ambientcg.com | CC0 1.0 |
 | Céu HDRI kloofendal_48d_partly_cloudy_puresky (`public/assets/hdri/`) | Poly Haven — https://polyhaven.com | CC0 1.0 |
 
+## Transporte e Censo do Rio (Fase 17)
+| Dado | Fonte | Termos |
+|---|---|---|
+| Linhas, itinerários, frequências e paradas de ônibus e BRT (`public/data/rio/onibus.json`, 0,65 MB) | GTFS da Secretaria Municipal de Transportes (SMTR) — Prefeitura do Rio, via Data.Rio e Mobility Database (feed mdb-1791) | dados abertos da Prefeitura; **conferir o termo de uso (Data.Rio) antes de distribuir publicamente** |
+| População, domicílios e contorno dos bairros (`public/data/rio/bairros.json`, 66 KB) | Censo Demográfico 2022 (IBGE, divulgação preliminar de 21/03/2024) agregado por bairro pelo Instituto Pereira Passos — Prefeitura do Rio, via Data.Rio | dados abertos; IBGE e Prefeitura devem ser citados |
+
 ## Vista Google 3D (Fase 12, opcional)
 | Item | Fonte | Licença/termos |
 |---|---|---|

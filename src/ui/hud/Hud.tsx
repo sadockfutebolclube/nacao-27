@@ -18,6 +18,7 @@ import { TrilhaSonora } from './Trilha';
 import { OpcoesGerais } from '../Opcoes';
 import { Assessor } from '../assessor/Assessor';
 import { bairroMaisPerto, predio as predioReal, TIPO_PREDIO } from '../../data/cidadeReal';
+import { bairroCensoEm, densidadeBairro } from '../../data/bairros';
 import { useConquistas } from '../conquistas/Conquistas';
 import { ASSESSOR_CIDADE, DICAS_CIDADE, PASSOS_CIDADE } from '../assessor/roteiros';
 import { nuvemConfigurada, salvarNuvem } from '../../cloud/nuvem';
@@ -188,7 +189,7 @@ function BarraFerramentas() {
 
   const camadas: { id: Camada; nome: string }[] = [
     { id: 'nenhuma', nome: 'Nenhuma' }, { id: 'zonas', nome: 'Zonas' }, { id: 'agua', nome: 'Água' }, { id: 'energia', nome: 'Energia' },
-    { id: 'esgoto', nome: 'Esgoto' }, { id: 'valor', nome: 'Valor do solo' }, { id: 'poluicao', nome: 'Poluição' }, { id: 'densidade', nome: 'Densidade' },
+    { id: 'esgoto', nome: 'Esgoto' }, { id: 'valor', nome: 'Valor do solo' }, { id: 'poluicao', nome: 'Poluição' }, { id: 'densidade', nome: 'Densidade' }, { id: 'bairros', nome: 'Bairros (Censo 2022)' },
     { id: 'saude', nome: 'Saúde' }, { id: 'educacao', nome: 'Educação' }, { id: 'seguranca', nome: 'Policiamento' }, { id: 'crime', nome: 'Crime' },
     { id: 'territorio', nome: 'Território' }, { id: 'transito', nome: 'Trânsito' }, { id: 'transporte', nome: 'Transporte' },
   ];
@@ -391,7 +392,11 @@ function InfoLote() {
           <div className="text-[11px] text-suave">{rua}, {numero} — {bairro}</div>
           <div className="titulo text-xl font-semibold mt-0.5">{nomeReal ?? (a ? (abandonado ? `${a.nome} (abandonado)` : a.nome) : 'Lote vazio')}</div>
           <div className="text-xs text-suave">{ZONES[zona]?.nome ?? 'Sem zona'}{a ? ` · nível ${a.level} · ${andares} andar${andares > 1 ? 'es' : ''}` : ''}</div>
-          {pReal && <div className="text-[10px] text-acento-2 mt-0.5">{bairroMaisPerto(mundo.real!, pReal.x, pReal.z) ? `${bairroMaisPerto(mundo.real!, pReal.x, pReal.z)} · ` : ''}Prédio real · {TIPO_PREDIO[pReal.tipo]} · {Math.round(pReal.w)}×{Math.round(pReal.d)} m · © OpenStreetMap</div>}
+          {pReal && (() => {
+            const bc = bairroCensoEm(pReal.x, pReal.z);
+            return bc && <div className="text-[10px] text-acento mt-0.5" title="Censo 2022 (IBGE, divulgação preliminar), agregado por bairro pelo IPP">{bc.nome} · {fmt.pessoas(bc.pop)} hab. ({bc.pop >= bc.pop10 ? '+' : '−'}{Math.abs(Math.round(((bc.pop - bc.pop10) / Math.max(1, bc.pop10)) * 100))}% desde 2010) · {fmt.int(Math.round(densidadeBairro(bc)))} hab./km²</div>;
+          })()}
+          {pReal && <div className="text-[10px] text-acento-2 mt-0.5">{!bairroCensoEm(pReal.x, pReal.z) && bairroMaisPerto(mundo.real!, pReal.x, pReal.z) ? `${bairroMaisPerto(mundo.real!, pReal.x, pReal.z)} · ` : ''}Prédio real · {TIPO_PREDIO[pReal.tipo]} · {Math.round(pReal.w)}×{Math.round(pReal.d)} m · © OpenStreetMap</div>}
         </div>
         <button onClick={() => set({ loteSelecionado: -1 })} className="text-suave hover:text-white"><Icone nome="x" tamanho={18} /></button>
       </div>

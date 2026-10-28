@@ -666,3 +666,12 @@ Contornos das 27 capitais na ordem dos prédios; anéis anti-horários dentro do
 - **Bairros** (`Bairros.tsx`): sprites de tamanho fixo na tela, até 36 por vez, escolhidos por distância (bairros até 5,2 km, comunidades até 1,5 km); `bairroMaisPerto` alimenta a ficha do prédio. Dados: `place=suburb|neighbourhood|quarter` do OSM em `bairros`/`nomesBairros` do arquivo.
 - **Dev**: `localStorage['n27:praia'] = '0.9'` força a lotação da praia.
 - **Testes** (`tests/fase16.test.ts`).
+
+# Parte XVI — Ônibus reais e Censo (Fase 17)
+
+- **GTFS** (`scripts/fetch-gtfs.ts` → `public/data/rio/onibus.json`): por linha, nome, destino, cor, tipo (702 = BRT/MOBI-Rio → 1; 200 = executivo → 2; resto 0), `porHora[24]` (viagens de dia útil `U_REG` contadas nas frequências) e um trecho por sentido; paradas dentro do mapa.
+- **Ônibus** (`render/city/Onibus.tsx`): até 160 ônibus nos trechos que passam a 1,5 km da câmera, sorteados pelo peso `porHora[hora]`; quantidade ≈ 0,3 × soma dos pesos; velocidade 5–9 m/s (BRT 7–11); `indiceDasVias` (célula de 24 m sobre as amostras de via) encaixa no eixo e dá a cota.
+- **Paradas**: abrigos instanciados, virados para a amostra de via mais próxima.
+- **Camada Transporte**: `LineSegments` com a cor de cada linha, 7 m acima do relevo.
+- **Censo** (`scripts/fetch-censo.ts`, `data/bairros.ts` → `bairros.json`): contornos simplificados a 15 m (anéis fechados divididos no ponto mais distante antes do Douglas–Peucker); `bairroCensoEm(x, z)`, `densidadeBairro`; camada `bairros` pinta os prédios por log10(hab./km²) de 2,7 a 4,7.
+- **Testes** (`tests/fase17.test.ts`).

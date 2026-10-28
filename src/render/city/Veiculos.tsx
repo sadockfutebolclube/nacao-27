@@ -14,6 +14,7 @@ import { mundo, useGame } from '../../sim/bridge';
 import { faixasVia, larguraVia, ROAD_SPECS } from '../../world/roads';
 import { ambiente } from './ambiente';
 import { amostrarPerfil } from './perfilVias';
+import { onibusEstado } from './onibusEstado';
 import { eixoSemaforo, faseSemaforo, perfisAtuais } from './Vias';
 import { alvoCamera } from './Camera';
 import { mergeGeos } from './Vias';
@@ -65,10 +66,12 @@ const LUZES: Record<Tipo, { f: number; t: number; y: number; l: number }> = {
  * Frota do Rio (Fase 16): numa avenida há mais ônibus e táxis e, com 4 faixas ou mais, o BRT; nas ruas, mais
  * motos, vans e picapes. `r` é um sorteio de 0 a 1.
  */
-export function sortearTipo(r: number, avenida: boolean, faixas: number): Tipo {
-  const tabela: [Tipo, number][] = avenida
+export function sortearTipo(r: number, avenida: boolean, faixas: number, semOnibus = false): Tipo {
+  const completa: [Tipo, number][] = avenida
     ? [[1, 0.14], [9, faixas >= 4 ? 0.05 : 0], [4, 0.1], [2, 0.14], [5, 0.04], [8, 0.03], [7, 0.05], [10, 0.012], [11, 0.01], [6, 0.12], [3, 0.14]]
     : [[1, 0.04], [4, 0.06], [2, 0.2], [5, 0.05], [8, 0.05], [7, 0.07], [10, 0.012], [11, 0.015], [6, 0.12], [3, 0.2]];
+  // Fase 17: com as linhas reais carregadas, os ônibus e o BRT vêm do GTFS (Onibus.tsx), não do sorteio
+  const tabela = semOnibus ? completa.filter(([t]) => t !== 1 && t !== 9) : completa;
   let acum = 0;
   for (const [t, p] of tabela) { acum += p; if (r < acum) return t; }
   return 0;
@@ -254,7 +257,7 @@ function geoVan() {
 }
 
 /** BRT articulado (Fase 16): dois corpos de 8,3 m ligados por um fole, janelas contínuas e luz de letreiro. */
-function geoBrt() {
+export function geoBrt() {
   const partes: Parte[] = [];
   for (const [z, c] of [[4.6, 1], [-4.6, 0]] as const) {
     partes.push({ g: caixa(2.5, 2.7, 8.3, 0, 1.75, z), cor: BRANCO, pinta: true });
@@ -326,7 +329,7 @@ function geoCaminhao() {
 }
 
 /** Ônibus urbano (~300 tri): faixa de janelas com colunas (acesa à noite), saia mais escura, letreiro, ar-condicionado. */
-function geoOnibus() {
+export function geoOnibus() {
   return montar([
     { g: perfil([[-6, 0.38], [6, 0.38], [6.05, 1.0], [6.02, 2.9], [5.8, 3.2], [-5.85, 3.2], [-6.02, 2.95]], 2.5), cor: BRANCO, pinta: true },
     { g: caixa(2.54, 1.05, 12.12, 0, 2.08, 0), cor: VIDRO, brilho: 1 },
@@ -365,7 +368,7 @@ function geoMoto() {
 }
 
 /** Material único dos veículos: cor da instância só onde `aPinta`=1; vidros/letreiros brilham. */
-function materialVeiculo(uNoite: { value: number }) {
+export function materialVeiculo(uNoite: { value: number }) {
   // Fase 12: físico com verniz (clearcoat) na lataria — reflete o céu HDRI como carro de verdade
   const m = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08 });
   m.onBeforeCompile = (sh) => {
@@ -507,7 +510,7 @@ export function Veiculos() {
         c.s = rng.range(0, pf.comprimento);
         c.dir = pf.edge.maoUnica ? 1 : rng.chance(0.5) ? 1 : -1;
         const r = rng.next();
-        c.tipo = sortearTipo(r, pf.edge.type === 'avenida', faixasVia(pf.edge));
+        c.tipo = sortearTipo(r, pf.edge.type === 'avenida', faixasVia(pf.edge), onibusEstado.ativo);
         c.v = c.tipo === 1 ? 9 : c.tipo === 9 ? rng.range(10, 13) : c.tipo === 10 ? rng.range(12, 17) : GRANDES.has(c.tipo) ? rng.range(8, 12) : rng.range(9, 15);
         c.faixa = GRANDES.has(c.tipo) ? 1 : rng.int(0, 1);
         c.cor = rng.int(0, 9999);

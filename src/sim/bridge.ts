@@ -41,7 +41,7 @@ export type Ferramenta =
   | { tipo: 'operacao' };
 
 export type Camada = 'nenhuma' | 'zonas' | 'agua' | 'energia' | 'esgoto' | 'valor' | 'poluicao' | 'densidade'
-  | 'saude' | 'educacao' | 'seguranca' | 'crime' | 'territorio' | 'transito' | 'transporte';
+  | 'saude' | 'educacao' | 'seguranca' | 'crime' | 'territorio' | 'transito' | 'transporte' | 'bairros';
 
 export interface Toast { id: number; texto: string; tom: 'erro' | 'ok' | 'info' }
 

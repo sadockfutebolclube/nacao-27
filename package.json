@@ -1,7 +1,7 @@
 {
   "name": "nacao-27",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "NAÇÃO 27 — city-builder e simulador de governo 100% brasileiro",
   "type": "module",
   "scripts": {
@@ -17,7 +17,9 @@
     "fetch-eleitorado": "node node_modules/tsx/dist/cli.mjs scripts/fetch-eleitorado.ts",
     "fetch-municipios": "node node_modules/tsx/dist/cli.mjs scripts/fetch-municipios.ts",
     "fetch-cidades": "node node_modules/tsx/dist/cli.mjs scripts/fetch-cidades.ts",
-    "fetch-assets": "node node_modules/tsx/dist/cli.mjs scripts/fetch-assets.ts"
+    "fetch-assets": "node node_modules/tsx/dist/cli.mjs scripts/fetch-assets.ts",
+    "fetch-gtfs": "node node_modules/tsx/dist/cli.mjs scripts/fetch-gtfs.ts",
+    "fetch-censo": "node node_modules/tsx/dist/cli.mjs scripts/fetch-censo.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

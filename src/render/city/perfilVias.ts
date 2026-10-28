@@ -117,6 +117,52 @@ export function construirPerfis(g: RoadGraph, hm: Heightmap): Map<number, Perfil
   return out;
 }
 
+export interface AmostraVia { x: number; y: number; z: number; tx: number; tz: number; largura: number; edge: number }
+
+/**
+ * Índice espacial das amostras de via (célula de 24 m) — para encaixar coisas que andam fora do grafo (ônibus
+ * do GTFS, paradas) no eixo da rua mais próxima, com a cota certa em túnel e viaduto.
+ */
+export interface IndiceVias { perto(x: number, z: number, raio: number, out: AmostraVia): boolean }
+const cacheIndice = new WeakMap<Map<number, Perfil>, IndiceVias>();
+
+export function indiceDasVias(perfis: Map<number, Perfil>): IndiceVias {
+  const emCache = cacheIndice.get(perfis);
+  if (emCache) return emCache;
+  const CEL = 24;
+  const px: number[] = [], py: number[] = [], pz: number[] = [], ptx: number[] = [], ptz: number[] = [], plarg: number[] = [], ped: number[] = [];
+  const celulas = new Map<number, number[]>();
+  const chave = (i: number, j: number) => i * 40009 + j;
+  for (const p of perfis.values()) {
+    const larg = larguraVia(p.edge);
+    for (let i = 0; i < p.n; i++) {
+      const k = px.length;
+      px.push(p.x[i]); py.push(p.y[i]); pz.push(p.z[i]); ptx.push(p.tx[i]); ptz.push(p.tz[i]); plarg.push(larg); ped.push(p.edge.id);
+      const c = chave(Math.floor(p.x[i] / CEL), Math.floor(p.z[i] / CEL));
+      (celulas.get(c) ?? celulas.set(c, []).get(c)!).push(k);
+    }
+  }
+  const idx: IndiceVias = {
+    perto(x, z, raio, out) {
+      const r = Math.ceil(raio / CEL), ci = Math.floor(x / CEL), cj = Math.floor(z / CEL);
+      let melhor = -1, dm = raio * raio;
+      for (let di = -r; di <= r; di++) for (let dj = -r; dj <= r; dj++) {
+        const lista = celulas.get(chave(ci + di, cj + dj));
+        if (!lista) continue;
+        for (const k of lista) {
+          const d = (px[k] - x) ** 2 + (pz[k] - z) ** 2;
+          if (d < dm) { dm = d; melhor = k; }
+        }
+      }
+      if (melhor < 0) return false;
+      out.x = px[melhor]; out.y = py[melhor]; out.z = pz[melhor]; out.tx = ptx[melhor]; out.tz = ptz[melhor]; out.largura = plarg[melhor]; out.edge = ped[melhor];
+      return true;
+    },
+  };
+  cacheIndice.set(perfis, idx);
+  return idx;
+}
+
 /** Posição e tangente ao longo do perfil (s em metros). */
 export function amostrarPerfil(p: Perfil, s: number, out: { x: number; y: number; z: number; tx: number; tz: number }) {
   const L = p.comprimento;

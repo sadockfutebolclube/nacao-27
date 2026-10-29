@@ -19,7 +19,7 @@ export const LATLON = {
 } as const;
 
 /** Prédios do OSM trocados por um modelo de marco, pelo nome. */
-const NOMES_SUBSTITUIDOS = new Set(['Arcos da Lapa', 'Museu do Amanhã', 'Catedral de São Sebastião']);
+const NOMES_SUBSTITUIDOS = new Set(['Arcos da Lapa', 'Museu do Amanhã', 'Catedral de São Sebastião', 'Igreja de Nossa Senhora da Candelária', 'Theatro Municipal', 'Biblioteca Nacional']);
 /** Maracanã: o estádio não tem prédio nomeado; tudo num raio de 190 m do centro deixa de ser desenhado. */
 const RAIO_MARACANA = 190;
 

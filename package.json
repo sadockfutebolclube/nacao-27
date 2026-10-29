@@ -1,7 +1,7 @@
 {
   "name": "nacao-27",
   "private": true,
-  "version": "1.19.0",
+  "version": "1.20.0",
   "description": "NAÇÃO 27 — city-builder e simulador de governo 100% brasileiro",
   "type": "module",
   "scripts": {

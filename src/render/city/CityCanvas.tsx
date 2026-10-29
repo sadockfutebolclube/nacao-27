@@ -17,7 +17,10 @@ import { ClimaFx } from './ClimaFx';
 import { Edificios } from './Edificios';
 import { PrediosReais } from './PrediosReais';
 import { Marcos } from './Marcos';
+import { Turismo } from './Turismo';
 import { Praia } from './Praia';
+import { Orla } from './Orla';
+import { TourTurismo } from './TourTurismo';
 import { Bairros } from './Bairros';
 import { Onibus } from './Onibus';
 import { Trilhos } from './Trilhos';
@@ -28,6 +31,7 @@ import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
 import { Favelas } from './Favelas';
 import { Pedestres } from './Pedestres';
+import { Visitantes } from './Visitantes';
 import { MapaCalorPedestres } from './MapaCalorPedestres';
 import { Selecao } from './Selecao';
 import { Ocorrencias } from './Ocorrencias';
@@ -120,8 +124,10 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Edificios') && <Edificios hm={hm} />}
         {liga('PrediosReais') && <PrediosReais />}
         {liga('Marcos') && <Marcos hm={hm} />}
+        {liga('Turismo') && <Turismo hm={hm} />}
         {liga('SaoJanuario') && <SaoJanuario hm={hm} />}
         {liga('Praia') && <Praia hm={hm} />}
+        {liga('Orla') && <Orla hm={hm} />}
         {liga('Bairros') && <Bairros hm={hm} />}
         {liga('Equipamentos') && <Equipamentos hm={hm} />}
         {liga('Arvores') && <Arvores hm={hm} />}
@@ -137,9 +143,11 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         <Ocorrencias hm={hm} />
         {liga('VeiculosEspeciais') && <VeiculosEspeciais hm={hm} />}
         {liga('Pedestres') && <Pedestres hm={hm} />}
+        {liga('Visitantes') && <Visitantes hm={hm} />}
         {liga('ClimaFx') && <ClimaFx hm={hm} />}
         {liga('Ferramentas') && <Ferramentas hm={hm} />}
         <CameraRig hm={hm} inicio={inicio} />
+        <TourTurismo hm={hm} />
         {liga('PosProcesso') && <PosProcesso />}
         <MonitorDesempenho />
         {import.meta.env.DEV && <VigiaQuadros />}

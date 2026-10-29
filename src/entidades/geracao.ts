@@ -5,6 +5,7 @@
  */
 import { PRENOMES, SOBRENOMES } from '../data/nomes';
 import dados from '../data/entidades.json';
+import { PONTOS, visitantesDoPonto, type Contexto, type PontoTuristico } from '../world/turismo';
 import { hash01 } from '../sim/core/rng';
 
 export type Persona = 'trabalhador' | 'estudante' | 'aposentado' | 'turista' | 'esportista' | 'ambulante';
@@ -238,8 +239,9 @@ export function gerarCarro(semente: number, tipoVeiculo: number, lotacaoOnibus =
 
 // ── ponto turístico ───────────────────────────────────────────────────────────────
 
-export interface MarcoDado { nome: string; chave: string; base: number; nota: number; historia: string; lat?: number; lon?: number; w?: number; d?: number; h?: number; y?: number }
-export const MARCOS = dados.marcos as MarcoDado[];
+export type MarcoDado = PontoTuristico;
+/** pontos turísticos (Fase 31: `src/data/turismo/pontos.json`, com capacidade, horário de pico, eventos e zonas de atividade) */
+export const MARCOS: MarcoDado[] = PONTOS;
 
 /** movimento do dia de um ponto turístico (0–1): manhã e começo da tarde */
 export const curvaTurismo = (hora: number) => {
@@ -248,6 +250,8 @@ export const curvaTurismo = (hora: number) => {
   return 0;
 };
 
-export function visitantesAgora(m: MarcoDado, hora: number, fimDeSemana: boolean, chuva: number, semente: number): number {
-  return Math.round(m.base * curvaTurismo(hora) * (fimDeSemana ? 1.35 : 1) * (1 - Math.min(0.6, chuva * 0.5)) * (0.9 + sorteio(semente, 70) * 0.2));
+/** pessoas no ponto agora: capacidade × ocupação (evento do dia, curva de pico, fim de semana, chuva); `semente` dá ±10% de variação entre pontos */
+export function visitantesAgora(m: MarcoDado, hora: number, fimDeSemana: boolean, chuva: number, semente: number, extra: Partial<Contexto> = {}): number {
+  const v = visitantesDoPonto(m, { hora, diaSemana: fimDeSemana ? 6 : 2, mes: 6, chuva, ...extra });
+  return Math.round(v * (0.9 + sorteio(semente, 70) * 0.2));
 }

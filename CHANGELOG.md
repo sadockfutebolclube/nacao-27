@@ -1,5 +1,45 @@
 # CHANGELOG
 
+## 1.20.0 — Fase 31: pontos turísticos, visitantes e orla (28/10/2026)
+
+Prints do tour automático (8 pontos), do painel de clique e da Escadaria Selarón em `docs/turismo/`; comparação de modelos e lista do que ficou em TEMP em `docs/turismo-modelos.md`.
+
+### Dados (JSON)
+- `src/data/turismo/pontos.json`: 23 pontos (Cristo, Pão de Açúcar/Urca/bondinho, Maracanã, São Januário, Arcos da Lapa, Selarón, Sambódromo, Copacabana, Ipanema, Aterro, Madureira, Floresta da Tijuca, Parque Lage, Jardim Botânico, Quinta da Boa Vista, Rio Star, Catedral, Candelária, Theatro Municipal, Biblioteca Nacional, Museu do Amanhã, Praça Mauá, Santos Dumont) com posição (OSM/Wikidata, no campo `fonte`), capacidade, ocupação de pico, horários de pico, nota, eventos (jogos do Maracanã e do Vasco, desfile de Carnaval) e **zonas de atividade** (anel, caixa, linha, caminho real do OSM, gramado, fluxo). Validado com zod em `src/world/turismo.ts`.
+- Mesmo cálculo para o desenho e para o painel: `ocupacaoAgora` (curva do dia × fim de semana × chuva × calor × evento), `visitantesHoje` (contador do dia), `notaDoPonto` (cai com lotação > 80%).
+- `entidades.json` perdeu a lista `marcos` (agora em `pontos.json`).
+
+### Visitantes (`Visitantes.tsx`)
+- Cada ponto acorda a menos de 900 m da câmera e sorteia seus lugares (semente = id). Atividades com clipe do personagem animado (Fase 30): foto, braços abertos, sentar, olhar a vista, fila, correr, caminhar, trilha, bicicleta, patins, cachorro, piquenique, torcida a caminho do estádio, vendedor e comemoração. Quem se move segue **caminhos reais do OSM** (`caminhos`: calçadas, ciclovias, trilhas), de ida e volta, ou o fluxo metrô → estádio (que inverte depois do jogo).
+- Novos clipes no personagem (`pessoaVAT.ts`): palmas, pulo, braços abertos e tirando foto (as duas poses apontando os ossos dos braços). Textura de vértices: 4.096 × 102 quadros.
+- Quantos lugares aparecem = ocupação/ocupação de pico do ponto. Em dia de jogo o Maracanã mostra a chegada, a fila e, depois, a volta da torcida; capacidade 78.800 no painel.
+
+### Orla (`Orla.tsx`, `orlaDados.ts`)
+- Costa lida do relevo: linha d'água, normal para o mar e largura da areia a cada ~12 m. Daí saem **quiosques** (modelo + dono + faturamento na ficha, como estabelecimentos), **redes de vôlei** com quadra, jogadores e bola, **postos de salva-vidas** com guarda, **surfistas** na prancha pegando onda, **banhistas**, **ambulantes** e caminhantes na beira, **guarda-sóis e cadeiras** com modelo 3D em 8 cores, **barcos fundeados** na enseada de Botafogo. Jetskis e botes continuam da Fase 27. Nada é posto em cima de prédio (`ocupacaoSolo.ts`).
+
+### Marcos 3D (`Turismo.tsx`, `monumentos.ts`)
+- **Cristo** em escala real (estátua 30 m + pedestal 8 m, 28 m de envergadura; cresce até 1,7× só quando a câmera está a mais de 2,5 km): túnica com pregas, panos sob os braços, mãos, mosaico de pedra-sabão, aceso à noite.
+- **Rio Star** de 88 m com a roda girando (modelo CC-BY animado) e passageiros nas cabines pela ocupação. **Bonde de Santa Teresa** (amarelo) andando nos Arcos. **Cabine do bondinho** nova (vidro, carrinho, cabo).
+- **Candelária, Theatro Municipal e Biblioteca Nacional** modelados com as proporções reais sobre o polígono do OSM (a frente vira para a rua mais próxima). **Escadaria Selarón** (azulejos sobre o eixo do polígono OSM; casas geradas cobrem parte), **Sambódromo** (arquibancadas de 12 m com 13 setores por lado ao longo da Rua Marquês de Sapucaí) e **balizamento vermelho** piscante nos prédios ≥ 100 m do Centro.
+
+### Painel de clique
+- Ponto turístico: visitantes agora, capacidade, lotação %, visitantes hoje, horário de pico, nota, o evento em andamento e "fazendo agora" (atividade e quantos).
+
+### Tour (tecla T; Esc/W/A/S/D encerram)
+- 8 paradas de 7 s com a hora do céu e o contexto do turismo travados (praia ao meio-dia de sábado, jogo no domingo às 15h…). Dev: `window.__n27tur.tour()`, `.tourIr(i)`, `.forcar`, `.hora(h)`.
+
+### Medido
+- Custo de CPU do código novo por quadro (média móvel; `window.__n27tur.ms`): visitantes 0,3 ms (Theatro, 97 pessoas), 0,7 ms (Copacabana, 108 pessoas + 949 adereços), 1,3 ms (Maracanã em jogo, 351 pessoas); orla 0,05–0,27 ms. O Cristo marcou 4,6 ms na primeira medição porque a média ainda continha o sorteio dos lugares (acontece uma vez por ponto).
+- **FPS: sem número confiável.** O painel embutido estava estrangulado: com Turismo, Visitantes e Orla desligados (`n27:desligar`) a mesma câmera deu 2–7 fps; com eles ligados, 6–29 fps. Não dá para atribuir a diferença ao código novo. Fica para medir no navegador do usuário.
+- Modelos novos: 8 GLB, 0,9 MB no total (meshopt, exceto o cachorro e a roda animada; nenhuma textura > 1.024 px).
+
+### Não feito / limites (lista completa em `docs/turismo-modelos.md`)
+- Parque de Madureira e o miolo da Floresta da Tijuca estão **fora do mapa** (D-129).
+- Cabines da roda-gigante com passageiros só como cabeças; cachorro sem andar; poses de foto/braços abertos sem transição; só personagem masculino adulto.
+- Maracanã segue com a elipse da Fase 15; Candelária, Theatro e Biblioteca são representações simplificadas (sem interior, sem detalhes de fachada).
+- Santos Dumont ganhou só a zona de passageiros; não há avião no pátio.
+- A Candelária e os dois prédios do Centro viram para a rua mais próxima; a fachada real pode estar do outro lado.
+
 ## 1.19.0 — Fase 30: veículos reais e pessoas com esqueleto (28/10/2026)
 
 Prints antes/depois em `docs/qualidade-visual/`. **Esta fase NÃO fez tudo o que o pedido listava** (ver "Não feito").

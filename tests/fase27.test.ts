@@ -60,7 +60,7 @@ describe('modelos 3D reais e créditos (regra de assets)', () => {
     let total = 0;
     for (const cat of readdirSync(raiz)) for (const f of readdirSync(join(raiz, cat))) {
       if (!f.endsWith('.glb')) continue;
-      if (cat === 'pessoa') continue; // personagem com esqueleto: sem quantização/meshopt de propósito (a pele precisa das posições em float)
+      if (cat === 'pessoa' || cat === 'animal' || cat === 'animado') continue; // personagem com esqueleto: sem quantização/meshopt de propósito (a pele precisa das posições em float)
       const b = readFileSync(join(raiz, cat, f));
       total += statSync(join(raiz, cat, f)).size;
       expect(b.readUInt32LE(0), f).toBe(0x46546c67); // "glTF"

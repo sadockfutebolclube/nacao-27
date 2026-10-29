@@ -7,17 +7,16 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useGame } from '../../sim/bridge';
 import { sampleHeight, sampleWaterDist, type Heightmap } from '../../world/terrain';
-import { ambiente } from './ambiente';
 import { alvoCamera } from './Camera';
-import { clima } from './climaVisual';
+import { contextoTurismo } from './turismoEstado';
+import { ocupado } from './ocupacaoSolo';
 
 const RAIO = 380;
 const MAX = 1400;
 const PELES = ['#f1c9a5', '#e0ac82', '#c68a5c', '#a96b43', '#7a4a2d', '#4f2f1c', '#f5d6b8'].map((c) => new THREE.Color(c));
 const TOALHAS = ['#e63946', '#f4a261', '#2a9d8f', '#118ab2', '#ffd166', '#ef476f', '#ffffff', '#06d6a0', '#9b5de5', '#f15bb5'].map((c) => new THREE.Color(c));
-const SOIS = ['#e63946', '#ffd166', '#118ab2', '#06d6a0', '#f4a261', '#ffffff', '#ef476f', '#9b5de5'].map((c) => new THREE.Color(c));
+export const SOIS = ['#e63946', '#ffd166', '#118ab2', '#06d6a0', '#f4a261', '#ffffff', '#ef476f', '#9b5de5'].map((c) => new THREE.Color(c));
 
 const hash = (i: number, j: number, k: number) => { const s = Math.sin(i * 127.1 + j * 311.7 + k * 74.7) * 43758.5453; return s - Math.floor(s); };
 
@@ -32,6 +31,9 @@ export function lotacaoPraia(hora: number, chuva: number, temp: number, diaSeman
 
 interface Item { x: number; y: number; z: number; rot: number; cor: number; pele: number; quem: number }
 
+/** Fase 31: os guarda-sóis do grupo não são mais cones aqui — Orla.tsx os desenha com o modelo 3D (guarda-sol e cadeiras) nestes lugares. */
+export const estadoPraia: { lot: number; sois: Item[] } = { lot: 0, sois: [] };
+
 /** Candidatos fixos numa grade em volta de (cx, cz): areia seca a até 70 m da água, mais gente perto do mar. */
 function candidatos(hm: Heightmap, cx: number, cz: number): Item[] {
   const out: Item[] = [];
@@ -42,6 +44,7 @@ function candidatos(hm: Heightmap, cx: number, cz: number): Item[] {
     const x = i * passo + (hash(i, j, 1) - 0.5) * passo * 0.8, z = j * passo + (hash(i, j, 2) - 0.5) * passo * 0.8;
     const y = sampleHeight(hm, x, z);
     if (y < 0.55 || y > 4.2) continue;
+    if (ocupado(x, z, 2)) continue;
     const wd = sampleWaterDist(hm, x, z);
     if (wd > 70) continue;
     // densidade: alta na beira (faixa de areia firme) e cai com a distância da água
@@ -80,15 +83,16 @@ export function Praia({ hm }: { hm: Heightmap }) {
     const a = alvoCamera();
     const meshes = [refs.toalha.current, refs.corpo.current, refs.sol.current, refs.pe.current, refs.isopor.current];
     if (meshes.some((m) => !m)) return;
-    const st = useGame.getState().stats;
     if (Math.hypot(a.x - E.cx, a.z - E.cz) > RAIO * 0.35) { E.cx = a.x; E.cz = a.z; E.itens = candidatos(hm, a.x, a.z); E.ultimaLotacao = -1; }
-    const dow = st ? new Date(st.ano, st.mes - 1, st.dia).getDay() : 6;
+    const ctx = contextoTurismo();
     // dev: `localStorage['n27:praia'] = '0.9'` força a lotação (para ver a praia cheia)
     const forcada = import.meta.env.DEV ? Number(localStorage.getItem('n27:praia') ?? NaN) : NaN;
-    const lot = Number.isFinite(forcada) ? forcada : lotacaoPraia(ambiente.hora, clima.chuva, st?.clima?.temp ?? 27, dow);
+    const lot = Number.isFinite(forcada) ? forcada : lotacaoPraia(ctx.hora, ctx.chuva, ctx.temp ?? 27, ctx.diaSemana);
+    estadoPraia.lot = lot;
     const nivel = Math.round(lot * 40);
     if (nivel === E.ultimaLotacao) return;
     E.ultimaLotacao = nivel;
+    estadoPraia.sois.length = 0;
 
     const { m, q, p, s, eixo, c } = tmp;
     const [tl, co, so, pe, is] = meshes as THREE.InstancedMesh[];
@@ -100,7 +104,7 @@ export function Praia({ hm }: { hm: Heightmap }) {
       p.set(it.x, it.y, it.z);
       if (it.quem < 0.55 * lot && nS < MAX / 4) {
         // grupo: guarda-sol com toalha e um banhista deitado
-        m.compose(p, q, s.set(1, 1, 1)); sol_(so, nS++, m, SOIS[it.cor % SOIS.length]);
+        estadoPraia.sois.push(it);
         p.set(it.x + 1.3, it.y, it.z); m.compose(p, q, s); tl.setMatrixAt(nT, m); tl.setColorAt(nT, TOALHAS[it.cor % TOALHAS.length]); nT++;
         m.compose(p, q, s); co.setMatrixAt(nC, m); co.setColorAt(nC, PELES[it.pele % PELES.length]); nC++;
       } else if (it.quem < 0.8 * lot) {
@@ -128,16 +132,11 @@ export function Praia({ hm }: { hm: Heightmap }) {
     <group>
       <instancedMesh ref={refs.toalha} args={[geos.toalha, mats.toalha, MAX]} receiveShadow frustumCulled={false} />
       <instancedMesh ref={refs.corpo} args={[geos.corpo, mats.corpo, MAX]} castShadow frustumCulled={false} />
-      <instancedMesh ref={refs.sol} args={[geos.sol, mats.sol, MAX / 3]} castShadow frustumCulled={false} />
+      <instancedMesh ref={refs.sol} args={[geos.sol, mats.sol, 1]} frustumCulled={false} visible={false} />
       <instancedMesh ref={refs.pe} args={[geos.pe, mats.pe, MAX]} castShadow frustumCulled={false} />
       <instancedMesh ref={refs.isopor} args={[geos.isopor, mats.isopor, MAX / 8]} castShadow frustumCulled={false} />
     </group>
   );
-}
-
-function sol_(im: THREE.InstancedMesh, i: number, m: THREE.Matrix4, cor: THREE.Color) {
-  im.setMatrixAt(i, m);
-  im.setColorAt(i, cor);
 }
 
 /** Junta geometrias simples (posição e normal) numa só. */

@@ -736,3 +736,6 @@ Passo de 0,05 s (subpassos ≤ 0,06 s), 20 Hz. Links = sentidos das arestas; fai
 
 ## Fase 30 — aparência (não altera a simulação)
 Frota: `frota.json` → `veiculoReal.ts` (GLB → vértices classificados) → `Veiculos.tsx`. Pessoas: `pessoaVAT.ts` (bake) → `Pedestres.tsx` (LOD por distância).
+
+## Fase 31 — turismo (não altera a simulação do Worker)
+Tudo no lado do desenho: `pontos.json` → `world/turismo.ts` (ocupação) → `Visitantes.tsx` (pessoas), `Orla.tsx` (praias), `Turismo.tsx` (marcos). O painel de clique lê o mesmo cálculo.

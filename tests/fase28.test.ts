@@ -1,7 +1,7 @@
 /** Fase 28: São Januário / Vasco da Gama (geometria do OSM) e continuação da 1B (rua de morro, falésia, talude). */
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import entidades from '../src/data/entidades.json';
+import { PONTOS } from '../src/world/turismo';
 import { CidadeReal } from '../src/data/cidadeReal';
 import { ArquivoTracos } from '../src/data/schemas';
 import { projetar } from '../src/world/cidadeReal';
@@ -49,7 +49,7 @@ describe('Estádio de São Januário (OpenStreetMap)', () => {
   });
 
   it('o ponto turístico "Estádio de São Januário" está na ficha, no centro do contorno, com dados de 1927', () => {
-    const m = (entidades as { marcos: { chave: string; lat?: number; lon?: number; historia: string }[] }).marcos.find((x) => x.chave === 'sao-januario');
+    const m = PONTOS.find((x) => x.chave === 'sao-januario');
     expect(m).toBeTruthy();
     const [mx, mz] = proj(m!.lat!, m!.lon!);
     expect(Math.hypot(mx - G.centro[0], mz - G.centro[1])).toBeLessThan(120);

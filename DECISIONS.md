@@ -420,3 +420,15 @@ Esqueleto na CPU para ~1.500 pedestres não cabe; animação assada em textura (
 
 ## D-137 · LOD de pessoas por partição no quadro
 O laço dos pedestres continua escrevendo um único conjunto de instâncias; uma passada final move os que estão a < 45 m para a malha do personagem e compacta o resto no lugar. Sem duplicar a lógica de nascer/andar.
+
+## D-138 · Pontos turísticos em JSON, com um só cálculo de ocupação
+`pontos.json` + `world/turismo.ts` (funções puras) decidem lotação, evento, contador e nota; o desenho (quantos lugares aparecem) e o painel usam a MESMA função, então o número do painel e a multidão concordam. Capacidades e picos são estimativas de jogo (marcadas no JSON e no painel), não estatística oficial.
+
+## D-139 · Visitantes: lugares sorteados por ponto, caminhos reais do OSM
+Cada ponto sorteia seus lugares uma vez (semente = id) quando a câmera chega a 900 m; quem anda segue as polilinhas de `mundo.real.caminhos` de ida e volta. Um InstancedMesh só para o personagem animado; a orla entra pelo mesmo motor via `fontesVisitantes` (pedidos de prancha e isopor valem no quadro seguinte).
+
+## D-140 · Costa da praia lida do relevo
+O eixo das praias em `pontos.json` é aproximado (lat/lon de duas ou três pontas do OSM); `orlaDados.ts` acha a linha d'água, a normal e a largura da areia no heightmap. Quiosques, redes e postos recuam do fundo para o mar até não pisar em prédio (`ocupacaoSolo.ts`, grade de 16 m com os lotes e os prédios do OSM).
+
+## D-141 · Quando modelar no código
+Nenhum candidato gratuito serviu para Cristo, cabine do bondinho, Candelária, Theatro, Biblioteca e Sambódromo (genéricos, sem a forma, ou com textura/licença fora da regra): foram modelados com as medidas reais, e a comparação está em `docs/turismo-modelos.md`. A roda-gigante usa o modelo de Arif porque só ele tem a roda separada do suporte.

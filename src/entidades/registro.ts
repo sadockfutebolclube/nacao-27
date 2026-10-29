@@ -18,9 +18,11 @@ export interface Caixa { x: number; y: number; z: number; yaw: number; w: number
 
 /** faixas de ID: dinâmicos contam de 1; estáticos têm faixa própria (o ID diz de onde veio) */
 export const ID_BASE_LOTE = 200_000_000;
+/** quiosques da orla (Fase 31): estabelecimentos que não são lotes */
+export const ID_BASE_QUIOSQUE = 250_000_000;
 export const ID_BASE_MARCO = 300_000_000;
 export const ehEstatico = (id: number) => id >= ID_BASE_LOTE;
-export const loteDeId = (id: number) => (id >= ID_BASE_LOTE && id < ID_BASE_MARCO ? id - ID_BASE_LOTE : -1);
+export const loteDeId = (id: number) => (id >= ID_BASE_LOTE && id < ID_BASE_QUIOSQUE ? id - ID_BASE_LOTE : -1);
 
 export interface Acerto { id: number; t: number; tipo: TipoEntidade }
 

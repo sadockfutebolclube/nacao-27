@@ -70,7 +70,25 @@ Sketchfab não foi usado (sem `SKETCHFAB_TOKEN`).
 ### Estádio de São Januário (Fase 28)
 Procurei estádios gratuitos no Poly Pizza ("Football stadium" e "Ballpark", Poly by Google; "Stadium Seats" e "Stadium", Zsky — CC-BY 3.0): são genéricos e não seguem o contorno real de 100 × 195 m, então o estádio é modelado no código a partir do contorno do OpenStreetMap (ODbL). Nenhum modelo externo foi usado.
 
+### Pontos turísticos e orla (Fase 31) — Poly Pizza, baixados em 28/10/2026
+
+| Arquivo | Título e autor | Licença | URL | Uso |
+|---|---|---|---|---|
+| animado/roda-gigante | "Animated Ferris Wheel", Arif | CC-BY 3.0 | https://poly.pizza/m/HknNtngih0 | roda-gigante Rio Star (roda e cabines como nós separados, escalada a 88 m) |
+| turismo/bonde | "Cable Car", Bruno Oliveira | CC-BY 3.0 | https://poly.pizza/m/1cViRrLkTIk | bonde de Santa Teresa nos Arcos da Lapa (vermelho trocado por amarelo no jogo) |
+| turismo/guarda-sol | "Red/White Beach Umbrella", S. Paul Michael | CC-BY 3.0 | https://poly.pizza/m/2li3sdSkmCI | guarda-sóis da orla (lona tingida por instância) |
+| turismo/cadeira-praia | "Beach chair", Poly by Google | CC-BY 3.0 | https://poly.pizza/m/9TN4PyhWvz1 | cadeiras da orla e dos quiosques |
+| turismo/quiosque-banca | "Market Stand", Quaternius | Domínio público (CC0) | https://poly.pizza/m/DGIM5HGISb | quiosques da orla |
+| turismo/prancha | "Surfboard", jeremy | CC-BY 3.0 | https://poly.pizza/m/3js4cQ-O-p2 | pranchas dos surfistas |
+| turismo/bicicleta | "Bicycle", jeremy | CC-BY 3.0 | https://poly.pizza/m/axc03j3xKfz | ciclistas dos parques |
+| animal/cachorro | "Shiba Inu", Quaternius | Domínio público (CC0) | https://poly.pizza/m/y4wdQpg767 | cães passeando (pose do modelo) |
+
+Atribuição CC-BY 3.0: Arif, Bruno Oliveira, S. Paul Michael, Poly by Google e jeremy, via Poly Pizza, sem alterações além da conversão/compressão, da escala e das cores
+por instância. Candidatos comparados e rejeitados (com autor, triângulos e licença) estão em `docs/turismo-modelos.md`; os GLB crus ficam em `data/cache/modelos-origem/turismo/` (fora do git).
+Sem modelo gratuito que servisse (modelados no código com as medidas reais, ver o mesmo documento): Cristo Redentor, cabine do bondinho, Igreja da Candelária, Theatro Municipal,
+Biblioteca Nacional e arquibancadas do Sambódromo. Sketchfab não foi usado (sem `SKETCHFAB_TOKEN`).
+
 ## Texturas procedurais (sem download)
 
-Asfalto, calçada, calçadão de pedra portuguesa, concreto de muro com barbacãs, brita e dormentes da via férrea, grama de banqueta, degraus das
+Mosaico de pedra-sabão do Cristo (`monumentos.ts`), azulejos da Escadaria Selarón (`Turismo.tsx`), rede de vôlei, asfalto, calçada, calçadão de pedra portuguesa, concreto de muro com barbacãs, brita e dormentes da via férrea, grama de banqueta, degraus das
 escadarias: desenhados em canvas por código (`src/render/city/texturas.ts`, `Vias.tsx`, `Trilhos.tsx`, `Caminhos.tsx`).

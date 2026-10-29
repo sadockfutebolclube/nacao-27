@@ -10,10 +10,8 @@ import { mundo } from '../../sim/bridge';
 import { projetar } from '../../world/cidadeReal';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { ambiente } from './ambiente';
+import { cabineBondinho } from './monumentos';
 import { ancoraMarco, IBGE_RIO, LATLON } from './pontosRio';
-
-/** o Cristo tem 38 m; numa cidade de 12 km ele some, então aparece 1,7× maior */
-const ESCALA_CRISTO = 1.7;
 
 const mat = (cor: string, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) => new THREE.MeshStandardMaterial({ color: cor, roughness: 0.8, ...extra });
 
@@ -22,25 +20,6 @@ function malha(g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0):
   o.position.set(x, y, z);
   o.castShadow = o.receiveShadow = true;
   return o;
-}
-
-// ── Cristo Redentor ──────────────────────────────────────────────────────────────
-
-function cristo(materiais: { pedra: THREE.Material; estatua: THREE.Material }): THREE.Group {
-  const g = new THREE.Group();
-  // pedestal em dois degraus de pedra
-  g.add(malha(new THREE.BoxGeometry(10, 4, 10), materiais.pedra, 0, 2, 0));
-  g.add(malha(new THREE.BoxGeometry(6.4, 4, 6.4), materiais.pedra, 0, 6, 0));
-  // túnica: tronco que afina para cima, com a barra mais aberta
-  g.add(malha(new THREE.CylinderGeometry(2.1, 3.3, 22, 14), materiais.estatua, 0, 19, 0));
-  g.add(malha(new THREE.CylinderGeometry(3.1, 3.7, 3, 14), materiais.estatua, 0, 9.5, 0));
-  // braços abertos (28 m de ponta a ponta), um pouco mais finos nas mãos
-  g.add(malha(new THREE.BoxGeometry(24, 2.7, 2.5), materiais.estatua, 0, 26.6, 0));
-  for (const lado of [-1, 1]) g.add(malha(new THREE.BoxGeometry(5, 1.9, 1.9), materiais.estatua, lado * 13.4, 26.6, 0));
-  // cabeça e pescoço
-  g.add(malha(new THREE.CylinderGeometry(1.2, 1.4, 1.8, 10), materiais.estatua, 0, 30.2, 0));
-  g.add(malha(new THREE.SphereGeometry(1.95, 14, 10), materiais.estatua, 0, 32.4, 0));
-  return g;
 }
 
 // ── Bondinho do Pão de Açúcar ────────────────────────────────────────────────────
@@ -65,13 +44,12 @@ function bondinho(hm: Heightmap, c: NonNullable<typeof mundo.real>): Bondinho {
   }
   for (const p of pontos) g.add(malha(new THREE.BoxGeometry(14, 7, 10), estacao, p.x, p.y - 4, p.z));
   // duas cabines por trecho, em sentidos opostos
-  const cab = new THREE.BoxGeometry(5.5, 3.4, 3.4);
-  const vermelho = mat('#d8352b'), branco = mat('#f1f0ec');
   const cabines: Bondinho['cabines'] = [];
   for (let seg = 0; seg < pontos.length - 1; seg++) for (const inverso of [false, true]) {
-    const m = new THREE.Group();
-    m.add(malha(cab, vermelho, 0, -2.6, 0));
-    m.add(malha(new THREE.BoxGeometry(5.6, 0.7, 3.5), branco, 0, -1.2, 0));
+    // Fase 31: cabine com casco, faixa de vidro e carrinho, virada ao longo do cabo
+    const m = cabineBondinho();
+    const d = pontos[seg + 1].clone().sub(pontos[seg]);
+    m.rotation.y = Math.atan2(-d.z, d.x);
     g.add(m);
     cabines.push({ m: m as unknown as THREE.Mesh, seg, inverso });
   }
@@ -230,7 +208,6 @@ function catedral(): THREE.Group {
 
 export function Marcos({ hm }: { hm: Heightmap }) {
   const real = mundo.real;
-  const grupoNoite = useRef<THREE.MeshStandardMaterial[]>([]);
   const cabinesRef = useRef<Bondinho | null>(null);
 
   const cena = useMemo(() => {
@@ -241,16 +218,6 @@ export function Marcos({ hm }: { hm: Heightmap }) {
       for (const [dx, dz] of [[0, 0], [raio, 0], [-raio, 0], [0, raio], [0, -raio]]) m = Math.min(m, Math.max(0, sampleHeight(hm, x + dx, z + dz)));
       return m;
     };
-
-    // Cristo Redentor, olhando para o leste (a baía)
-    const [cx, cz] = projetar(real, ...LATLON.cristo);
-    const pedra = mat('#8a857b'), estatua = mat('#b9c3bb', { roughness: 0.75, emissive: '#fff1cf', emissiveIntensity: 0 });
-    grupoNoite.current = [estatua];
-    const cr = cristo({ pedra, estatua });
-    cr.scale.setScalar(ESCALA_CRISTO);
-    cr.position.set(cx, solo(cx, cz, 4) - 0.5, cz);
-    cr.rotation.y = Math.PI / 2;
-    raiz.add(cr);
 
     // bondinho
     const bd = bondinho(hm, real);
@@ -300,8 +267,6 @@ export function Marcos({ hm }: { hm: Heightmap }) {
   }, [cena]);
 
   useFrame(() => {
-    // Cristo iluminado à noite
-    for (const m of grupoNoite.current) m.emissiveIntensity = ambiente.noite * 0.9;
     // cabines do bondinho: 90 s ida e volta em cada trecho
     const bd = cabinesRef.current;
     if (!bd) return;

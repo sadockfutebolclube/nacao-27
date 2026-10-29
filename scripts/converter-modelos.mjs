@@ -15,6 +15,7 @@ const origem = join(raiz, 'data/cache/modelos-origem');
 const W = join(origem, 'kenney-watercraft/Models/GLB format');
 const C = join(origem, 'kenney-car/Models/GLB format');
 const P = join(origem, 'polypizza');
+const T = join(origem, 'turismo');
 
 /** [arquivo de origem, categoria, nome de saída] */
 const LISTA = [
@@ -35,6 +36,10 @@ const LISTA = [
   // Fase 30: personagens com esqueleto (sem quantização: a pele precisa das posições em float)
   [`${origem}/pessoas/homem.glb`, 'pessoa', 'homem'],
   [`${P}/onibus-a.glb`, 'terrestre', 'onibus-a'], [`${P}/moto-b.glb`, 'terrestre', 'moto-b'],
+  // Fase 31: pontos turísticos e orla (Poly Pizza; escolhas e rejeitadas em docs/turismo-modelos.md)
+  [`${T}/HknNtngih0.glb`, 'animado', 'roda-gigante'], [`${origem}/polypizza/bici-b.glb`, 'turismo', 'bicicleta'], [`${T}/1cViRrLkTIk.glb`, 'turismo', 'bonde'], [`${T}/2li3sdSkmCI.glb`, 'turismo', 'guarda-sol'],
+  [`${T}/9TN4PyhWvz1.glb`, 'turismo', 'cadeira-praia'], [`${T}/DGIM5HGISb.glb`, 'turismo', 'quiosque-banca'], [`${T}/3js4cQ-O-p2.glb`, 'turismo', 'prancha'],
+  [`${T}/y4wdQpg767.glb`, 'animal', 'cachorro'],
 ];
 
 await MeshoptEncoder.ready;
@@ -42,7 +47,7 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
 let antes = 0, depois = 0;
 for (const [src, cat, nome] of LISTA) {
   const doc = await io.read(src);
-  if (cat === 'pessoa') await doc.transform(dedup(), prune());
+  if (cat === 'pessoa' || cat === 'animal' || cat === 'animado') await doc.transform(dedup(), prune());
   else await doc.transform(dedup(), prune(), weld(), quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
   for (const t of doc.getRoot().listTextures()) { const [w, h] = t.getSize() ?? [0, 0]; if (Math.max(w, h) > 1024) throw new Error(`${nome}: textura ${w}x${h} > 1024`); }
   const dst = join(raiz, 'assets/models', cat, `${nome}.glb`);

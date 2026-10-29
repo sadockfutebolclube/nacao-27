@@ -12,6 +12,7 @@ import { pedDebug } from '../render/city/estadoPedestres';
 import { comercioFechadoEm } from '../render/city/ocorrenciaEstado';
 import { diaDaSemana, fimDeSemana } from '../render/city/densidade';
 import { ancoraMarco, prediosOcultos } from '../render/city/pontosRio';
+import { posicaoDoPonto } from '../render/city/turismoEstado';
 import { indiceDasVias, type AmostraVia } from '../render/city/perfilVias';
 import { perfisAtuais } from '../render/city/Vias';
 import { mundo, useGame } from '../sim/bridge';
@@ -21,13 +22,16 @@ import { DADOS as DADOS_SEG } from '../sim/faccoes/dados';
 import { LOT_STATE_STRIDE } from '../sim/protocol';
 import { BUILD_HALF } from '../world/constants';
 import { LOT_STRIDE } from '../world/lots';
-import { projetar } from '../world/cidadeReal';
 import { sampleHeight } from '../world/terrain';
+import { TURISMO } from '../world/turismo';
 import {
-  gerarCarro, gerarCasa, gerarEstabelecimento, gerarPessoa, MARCOS, regiaoDoBairro, regiaoPorAP, sorteio, visitantesAgora,
+  gerarCarro, gerarCasa, gerarEstabelecimento, gerarPessoa, MARCOS, regiaoDoBairro, regiaoPorAP, sorteio,
   type Dominio, type Endereco, type FichaCarro, type FichaCasa, type FichaEstab, type FichaPessoa, type MarcoDado, type Persona,
 } from './geracao';
-import { ID_BASE_LOTE, ID_BASE_MARCO, IndiceCaixas, registro, type Caixa, type TipoEntidade } from './registro';
+import { ID_BASE_LOTE, ID_BASE_MARCO, ID_BASE_QUIOSQUE, IndiceCaixas, registro, type Caixa, type TipoEntidade } from './registro';
+import { dadosDaOrla, type Quiosque } from '../render/city/orlaDados';
+import { contextoTurismo } from '../render/city/turismoEstado';
+import { eventoAgora, notaDoPonto, ocupacaoAgora, textoPico, visitantesDoPonto, visitantesHoje } from '../world/turismo';
 
 // ── fatos do mundo ────────────────────────────────────────────────────────────────
 
@@ -88,7 +92,7 @@ export function agoraDoJogo() {
 const NOMES_TIPO = ['residencial', 'comercial', 'industrial', 'serviço', 'religioso'] as const;
 
 export interface MetaLote { lote: number; tipoPredio: 0 | 1 | 2 | 3 | 4; nome: string | null; andares: number; ref: number }
-export interface Estaticos { versao: number; construidoEm: number; idx: IndiceCaixas; meta: Map<number, MetaLote>; marcos: Map<number, number>; porIndiceKind: Uint8Array }
+export interface Estaticos { versao: number; construidoEm: number; idx: IndiceCaixas; meta: Map<number, MetaLote>; marcos: Map<number, number>; quiosques: Map<number, Quiosque>; porIndiceKind: Uint8Array }
 let estaticos: Estaticos | null = null;
 
 /** Monta (ou reaproveita) o índice de caixas dos prédios e marcos; refaz quando o mundo mudou ou passaram 20 s. */
@@ -127,21 +131,28 @@ export function garantirEstaticos(): Estaticos | null {
     const id = ID_BASE_MARCO + k;
     let caixa: Caixa | null = null;
     if (mundo.real) {
-      if (m.lat !== undefined && m.lon !== undefined) {
-        const [x, z] = projetar(mundo.real, m.lat, m.lon);
-        caixa = { x, y: Math.max(0, sampleHeight(hm, x, z)), z, yaw: 0, w: m.w ?? 30, h: m.h ?? 30, d: m.d ?? 30 };
-      } else {
-        const an = ancoraMarco(mundo.real, m.chave);
-        if (an) caixa = { x: an.x, y: Math.max(0, sampleHeight(hm, an.x, an.z)), z: an.z, yaw: an.angle, w: Math.max(an.w, 12), h: m.h ?? an.andares * 3.1, d: Math.max(an.d, 12) };
+      const an = ancoraMarco(mundo.real, m.chave);
+      if (an) caixa = { x: an.x, y: Math.max(0, sampleHeight(hm, an.x, an.z)), z: an.z, yaw: an.angle, w: Math.max(an.w, 12), h: m.h ?? an.andares * 3.1, d: Math.max(an.d, 12) };
+      else {
+        const pos = posicaoDoPonto(m);
+        if (pos) caixa = { x: pos[0], y: Math.max(0, sampleHeight(hm, pos[0], pos[1])), z: pos[1], yaw: 0, w: m.w ?? 30, h: m.h ?? 30, d: m.d ?? 30 };
       }
     }
     if (!caixa) return;
     caixas.push(caixa); ids.push(id); tipos.push(tIdx('marco')); kinds.push(9);
     marcos.set(id, k);
   });
+  // quiosques da orla (Fase 31): estabelecimentos com ficha própria (dono, funcionários, faturamento)
+  const quiosques = new Map<number, Quiosque>();
+  if (mundo.real) for (const q of dadosDaOrla(hm, mundo.real).quiosques) {
+    const id = ID_BASE_QUIOSQUE + q.id;
+    caixas.push({ x: q.x, y: Math.max(0, sampleHeight(hm, q.x, q.z)), z: q.z, yaw: q.yaw, w: 4, h: 3.4, d: 4 });
+    ids.push(id); tipos.push(tIdx('estabelecimento')); kinds.push(1);
+    quiosques.set(id, q);
+  }
   const idx = new IndiceCaixas(caixas, ids, tipos, 32);
   registro.definirEstaticos(idx, wv);
-  estaticos = { versao: wv, construidoEm: agora, idx, meta, marcos, porIndiceKind: Uint8Array.from(kinds) };
+  estaticos = { versao: wv, construidoEm: agora, idx, meta, marcos, quiosques, porIndiceKind: Uint8Array.from(kinds) };
   return estaticos;
 }
 
@@ -154,7 +165,10 @@ export type Ficha =
   | (Base & { tipo: 'carro' | 'onibus'; ficha: FichaCarro; velocidadeKmh: number; destino: string; linha: { nome: string; longo: string } | null })
   | (Base & { tipo: 'casa' | 'predio'; ficha: FichaCasa; titulo: string; nome: string | null })
   | (Base & { tipo: 'estabelecimento'; ficha: FichaEstab; endereco: Endereco })
-  | (Base & { tipo: 'marco'; dado: MarcoDado; visitantes: number });
+  | (Base & { tipo: 'marco'; dado: MarcoDado; visitantes: number; turismo: DadosTurismo });
+
+/** o que o painel de um ponto turístico mostra além do texto: tudo calculado por `world/turismo.ts` (o mesmo cálculo que decide quantas pessoas aparecem) */
+export interface DadosTurismo { ocupacao: number; capacidade: number; hoje: number; nota: number; evento: string | null; pico: string; foraDoMapa: boolean; atividades: { id: string; rotulo: string; n: number }[] }
 
 function enderecoLote(li: number): Endereco {
   const L = mundo.lots, o = li * LOT_STRIDE;
@@ -194,11 +208,28 @@ export function fichaDe(id: number, investigacao: (id: number) => number | undef
   const L = mundo.lots, S = mundo.lotState;
   const est = garantirEstaticos();
 
+  if (id >= ID_BASE_QUIOSQUE && id < ID_BASE_MARCO) {
+    const q = est?.quiosques.get(id);
+    if (!q) return null;
+    const b = bairroInfo(q.x, q.z);
+    const end: Endereco = { rua: q.praia === 'ipanema' ? 'Avenida Vieira Souto' : 'Avenida Atlântica', numero: numeroEm(q.x, q.z), bairro: b.nome, regiao: b.regiao };
+    // área de atendimento (balcão + mesas na areia) de ~12 × 12 m: a conta de faturamento parte dela
+    const f = gerarEstabelecimento({ semente: id, nome: q.nome, tipoPredio: 'comercial', endereco: end, w: 12, d: 12, andares: 1, lv: 75, hora: ag.hora, fimDeSemana: ag.fds, chuva: ag.chuva, dominio: dominioEm(q.x, q.z).dominio });
+    return { id, tipo: 'estabelecimento', pos: { x: q.x, z: q.z }, bairro: b, viva: true, ficha: f, endereco: end };
+  }
   if (id >= ID_BASE_MARCO) {
     const k = id - ID_BASE_MARCO, m = MARCOS[k];
     const cx = registro.caixaDe(id);
     if (!m || !cx) return null;
-    return { id, tipo: 'marco', pos: { x: cx.x, z: cx.z }, bairro: bairroInfo(cx.x, cx.z), viva: true, dado: m, visitantes: visitantesAgora(m, ag.hora, ag.fds, ag.chuva, id) };
+    const ct = contextoTurismo();
+    const por = new Map<string, number>();
+    for (const z of m.zonas) por.set(z.atividade, (por.get(z.atividade) ?? 0) + z.n);
+    const ocup = ocupacaoAgora(m, ct), ref = m.eventos ? Math.max(...m.eventos.map((e) => e.ocupacao)) : Math.max(0.001, m.ocupacaoPico);
+    const atividades = [...por.entries()].map(([a, n]) => ({ id: a, rotulo: TURISMO.atividades[a]?.rotulo ?? a, n: Math.round(n * Math.min(1, ocup / ref)) })).filter((a) => a.n > 0);
+    return {
+      id, tipo: 'marco', pos: { x: cx.x, z: cx.z }, bairro: bairroInfo(cx.x, cx.z), viva: true, dado: m, visitantes: visitantesDoPonto(m, ct),
+      turismo: { ocupacao: ocup, capacidade: m.capacidade, hoje: visitantesHoje(m, ct), nota: notaDoPonto(m, ct), evento: eventoAgora(m, ct)?.rotulo ?? null, pico: textoPico(m), foraDoMapa: !!m.foraDoMapa, atividades },
+    };
   }
   if (id >= ID_BASE_LOTE) {
     const meta = est?.meta.get(id);

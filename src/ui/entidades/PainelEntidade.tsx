@@ -210,11 +210,24 @@ function CorpoEstab({ f }: { f: Extract<Ficha, { tipo: 'estabelecimento' }> }) {
 }
 
 function CorpoMarco({ f }: { f: Extract<Ficha, { tipo: 'marco' }> }) {
+  const t = f.turismo, pct = Math.round(t.ocupacao * 100);
   return (
     <>
+      {t.foraDoMapa && <div className="mb-1 text-[11px] text-[#ffb86b]">Fora da área jogável atual (expansão do mapa para o noroeste: DECISIONS D-129). Dados abaixo são só da ficha.</div>}
+      {t.evento && <div className="mb-1 text-[11px] text-acento">Agora: {t.evento}</div>}
       <Linha k="Visitantes agora" v={fmt.int(f.visitantes)} />
-      <Linha k="Nota (avaliação simulada)" v={`★ ${f.dado.nota.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}`} />
+      <Linha k="Capacidade" v={fmt.int(t.capacidade)} />
+      <Linha k="Lotação" v={`${pct}%`} cor={pct >= 80 ? '#ff7a7a' : undefined} />
+      <Linha k="Visitantes hoje" v={fmt.int(t.hoje)} />
+      <Linha k="Horário de pico" v={t.pico} />
+      <Linha k="Nota (avaliação simulada)" v={`★ ${t.nota.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}`} />
+      {t.atividades.length > 0 && (
+        <div className="mt-1 text-[11px] text-suave">
+          Fazendo agora: {t.atividades.map((a) => `${a.rotulo} (${a.n})`).join(' · ')}
+        </div>
+      )}
       <div className="mt-2 text-[12px] leading-snug text-texto/90">{f.dado.historia}</div>
+      <div className="mt-1 text-[10px] text-suave">Fonte da posição: {f.dado.fonte}. Capacidade, picos e nota são estimativas do jogo.</div>
     </>
   );
 }

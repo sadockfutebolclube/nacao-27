@@ -4,6 +4,8 @@
  * quadro, uma coluna por vértice; normais numa segunda textura) e o vertex shader só lê a textura — milhares de instâncias sem custo de esqueleto
  * na CPU. Por instância: fase da passada, ritmo (0 = parado; alto = corrida), tom de pele, camisa (instanceColor), calça, guarda-chuva e sentado.
  * O clipe é escolhido no shader: sentado → Sitting; ritmo 0 → Idle; ritmo < 9,5 rad/s → Walk; acima → Run.
+ * Fase 31 (visitantes dos pontos turísticos): ritmo NEGATIVO escolhe um clipe especial — -1 palmas (Clapping), -2 pulo (Jump),
+ * -3 braços abertos e -4 tirando foto (as duas poses são montadas apontando os ossos dos braços e assadas num quadro só).
  */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -20,7 +22,7 @@ export interface PessoaVAT {
   geo: THREE.BufferGeometry;
   posTex: THREE.DataTexture;
   norTex: THREE.DataTexture;
-  /** início e quantos quadros de cada clipe: [idle, walk, run, sit] */
+  /** início e quantos quadros de cada clipe: [idle, walk, run, sit, palmas, pulo, braços abertos, foto] */
   clipes: { base: number; n: number }[];
   triangulos: number;
   vertices: number;
@@ -49,15 +51,21 @@ async function montar(): Promise<PessoaVAT> {
   if (total > LARGURA) throw new Error(`personagem com ${total} vértices (limite ${LARGURA})`);
 
   const clip = (re: RegExp) => gltf.animations.find((a) => re.test(a.name));
+  const palmas = clip(/Clapping/i), pulo = clip(/Man_Jump$/i);
   const idle = clip(/Idle/i), walk = clip(/Walk/i), run = clip(/Run(?!ning?Jump)/i) ?? clip(/Running/i), sit = clip(/Sitting|SitIdle/i);
-  if (!idle || !walk || !run || !sit) throw new Error(`clipes que faltam: ${[!idle && 'Idle', !walk && 'Walk', !run && 'Run', !sit && 'Sitting'].filter(Boolean).join(', ')}`);
+  if (!idle || !walk || !run || !sit || !palmas || !pulo) throw new Error(`clipes que faltam: ${[!idle && 'Idle', !walk && 'Walk', !run && 'Run', !sit && 'Sitting', !palmas && 'Clapping', !pulo && 'Jump'].filter(Boolean).join(', ')}`);
 
   // quadros: (clipe, instantes)
-  const planos: { clip: THREE.AnimationClip; de: number; ate: number; n: number }[] = [
+  const planos: { clip: THREE.AnimationClip; de: number; ate: number; n: number; pose?: (cena: THREE.Object3D) => void }[] = [
     { clip: idle, de: 0, ate: idle.duration, n: 24 },
     { clip: walk, de: 0, ate: walk.duration, n: 24 },
     { clip: run, de: 0, ate: run.duration, n: 16 },
     { clip: sit, de: sit.duration * 0.85, ate: sit.duration, n: 4 },
+    { clip: palmas, de: 0, ate: palmas.duration, n: 16 },
+    { clip: pulo, de: 0, ate: pulo.duration, n: 16 },
+    // as poses saem do primeiro quadro do Idle com os braços reapontados (por último, para o que foi mexido não vazar para outro clipe)
+    { clip: idle, de: 0, ate: 0, n: 1, pose: poseBracosAbertos },
+    { clip: idle, de: 0, ate: 0, n: 1, pose: poseFoto },
   ];
   const quadros = planos.reduce((s, p) => s + p.n, 0);
   const pos = new Float32Array(LARGURA * quadros * 4), nor = new Float32Array(LARGURA * quadros * 4);
@@ -79,6 +87,7 @@ async function montar(): Promise<PessoaVAT> {
       acao.time = pl.de + ((pl.ate - pl.de) * f) / pl.n;
       mixer.update(0);
       cena.updateMatrixWorld(true);
+      pl.pose?.(cena);
       malhas.forEach((m, k) => {
         m.skeleton.update();
         const n = m.geometry.getAttribute('position').count;
@@ -178,12 +187,19 @@ export function materialPessoaVAT(vat: PessoaVAT, u: { uTempo: { value: number }
         uniform highp sampler2D uNor;
         const float FPS = 24.0;
         vec2 clipe() {
+          if (iAnim.y < -0.5) {
+            int k = int(-iAnim.y + 0.5);
+            if (k == 1) return vec2(${c[4].base.toFixed(1)}, ${c[4].n.toFixed(1)});
+            if (k == 2) return vec2(${c[5].base.toFixed(1)}, ${c[5].n.toFixed(1)});
+            if (k == 3) return vec2(${c[6].base.toFixed(1)}, ${c[6].n.toFixed(1)});
+            return vec2(${c[7].base.toFixed(1)}, ${c[7].n.toFixed(1)});
+          }
           if (iAnim.w > 1.5) return vec2(${c[3].base.toFixed(1)}, ${c[3].n.toFixed(1)});
           if (iAnim.y < 0.01) return vec2(${c[0].base.toFixed(1)}, ${c[0].n.toFixed(1)});
           if (iAnim.y < 9.5) return vec2(${c[1].base.toFixed(1)}, ${c[1].n.toFixed(1)});
           return vec2(${c[2].base.toFixed(1)}, ${c[2].n.toFixed(1)});
         }
-        float velClipe() { return iAnim.w > 1.5 ? 0.0 : (iAnim.y < 0.01 ? 0.7 : (iAnim.y < 9.5 ? iAnim.y / 5.4 : iAnim.y / 11.0)); }`)
+        float velClipe() { if (iAnim.y < -0.5) return iAnim.y > -2.5 ? 1.0 : 0.0; return iAnim.w > 1.5 ? 0.0 : (iAnim.y < 0.01 ? 0.7 : (iAnim.y < 9.5 ? iAnim.y / 5.4 : iAnim.y / 11.0)); }`)
       .replace('#include <color_vertex>', `
         {
           vec3 pele = mix(vec3(0.85, 0.55, 0.38), vec3(0.12, 0.055, 0.03), iAnim.z);
@@ -212,4 +228,39 @@ export function materialPessoaVAT(vat: PessoaVAT, u: { uTempo: { value: number }
   };
   m.customProgramCacheKey = () => 'pessoa-vat';
   return m;
+}
+
+// ── poses montadas apontando os ossos ────────────────────────────────────────────
+
+/** Gira o osso (no espaço do mundo) para que o segmento osso → filho aponte para `alvo`; os descendentes vão junto. */
+function apontar(cena: THREE.Object3D, osso: string, filho: string, alvo: THREE.Vector3) {
+  const b = cena.getObjectByName(osso), f = cena.getObjectByName(filho);
+  if (!b || !f || !b.parent) return;
+  cena.updateMatrixWorld(true);
+  const p0 = b.getWorldPosition(new THREE.Vector3()), p1 = f.getWorldPosition(new THREE.Vector3());
+  const d = p1.sub(p0).normalize();
+  const delta = new THREE.Quaternion().setFromUnitVectors(d, alvo.clone().normalize());
+  const mundo = b.getWorldQuaternion(new THREE.Quaternion()).premultiply(delta);
+  b.quaternion.copy(b.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(mundo));
+  cena.updateMatrixWorld(true);
+}
+/** +1 se o osso fica do lado +X do corpo, −1 do outro (o personagem é simétrico em torno do quadril) */
+function lado(cena: THREE.Object3D, osso: string): number {
+  const o = cena.getObjectByName(osso), q = cena.getObjectByName('Hips');
+  if (!o || !q) return 1;
+  return Math.sign(o.getWorldPosition(new THREE.Vector3()).x - q.getWorldPosition(new THREE.Vector3()).x) || 1;
+}
+/** o nariz do personagem aponta para +Z (convenção do glTF e do jogo: yaw 0 olha para +Z) */
+function poseBracosAbertos(cena: THREE.Object3D) {
+  for (const s of ['L', 'R']) {
+    const x = lado(cena, `UpperArm${s}`);
+    apontar(cena, `UpperArm${s}`, `LowerArm${s}`, new THREE.Vector3(x, 0.12, 0));
+    apontar(cena, `LowerArm${s}`, `Palm${s}`, new THREE.Vector3(x, 0.2, 0));
+  }
+}
+/** celular na frente do rosto com a mão direita; a esquerda segura o cotovelo (fica solta ao longo do corpo) */
+function poseFoto(cena: THREE.Object3D) {
+  const x = lado(cena, 'UpperArmR');
+  apontar(cena, 'UpperArmR', 'LowerArmR', new THREE.Vector3(x * 0.25, -0.35, 0.9));
+  apontar(cena, 'LowerArmR', 'PalmR', new THREE.Vector3(-x * 0.05, 0.95, 0.35));
 }

@@ -37,3 +37,12 @@ Texturas, HDRI e modelos estão em `ASSETS_LICENSES.md`.
 ## Fase 28 — São Januário
 - **Estádio de São Januário (Estádio Vasco da Gama)**: OpenStreetMap via Overpass API, `leisure=stadium` way 353439809 (contorno), `leisure=pitch` ways 353439806 e 353439812, tênis way 353439811, baixado em 28/10/2026; ODbL (© colaboradores do OpenStreetMap). Guardado em `src/data/marcos/sao-januario.json`. Capacidade e data de inauguração: Wikipédia/Wikidata Q721419 (conferir antes de publicar).
 - Expansão noroeste (planejada, não executada): o DEM Copernicus GLO-30 já em `data/cache/dem` (tile S23 W044) cobre Madureira (-22,87; -43,34), Penha e o Galeão; o OSM exigiria novo recorte do extrato do Sudeste (Geofabrik).
+
+## Fase 31 — pontos turísticos
+- **Posições** (`src/data/turismo/pontos.json`, campo `fonte`): OpenStreetMap via Overpass API (https://overpass-api.de/api/interpreter), consultas por nome e por `tourism=attraction`, `leisure=stadium`, `natural=beach`, `attraction=big_wheel`, caixa -23,08…-22,74 / -43,80…-43,10, baixado em 28/10/2026; ODbL (© colaboradores do OpenStreetMap). Conferido com a Wikidata (https://www.wikidata.org/): Q79961 (Cristo), Q210722 (Pão de Açúcar), Q155174 (Maracanã), Q1579892 (Arcos), Q2200939 (Selarón), Q281521 (Sambódromo), Q63894 e Q3390838 (praias), Q5457206 (Aterro), Q10345493 (Madureira), Q14942956 (Tijuca), Q45242 (Jardim Botânico), Q2500590 (Quinta), Q72949268 (Rio Star), Q2411716 (Catedral), Q28679543 (Candelária), Q1968538 (Theatro), Q948882 (Biblioteca), Q10333874 (Museu do Amanhã), Q10353330 (Praça Mauá), Q865475 (Santos Dumont).
+- **Escadaria Selarón**: geometria do polígono OSM way 237171010 (eixo de ~110 m × 5,8 m), mesma consulta, 28/10/2026.
+- **Roda-gigante Rio Star**: OSM way 1050242513 (nome atual "Yup Star", `height=88`) e Wikidata Q72949268.
+- **Sambódromo**: o eixo vem das vias OSM "Rua Marquês de Sapucaí" já no mapa do jogo; sem dados novos.
+- **Capacidades, ocupação de pico, horários, calendário de jogos e desfile, notas e giro de visitantes são estimativas de jogo** (não há estatística oficial por ponto); as datas e medidas históricas dos textos vêm da Wikipédia/Wikidata e estão marcadas "cerca de" onde não foram conferidas em fonte primária.
+- **Modelos 3D**: Poly Pizza (CC0/CC-BY 3.0), 28/10/2026, lista em `assets/CREDITS.md`.
+- **Fora do mapa**: Parque de Madureira (r14120797) e o miolo da Floresta da Tijuca ficam além da área alcançável (±6,6 km do centro -22,945; -43,195); precisam da expansão noroeste (D-129).

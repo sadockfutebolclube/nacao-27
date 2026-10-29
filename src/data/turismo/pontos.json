@@ -1,0 +1,310 @@
+{
+  "_leia-me": "Fase 31 — pontos turísticos do Rio. Posições: OpenStreetMap (Overpass, 28/10/2026) e Wikidata, ids em `fonte` (ver data/SOURCES.md). Capacidade (pessoas ao mesmo tempo), ocupação de pico, horários, notas e atividades são ESTIMATIVAS de jogo, não estatística oficial. Zonas: posições em metros a partir do ponto (x leste, z sul); `ref` troca o ponto de referência por [lat, lon]; `rotAncora` gira a zona pelo ângulo do prédio do OSM.",
+  "atividades": {
+    "foto": { "rotulo": "tirando foto", "clipe": "foto" },
+    "posar": { "rotulo": "posando de braços abertos", "clipe": "pose" },
+    "sentar": { "rotulo": "sentado olhando a vista", "clipe": "sentar" },
+    "vista": { "rotulo": "olhando a vista", "clipe": "parado" },
+    "fila": { "rotulo": "na fila", "clipe": "parado" },
+    "correr": { "rotulo": "correndo", "clipe": "correr", "vel": 2.9 },
+    "caminhar": { "rotulo": "caminhando", "clipe": "andar", "vel": 1.25 },
+    "trilha": { "rotulo": "na trilha", "clipe": "andar", "vel": 1.0 },
+    "bicicleta": { "rotulo": "de bicicleta", "clipe": "sentar", "vel": 4.4, "extra": "bicicleta" },
+    "patins": { "rotulo": "de patins", "clipe": "andar", "vel": 3.3 },
+    "cao": { "rotulo": "passeando com o cachorro", "clipe": "andar", "vel": 1.1, "extra": "cachorro" },
+    "piquenique": { "rotulo": "no piquenique", "clipe": "sentar", "extra": "toalha" },
+    "torcida": { "rotulo": "a caminho do estádio", "clipe": "andar", "vel": 1.4 },
+    "vendedor": { "rotulo": "vendendo", "clipe": "parado", "extra": "isopor" },
+    "pular": { "rotulo": "comemorando", "clipe": "pular" },
+    "palmas": { "rotulo": "aplaudindo", "clipe": "palmas" }
+  },
+  "pontos": [
+    {
+      "id": "cristo", "nome": "Cristo Redentor", "chave": "cristo", "categoria": "mirante", "construtor": "cristo",
+      "lat": -22.95192, "lon": -43.21046, "w": 20, "d": 20, "h": 38, "capacidade": 1800, "ocupacaoPico": 0.55, "pico": [[10, 15]], "nota": 4.8, "fimDeSemana": 1.35,
+      "fonte": "OSM n4919986733; Wikidata Q79961",
+      "historia": "Inaugurado em 12 de outubro de 1931 no topo do Corcovado, a ~710 m de altitude. A estátua Art Déco tem cerca de 30 m sobre um pedestal de 8 m, com 28 m de uma ponta a outra dos braços; projeto do engenheiro Heitor da Silva Costa, com escultura de Paul Landowski. Uma das Novas Sete Maravilhas do Mundo (2007).",
+      "zonas": [
+        { "atividade": "posar", "forma": "caixa", "c": [16, 0], "t": [8, 20], "n": 10, "olhar": "centro" },
+        { "atividade": "foto", "forma": "anel", "r": [12, 28], "arco": [-110, 110], "n": 22, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "linha", "a": [-4, -16], "b": [-4, 16], "n": 8, "olhar": 0 },
+        { "atividade": "vista", "forma": "anel", "r": [24, 34], "n": 14, "olhar": "fora" }
+      ]
+    },
+    {
+      "id": "pao-acucar", "nome": "Pão de Açúcar e Morro da Urca", "chave": "bondinho", "categoria": "mirante", "construtor": "bondinho",
+      "lat": -22.9528, "lon": -43.1632, "w": 30, "d": 30, "h": 18, "capacidade": 1500, "ocupacaoPico": 0.6, "pico": [[9, 14]], "nota": 4.7, "fimDeSemana": 1.3,
+      "fonte": "OSM n34582421 (cume), n146396315 (Morro da Urca); Wikidata Q210722",
+      "historia": "O primeiro bondinho do Brasil, inaugurado em 27 de outubro de 1912, liga a Praia Vermelha ao Morro da Urca (220 m) e ao Pão de Açúcar (396 m). Um dos cartões-postais do Rio.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [8, 22], "n": 18, "olhar": "fora" },
+        { "atividade": "sentar", "forma": "anel", "r": [14, 18], "arco": [-30, 120], "n": 8, "olhar": "fora" },
+        { "atividade": "fila", "forma": "linha", "ref": [-22.9552, -43.1657], "a": [-10, -8], "b": [10, -8], "n": 14, "olhar": 90 },
+        { "atividade": "foto", "forma": "anel", "ref": [-22.94949, -43.15616], "r": [4, 14], "n": 10, "olhar": "fora" }
+      ]
+    },
+    {
+      "id": "maracana", "nome": "Maracanã", "chave": "maracana", "categoria": "estadio", "construtor": "maracana",
+      "lat": -22.91216, "lon": -43.23019, "w": 200, "d": 200, "h": 40, "capacidade": 78800, "ocupacaoPico": 0.0, "pico": [], "nota": 4.6, "fimDeSemana": 1,
+      "fonte": "OSM r4587734 (estádio), n8025693513 (estação); Wikidata Q155174",
+      "eventos": [
+        { "rotulo": "Jogo de domingo (16h)", "diasSemana": [0], "inicio": 14, "fim": 18.5, "ocupacao": 0.62 },
+        { "rotulo": "Jogo de quarta (21h30)", "diasSemana": [3], "inicio": 19.5, "fim": 24, "ocupacao": 0.55 },
+        { "rotulo": "Jogo de sábado (19h)", "diasSemana": [6], "inicio": 17, "fim": 21.5, "ocupacao": 0.5 }
+      ],
+      "visitaDiaria": 0.003,
+      "historia": "Inaugurado em 16 de junho de 1950 para a Copa do Mundo, palco do \"Maracanazo\" (Uruguai 2×1 Brasil, em 16 de julho). Reformado para a Copa de 2014 e a abertura das Olimpíadas de 2016. Capacidade atual de cerca de 78 mil pessoas.",
+      "zonas": [
+        { "atividade": "fila", "forma": "linha", "c": [180, 0], "a": [180, -14], "b": [180, 14], "n": 26, "olhar": 180 },
+        { "atividade": "fila", "forma": "linha", "a": [-14, 160], "b": [14, 160], "n": 26, "olhar": 270 },
+        { "atividade": "fila", "forma": "linha", "a": [-14, -160], "b": [14, -160], "n": 26, "olhar": 90 },
+        { "atividade": "fila", "forma": "linha", "a": [-180, -14], "b": [-180, 14], "n": 26, "olhar": 0 },
+        { "atividade": "torcida", "forma": "fluxo", "de": [-22.90969, -43.23407], "para": [-150, -120], "n": 140, "vel": 1.4 },
+        { "atividade": "torcida", "forma": "fluxo", "de": [-22.9172, -43.2312], "para": [130, 150], "n": 80, "vel": 1.4 },
+        { "atividade": "vendedor", "forma": "linha", "a": [-210, -130], "b": [-120, -190], "n": 14, "olhar": "fora" },
+        { "atividade": "pular", "forma": "anel", "r": [205, 215], "n": 20, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "sao-januario", "nome": "Estádio de São Januário", "chave": "sao-januario", "categoria": "estadio", "construtor": "sao-januario",
+      "lat": -22.8914, "lon": -43.2284, "w": 120, "d": 195, "h": 24, "capacidade": 21000, "ocupacaoPico": 0.0, "pico": [], "nota": 4.7, "fimDeSemana": 1,
+      "fonte": "OSM w353439809; Wikidata Q721419",
+      "eventos": [
+        { "rotulo": "Jogo do Vasco (domingo, 16h)", "diasSemana": [0], "inicio": 14, "fim": 18.5, "ocupacao": 0.7 },
+        { "rotulo": "Jogo do Vasco (quarta, 21h30)", "diasSemana": [3], "inicio": 19.5, "fim": 24, "ocupacao": 0.6 }
+      ],
+      "visitaDiaria": 0.01,
+      "historia": "Estádio Vasco da Gama, o São Januário, inaugurado em 21 de abril de 1927 com dinheiro de uma campanha de sócios do Clube de Regatas Vasco da Gama; na época era o maior estádio do Brasil. Fica no bairro Vasco da Gama (Zona Norte) e hoje comporta cerca de 21 mil pessoas. Em 1º de maio de 1940, Getúlio Vargas anunciou ali o salário mínimo. Dimensões e arquibancadas do jogo são aproximadas do contorno do OpenStreetMap.",
+      "zonas": []
+    },
+    {
+      "id": "arcos", "nome": "Arcos da Lapa", "chave": "Arcos da Lapa", "categoria": "monumento", "construtor": "arcos",
+      "lat": -22.91303, "lon": -43.17995, "h": 18, "capacidade": 900, "ocupacaoPico": 0.5, "pico": [[17, 23]], "nota": 4.5, "fimDeSemana": 1.5,
+      "fonte": "OSM w154966398; Wikidata Q1579892",
+      "historia": "Antigo Aqueduto da Carioca, obra do século XVIII (concluída por volta de 1750) que levava água do Rio Carioca ao Centro. Desde 1896 serve de viaduto ao bonde de Santa Teresa.",
+      "zonas": [
+        { "atividade": "caminhar", "forma": "caminho", "raio": 220, "tipos": [1, 5], "n": 14 },
+        { "atividade": "foto", "forma": "caixa", "c": [0, 22], "t": [30, 8], "n": 10, "olhar": "centro", "rotAncora": true },
+        { "atividade": "sentar", "forma": "caixa", "c": [0, -22], "t": [60, 5], "n": 10, "olhar": "centro", "rotAncora": true }
+      ]
+    },
+    {
+      "id": "selaron", "nome": "Escadaria Selarón", "chave": "selaron", "categoria": "monumento", "construtor": null,
+      "lat": -22.91552, "lon": -43.17964, "w": 8, "d": 40, "h": 10, "capacidade": 300, "ocupacaoPico": 0.7, "pico": [[10, 16]], "nota": 4.7, "fimDeSemana": 1.3,
+      "fonte": "OSM w237171010; Wikidata Q2200939",
+      "trajeto": [[-22.915251, -43.179056], [-22.915723, -43.180029]], "larguraM": 5.8,
+      "historia": "Obra do artista chileno Jorge Selarón, que a partir de 1990 revestiu os degraus da Rua Manoel Carneiro com azulejos de dezenas de países, entre eles o vermelho, o verde e o amarelo que ele chamava de \"as cores do Brasil\". O trajeto no jogo é o eixo do polígono do OpenStreetMap (~110 m).",
+      "zonas": [
+        { "atividade": "foto", "forma": "caixa", "c": [0, 0], "t": [4, 34], "n": 12, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "linha", "a": [-3, -14], "b": [-3, 14], "n": 6, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "sambodromo", "nome": "Sambódromo da Marquês de Sapucaí", "chave": "sambodromo", "categoria": "estadio", "construtor": "sambodromo",
+      "lat": -22.91089, "lon": -43.19687, "w": 90, "d": 700, "h": 20, "capacidade": 72500, "ocupacaoPico": 0.0, "pico": [], "nota": 4.7, "fimDeSemana": 1,
+      "fonte": "OSM w34306743; Wikidata Q281521",
+      "eventos": [{ "rotulo": "Desfile de Carnaval", "meses": [2], "diasSemana": [5, 6, 0, 1], "inicio": 19, "fim": 29, "ocupacao": 0.92 }],
+      "visitaDiaria": 0.004,
+      "historia": "Projeto de Oscar Niemeyer inaugurado em 1984, concentra os desfiles das escolas de samba do Carnaval carioca em uma passarela de cerca de 700 m, com capacidade para cerca de 72 mil pessoas nas arquibancadas e camarotes.",
+      "zonas": [
+        { "atividade": "pular", "forma": "caixa", "c": [0, 0], "t": [70, 600], "n": 40, "olhar": "centro", "rotAncora": false }
+      ]
+    },
+    {
+      "id": "copacabana", "nome": "Praia de Copacabana", "chave": "copacabana", "categoria": "praia", "construtor": null, "orla": "copacabana",
+      "lat": -22.97569, "lon": -43.181, "w": 60, "d": 60, "h": 12, "capacidade": 60000, "ocupacaoPico": 0.55, "pico": [[10.5, 16]], "nota": 4.7, "fimDeSemana": 1.5,
+      "fonte": "OSM r5514745; Wikidata Q63894",
+      "historia": "Cerca de 4 km de areia entre o Leme e o Arpoador. O calçadão de pedra portuguesa em ondas pretas e brancas, desenho de Roberto Burle Marx, foi ampliado em 1970. Palco do Réveillon e de shows gratuitos que reúnem centenas de milhares de pessoas.",
+      "zonas": []
+    },
+    {
+      "id": "ipanema", "nome": "Praia de Ipanema", "chave": "ipanema", "categoria": "praia", "construtor": null, "orla": "ipanema",
+      "lat": -22.98731, "lon": -43.20507, "w": 60, "d": 60, "h": 12, "capacidade": 35000, "ocupacaoPico": 0.55, "pico": [[10.5, 16]], "nota": 4.7, "fimDeSemana": 1.5,
+      "fonte": "OSM w42364539; Wikidata Q3390838",
+      "historia": "Praia entre o Arpoador e o Leblon, com os Postos 8 a 10, o Arpoador (e sua pedra, ponto de pôr do sol aplaudido), o surfe na arrebentação e o futevôlei na areia.",
+      "zonas": []
+    },
+    {
+      "id": "aterro", "nome": "Aterro do Flamengo", "chave": "aterro", "categoria": "parque", "construtor": null,
+      "lat": -22.92737, "lon": -43.17292, "w": 80, "d": 80, "h": 10, "capacidade": 12000, "ocupacaoPico": 0.3, "pico": [[6, 9.5], [16, 19.5]], "nota": 4.6, "fimDeSemana": 2.0,
+      "fonte": "OSM r1124430; Wikidata Q5457206",
+      "historia": "Parque de cerca de 120 hectares inaugurado em 1965 sobre terreno ganho ao mar, com projeto de Affonso Eduardo Reidy e paisagismo de Roberto Burle Marx. Pista de corrida e ciclovia, campos de futebol e quadras de vôlei.",
+      "zonas": [
+        { "atividade": "correr", "forma": "caminho", "raio": 700, "tipos": [4, 1, 5], "n": 40 },
+        { "atividade": "bicicleta", "forma": "caminho", "raio": 700, "tipos": [4], "n": 24 },
+        { "atividade": "patins", "forma": "caminho", "raio": 700, "tipos": [4, 1], "n": 10 },
+        { "atividade": "caminhar", "forma": "caminho", "raio": 700, "tipos": [1, 4, 5], "n": 24 },
+        { "atividade": "piquenique", "forma": "gramado", "raio": 500, "n": 26 },
+        { "atividade": "cao", "forma": "caminho", "raio": 600, "tipos": [1, 4], "n": 12 }
+      ]
+    },
+    {
+      "id": "madureira", "nome": "Parque de Madureira", "chave": "madureira", "categoria": "parque", "construtor": null, "foraDoMapa": true,
+      "lat": -22.85767, "lon": -43.35149, "w": 80, "d": 80, "h": 10, "capacidade": 9000, "ocupacaoPico": 0.35, "pico": [[7, 10], [16, 19.5]], "nota": 4.5, "fimDeSemana": 2.0,
+      "fonte": "OSM r14120797; Wikidata Q10345493",
+      "historia": "Inaugurado em 2012 sob as linhas de transmissão, na Zona Norte, é um parque linear com pista de skate, ciclovia e quadras. Fica fora da área jogável atual (ver DECISIONS D-129: expansão do mapa para o noroeste).",
+      "zonas": []
+    },
+    {
+      "id": "tijuca", "nome": "Floresta da Tijuca", "chave": "tijuca", "categoria": "parque", "construtor": null,
+      "lat": -22.97037, "lon": -43.25788, "w": 40, "d": 40, "h": 10, "capacidade": 3000, "ocupacaoPico": 0.3, "pico": [[9, 14]], "nota": 4.8, "fimDeSemana": 1.4,
+      "fonte": "OSM r2185389 (floresta), n3270528601 (Mesa do Imperador); Wikidata Q14942956",
+      "historia": "Floresta replantada a partir de 1861 pelo major Archer, depois de os cafezais e a lenha esgotarem a mata original. Hoje é parte do Parque Nacional da Tijuca (~40 km²), uma das maiores florestas urbanas do mundo. O ponto marca a Mesa do Imperador (setor Vista Chinesa).",
+      "zonas": [
+        { "atividade": "trilha", "forma": "caminho", "raio": 900, "tipos": [2, 3], "n": 18 },
+        { "atividade": "foto", "forma": "anel", "r": [4, 14], "n": 12, "olhar": "fora" },
+        { "atividade": "sentar", "forma": "anel", "r": [8, 12], "arco": [0, 160], "n": 6, "olhar": "fora" },
+        { "atividade": "piquenique", "forma": "gramado", "raio": 120, "n": 8 }
+      ]
+    },
+    {
+      "id": "parque-lage", "nome": "Parque Lage", "chave": "parque-lage", "categoria": "parque", "construtor": null,
+      "lat": -22.96003, "lon": -43.21216, "w": 40, "d": 40, "h": 18, "capacidade": 1500, "ocupacaoPico": 0.4, "pico": [[9, 17]], "nota": 4.8, "fimDeSemana": 1.7,
+      "fonte": "OSM r14917255 (parque), r14917745 (palacete)",
+      "historia": "Parque ao pé do Corcovado, projetado por paisagista inglês no século XIX e sede, desde 1966, da Escola de Artes Visuais. O palacete de Henrique Lage, dos anos 1920, é o cenário de muitas fotos e do café no pátio.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [14, 32], "n": 14, "olhar": "centro" },
+        { "atividade": "caminhar", "forma": "caminho", "raio": 260, "tipos": [1, 2, 3], "n": 12 },
+        { "atividade": "piquenique", "forma": "gramado", "raio": 140, "n": 14 },
+        { "atividade": "sentar", "forma": "anel", "r": [10, 14], "n": 8, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "jardim-botanico", "nome": "Jardim Botânico", "chave": "jardim-botanico", "categoria": "parque", "construtor": null,
+      "lat": -22.96814, "lon": -43.22507, "w": 60, "d": 60, "h": 12, "capacidade": 4000, "ocupacaoPico": 0.35, "pico": [[9, 16]], "nota": 4.8, "fimDeSemana": 1.6,
+      "fonte": "OSM r14919209; Wikidata Q45242",
+      "historia": "Fundado em 1808 por Dom João VI, tem cerca de 54 hectares, a aleia de palmeiras-imperiais e milhares de espécies de plantas, de bromélias a vitórias-régias.",
+      "zonas": [
+        { "atividade": "caminhar", "forma": "caminho", "raio": 520, "tipos": [1, 2, 3, 5], "n": 28 },
+        { "atividade": "piquenique", "forma": "gramado", "raio": 300, "n": 18 },
+        { "atividade": "foto", "forma": "anel", "r": [10, 24], "n": 12, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [12, 16], "n": 8, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "quinta", "nome": "Quinta da Boa Vista", "chave": "quinta", "categoria": "parque", "construtor": null,
+      "lat": -22.90541, "lon": -43.22638, "w": 120, "d": 80, "h": 25, "capacidade": 8000, "ocupacaoPico": 0.3, "pico": [[10, 17]], "nota": 4.5, "fimDeSemana": 2.2,
+      "fonte": "OSM w64370351; Wikidata Q2500590",
+      "historia": "Antiga residência da família imperial, em São Cristóvão. O palácio abriga o Museu Nacional, e os jardins projetados por Auguste Glaziou, a lagoa e o zoológico atraem passeios de fim de semana.",
+      "zonas": [
+        { "atividade": "caminhar", "forma": "caminho", "raio": 520, "tipos": [1, 2, 3, 5], "n": 30 },
+        { "atividade": "correr", "forma": "caminho", "raio": 520, "tipos": [1, 3], "n": 16 },
+        { "atividade": "bicicleta", "forma": "caminho", "raio": 520, "tipos": [1, 4], "n": 10 },
+        { "atividade": "piquenique", "forma": "gramado", "raio": 320, "n": 36 },
+        { "atividade": "cao", "forma": "caminho", "raio": 520, "tipos": [1, 3], "n": 10 },
+        { "atividade": "foto", "forma": "anel", "r": [36, 60], "n": 12, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "roda-gigante", "nome": "Roda-gigante Rio Star", "chave": "roda-gigante", "categoria": "atracao", "construtor": "roda-gigante",
+      "lat": -22.89297, "lon": -43.19436, "w": 40, "d": 12, "h": 88, "capacidade": 300, "ocupacaoPico": 0.5, "pico": [[14, 22]], "nota": 4.4, "fimDeSemana": 1.6,
+      "fonte": "OSM w1050242513 (\"Yup Star\", altura 88 m); Wikidata Q72949268 (Rio Star)",
+      "historia": "Roda-gigante de 88 m no Porto Maravilha, com cabines fechadas e vista da Baía de Guanabara, do Centro e da Zona Portuária. Uma volta completa leva cerca de 15 minutos.",
+      "zonas": [
+        { "atividade": "fila", "forma": "linha", "a": [-8, 16], "b": [-8, 40], "n": 12, "olhar": 270 },
+        { "atividade": "fila", "forma": "linha", "a": [-4, 40], "b": [-4, 16], "n": 12, "olhar": 90 },
+        { "atividade": "foto", "forma": "anel", "r": [26, 44], "n": 10, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "catedral", "nome": "Catedral Metropolitana de São Sebastião", "chave": "Catedral de São Sebastião", "categoria": "religioso", "construtor": null,
+      "lat": -22.9108, "lon": -43.18069, "h": 96, "capacidade": 20000, "ocupacaoPico": 0.03, "pico": [[8, 18]], "nota": 4.4, "fimDeSemana": 0.8,
+      "fonte": "OSM w30621926; Wikidata Q2411716",
+      "historia": "Catedral de formato cônico, com cerca de 96 m de altura, projetada por Edgar Fonseca e inaugurada em 1979. Os vitrais de 64 m sobem pelas quatro faces.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [52, 70], "n": 10, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [50, 54], "n": 6, "olhar": "fora" }
+      ]
+    },
+    {
+      "id": "candelaria", "nome": "Igreja da Candelária", "chave": "Igreja de Nossa Senhora da Candelária", "categoria": "religioso", "construtor": "candelaria",
+      "lat": -22.90085, "lon": -43.17779, "w": 36, "d": 70, "h": 56, "capacidade": 1200, "ocupacaoPico": 0.2, "pico": [[8, 17]], "nota": 4.6, "fimDeSemana": 0.7,
+      "fonte": "OSM w30839484; Wikidata Q28679543",
+      "historia": "Igreja barroca com cúpula, construção iniciada em 1775 e concluída ao longo do século XIX, no início da Avenida Presidente Vargas. Seu interior tem mármores de Lisboa e telas sobre a história da imagem de Nossa Senhora da Candelária.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [30, 48], "n": 10, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [28, 32], "n": 6, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "theatro", "nome": "Theatro Municipal", "chave": "Theatro Municipal", "categoria": "cultural", "construtor": "theatro",
+      "lat": -22.90901, "lon": -43.17669, "w": 70, "d": 55, "h": 36, "capacidade": 1700, "ocupacaoPico": 0.25, "pico": [[14, 22]], "nota": 4.7, "fimDeSemana": 0.9,
+      "fonte": "OSM w107748847; Wikidata Q1968538",
+      "historia": "Inaugurado em 14 de julho de 1909, o teatro foi inspirado na Ópera Garnier de Paris. A cúpula, o salão de espelhos e o foyer decorado são cartões-postais da Cinelândia.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [42, 62], "n": 10, "olhar": "centro" },
+        { "atividade": "fila", "forma": "linha", "a": [-24, 40], "b": [24, 40], "n": 10, "olhar": 270 }
+      ]
+    },
+    {
+      "id": "biblioteca", "nome": "Biblioteca Nacional", "chave": "Biblioteca Nacional", "categoria": "cultural", "construtor": "biblioteca",
+      "lat": -22.9097, "lon": -43.17542, "w": 80, "d": 50, "h": 24, "capacidade": 900, "ocupacaoPico": 0.25, "pico": [[10, 17]], "nota": 4.7, "fimDeSemana": 0.6,
+      "fonte": "OSM w1229035013; Wikidata Q948882",
+      "historia": "O prédio neoclássico, de 1910, abriga um dos maiores acervos da América Latina, com mais de 9 milhões de itens (livros, manuscritos, mapas e fotografias).",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [40, 60], "n": 8, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [38, 42], "n": 6, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "museu-amanha", "nome": "Museu do Amanhã", "chave": "Museu do Amanhã", "categoria": "cultural", "construtor": null,
+      "lat": -22.89404, "lon": -43.17938, "h": 22, "capacidade": 1800, "ocupacaoPico": 0.4, "pico": [[11, 16]], "nota": 4.6, "fimDeSemana": 1.5,
+      "fonte": "OSM w372720167; Wikidata Q10333874",
+      "historia": "Projeto do arquiteto espanhol Santiago Calatrava, inaugurado em dezembro de 2015 no Píer da Praça Mauá, durante a revitalização da região portuária. Museu de ciências com foco em sustentabilidade.",
+      "zonas": [
+        { "atividade": "foto", "forma": "anel", "r": [45, 85], "n": 16, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [60, 64], "n": 8, "olhar": "fora" },
+        { "atividade": "caminhar", "forma": "caminho", "raio": 160, "tipos": [1, 5], "n": 12 }
+      ]
+    },
+    {
+      "id": "praca-maua", "nome": "Praça Mauá", "chave": "praca-maua", "categoria": "cultural", "construtor": null,
+      "lat": -22.89629, "lon": -43.18073, "w": 80, "d": 80, "h": 10, "capacidade": 2500, "ocupacaoPico": 0.3, "pico": [[11, 18]], "nota": 4.5, "fimDeSemana": 1.5,
+      "fonte": "OSM r5519348; Wikidata Q10353330",
+      "historia": "Praça do porto, onde chegam os navios de cruzeiro e termina o VLT. Cercada pelo MAR, pelo Museu do Amanhã e pelos armazéns revitalizados do Porto Maravilha.",
+      "zonas": [
+        { "atividade": "caminhar", "forma": "caminho", "raio": 220, "tipos": [1, 5], "n": 16 },
+        { "atividade": "foto", "forma": "anel", "r": [20, 46], "n": 10, "olhar": "centro" },
+        { "atividade": "sentar", "forma": "anel", "r": [16, 20], "n": 8, "olhar": "centro" }
+      ]
+    },
+    {
+      "id": "santos-dumont", "nome": "Aeroporto Santos Dumont", "chave": "santos-dumont", "categoria": "transporte", "construtor": null,
+      "lat": -22.9123, "lon": -43.16769, "w": 120, "d": 60, "h": 18, "capacidade": 5000, "ocupacaoPico": 0.45, "pico": [[6, 10], [16, 20]], "nota": 4.3, "fimDeSemana": 0.9,
+      "fonte": "OSM w383711861 (aeródromo), r20666854 (terminal); Wikidata Q865475",
+      "historia": "Aeroporto no Centro, junto à Baía de Guanabara, inaugurado em 1936 e conhecido pela ponte aérea Rio–São Paulo. A pista tem cerca de 1,3 km e os pousos sobrevoam o Pão de Açúcar.",
+      "zonas": [
+        { "atividade": "caminhar", "forma": "caminho", "raio": 180, "tipos": [1, 5], "n": 14 },
+        { "atividade": "fila", "forma": "linha", "a": [-40, 0], "b": [40, 0], "n": 26, "olhar": 270 }
+      ]
+    }
+  ],
+  "orla": {
+    "praias": {
+      "copacabana": {
+        "eixo": [[-22.9640, -43.1685], [-22.9757, -43.1810], [-22.9860, -43.1905]],
+        "quiosquesPorKm": 5, "postosPorKm": 3, "voleiPorKm": 5, "surfistasPorKm": 3, "ambulantesPorKm": 20, "barcos": 0
+      },
+      "ipanema": {
+        "eixo": [[-22.9880, -43.1930], [-22.9873, -43.2050], [-22.9879, -43.2215]],
+        "quiosquesPorKm": 5, "postosPorKm": 3, "voleiPorKm": 7, "surfistasPorKm": 8, "ambulantesPorKm": 20, "barcos": 0
+      }
+    },
+    "quiosques": {
+      "nomes": ["Bar e Quiosque Cantinho do Mar", "Bar e Quiosque Posto Seis", "Bar e Quiosque Mate Gelado", "Bar e Quiosque Água de Coco", "Bar e Quiosque Pé na Areia", "Bar e Quiosque Sol e Mar", "Bar e Quiosque Garota da Praia", "Bar e Quiosque Rei do Camarão", "Bar e Quiosque Brisa", "Bar e Quiosque Arpoador"]
+    },
+    "barcosFundeados": [
+      { "lat": -22.9475, "lon": -43.1695, "modelo": "boat-sail-a", "rot": 40 },
+      { "lat": -22.9460, "lon": -43.1725, "modelo": "boat-sail-b", "rot": 120 },
+      { "lat": -22.9440, "lon": -43.1760, "modelo": "boat-fishing-small", "rot": 200 },
+      { "lat": -22.9420, "lon": -43.1790, "modelo": "boat-sail-a", "rot": 75 },
+      { "lat": -22.9400, "lon": -43.1810, "modelo": "boat-sail-b", "rot": 300 },
+      { "lat": -22.9378, "lon": -43.1770, "modelo": "boat-speed-b", "rot": 15 },
+      { "lat": -22.9352, "lon": -43.1745, "modelo": "boat-sail-a", "rot": 250 },
+      { "lat": -22.9330, "lon": -43.1700, "modelo": "boat-fishing-small", "rot": 165 },
+      { "lat": -22.9305, "lon": -43.1665, "modelo": "boat-sail-b", "rot": 330 },
+      { "lat": -22.9490, "lon": -43.1650, "modelo": "boat-sail-a", "rot": 95 }
+    ]
+  },
+  "arranhaCeus": { "alturaMinM": 100, "luzBalizamento": true, "nota": "Altura vem do OpenStreetMap (height ou building:levels); balizamento vermelho piscante no topo, como na aviação civil." }
+}

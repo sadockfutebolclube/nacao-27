@@ -91,7 +91,9 @@ export const RASTER_INFORMAL = -3;
  * baixo (o lado de cima entra no morro, como num muro de arrimo) nos prédios reais do OSM, e os lotes gerados que passam do limite são descartados.
  */
 export const DESNIVEL_MAX = 3;
-export const estatLotes = { comMuroDeArrimo: 0, descartadosPorDesnivel: 0, comBaseMaciça: 0 };
+/** Fase 34: prédio real com mais de tanto desnível sob a planta não cabe nem com base maciça (a casa ficaria enterrada de um lado e no ar do outro): o lote é removido e contado */
+export const DESNIVEL_REMOVER = 8;
+export const estatLotes = { comMuroDeArrimo: 0, descartadosPorDesnivel: 0, comBaseMaciça: 0, removidosPorDesnivel: 0 };
 
 /** Altura (m) da base maciça sob o prédio: da cota da base até o ponto mais baixo do terreno sob a planta. */
 export function plintoDoLote(hm: Heightmap, x: number, z: number, angle: number, w: number, d: number, baseY: number): number {
@@ -100,7 +102,7 @@ export function plintoDoLote(hm: Heightmap, x: number, z: number, angle: number,
 
 export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], raster: Int32Array, informais: Footprint[] = [], fixos: (Footprint & { edge: number; ref: number })[] = []): LotGeom[] {
   raster.fill(0);
-  estatLotes.comMuroDeArrimo = 0; estatLotes.descartadosPorDesnivel = 0; estatLotes.comBaseMaciça = 0;
+  estatLotes.comMuroDeArrimo = 0; estatLotes.descartadosPorDesnivel = 0; estatLotes.comBaseMaciça = 0; estatLotes.removidosPorDesnivel = 0;
   rasterizeRoads(g, raster);
   for (const b of blockers) forRectCells(b, (idx) => { raster[idx] = -2; });
   for (const b of informais) forRectCells(b, (idx) => { if (raster[idx] === 0) raster[idx] = RASTER_INFORMAL; });
@@ -113,6 +115,7 @@ export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], 
     if (!total || livres < total * 0.6) continue;
     const hs = cornerHeights(hm, f);
     if (Math.min(...hs) < 0.3 && hs[4] < 0.6) continue;
+    if (Math.max(...hs) - Math.min(...hs) > DESNIVEL_REMOVER) { estatLotes.removidosPorDesnivel++; continue; }
     const id = lots.length + 1;
     forRectCells(f, (idx) => { if (raster[idx] === 0) raster[idx] = id; });
     const minR = Math.min(...hs), maxR = Math.max(...hs);

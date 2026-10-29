@@ -1,5 +1,59 @@
 # CHANGELOG
 
+## 1.23.0 — Fase 34: muros-tela, rotatórias partidas, discos no chão e casas em desnível extremo (29/10/2026)
+
+Pedido: o print da Estrada do Corcovado (Humaitá) com leques verdes, patamares soltos e "coisas por cima", e "todas as estradas, rotatórias, curvas, terrenos sobrepondo, túneis". **Não consegui reproduzir o leque verde do print** nem no build local nem no site publicado com a Fase 33 (prints do Pages conferidos); ele parece ser de uma versão anterior à Fase 33. O que seguia errado no mesmo trecho e em outros locais foi reproduzido com prints antes (`docs/auditoria-vias/antes-detalhes/`) e corrigido (`fase34-detalhes/`; os mesmos 24 lugares do detector em `fase34/` × `depois/`). Relatório: `docs/auditoria-vias/fase34.json`.
+
+### Causas e correções
+- **Muros de arrimo viravam "telas" no ar** (Corcovado, São Francisco Xavier, Vidigal): a altura da parede era até o relevo ORIGINAL, mas o terreno ao lado da pista já tinha sido escavado, então o muro (até 15 m, em patamares com faixas verdes cruzadas em X) ficava de pé sobre um terreno bem mais baixo. Agora vai até o relevo **renderizado** (`Vias.tsx`, laço do muro). Sobreposições de taludes/muros: 376 → 92; triângulos de muro e talude 6.163 → 3.581.
+- **Verga do portal de túnel**: mesma causa (até 16 m de laje sobre terreno escavado, "outdoor" sobre dois pilares). Agora até o relevo renderizado.
+- **Rotatórias partidas** (as 8 do OSM): o anel vinha em arcos soltos com vãos de grama e a ilha central tinha uma fatia coberta pelo morro. Agora há uma coroa de asfalto contínua (`anel()`, um fio abaixo do leito, que mantém a pintura) e a ilha acompanha a cota do anel. `tests/fase34.test.ts` exige ≥ 34 de 36 ângulos do anel cobertos em todas.
+- **Discos de cruzamento e faixas de pedestres usavam a cota do RELEVO**, não a da pista: em ponte, túnel e muro ficavam no chão (manchas pretas sob o viaduto, na boca do túnel), e em rampa de 40% o prato plano de 9 m cobria a pista de um lado. Agora o centro usa a cota do nó (`perfis`), a borda acompanha a amostra de pista mais próxima e pontas de rua (grau 1) não têm disco (viravam "barbatanas" no ar).
+- **Prédios reais em desnível extremo**: 9.179 prédios do OSM com mais de 8 m de desnível sob a planta **deixam de ser colocados** (`DESNIVEL_REMOVER` em `lots.ts`, contados em `estatLotes.removidosPorDesnivel`, de 152.698; os que têm 3 a 8 m seguem com base maciça). Eram as casas "em cunha", metade enterrada. É perda de dado real, decidida por mim a partir do pedido de "remover o lote e registrar quantos"; o limite é uma constante e a lista está no relatório.
+
+### Medido (mesmo detector; antes = código final da Fase 33)
+| categoria | antes | depois |
+|---|---|---|
+| lascas | 0 | 0 |
+| normais invertidas | 0 | 0 |
+| taludes sobrepostos | 376 | 92 |
+| vértices isolados | 4 | 1 |
+| queda lateral > 2,5 m (amostras) | 16.230 | 16.230 |
+| morro ao lado da pista > 0,8 m | 262 | 262 |
+| saltos de cota > 1,5 m em nós | 0 | 0 |
+| prédios inclinados | 0 | 0 |
+| prédios com desnível > 3 m sob a planta (o detector não conta os removidos) | 18.780 | 8.956 |
+| props fora da superfície | 281 | 281 |
+
+Tempo (detector): terreno 7053 → 4763 ms, malha das vias 1969 → 2152 ms (variação de máquina; nada novo no terreno).
+
+### FPS (`npm run medir-fps -- --sem-vsync`; `docs/medicoes/fase33.json` × `fase34.json`)
+| cena | fps Fase 33 | fps Fase 34 | quadro máx (ms) |
+|---|---|---|---|
+| Orla de Copacabana | 58.99 | 76.19 | 84.81 → 63.2 |
+| Centro (Cinelândia) | 53.44 | 72.57 | 97.9 → 64.56 |
+| Favela na encosta (Vidigal) | 59.63 | 79.61 | 95.19 → 84.22 |
+| Cruzamento com trânsito (Rio Branco × Presidente Vargas) | 53.22 | 77.54 | 99.99 → 63.12 |
+| Tour dos pontos turísticos (8 paradas de 7 s) | 52.47 | 70.62 | 294.44 → 257.86 |
+
+Triângulos e draw calls iguais (11,8–14,4 M; 511–828). Os fps subiram 20–35% entre duas rodadas do mesmo tipo de código: é **variação da máquina** (a linha de base de 28/10 tinha 15–27 fps nas mesmas cenas); o que dá para afirmar é que a fase não custa fps. Não há ganho a creditar.
+
+### O que NÃO foi resolvido
+- **Zig-zag da Estrada do Corcovado** (e outros grampos): o OSM tem trechos de 8–30 m e o regrade limita a 40% de rampa, então as pernas do grampo ficam empilhadas a 10–30 m de altura uma da outra, com pontes e túneis curtos de 9–18 m entre elas e muro/ponte/normal alternando no mesmo trecho. Está melhor (sem telas, sem discos no chão, portal certo), mas continua mais "amontoado" que a estrada real, que ganha altura com curvas mais longas.
+- **Queda lateral** (16.230 amostras) e **morro ao lado da pista** (262) iguais à Fase 33: grade de 10,67 m.
+- **Casas em encosta íngreme**: as que sobram entre 3 e 8 m de desnível ainda mostram o lado de baixo da base maciça; o terreno de 45–60° em volta (cortes e aterros das ruas) deixa a casa "enfiada" de um lado. Resolver pede plataforma própria por lote no relevo.
+- 2 cruzamentos sem nó em cotas diferentes e 9 pontas quase conectadas (dados do OSM). Braços de rotatória ainda podem ficar com uma fresta pequena junto ao anel.
+- Túneis: só a boca do túnel do Corcovado foi vista antes e depois; não revisei os demais túneis do Rio.
+- Piores locais restantes (`fase34.json`, 30 no total):
+1. São Francisco Xavier (-5387, -3902) — pontuação 146
+2. Praça da Bandeira (-2338, -4149) — pontuação 72
+3. Maracanã (-3140, -3781) — pontuação 68
+4. Ipanema (96, 3872) — pontuação 64
+5. São Cristóvão (-2147, -4943) — pontuação 62
+6. São Cristóvão (-2019, -5028) — pontuação 60
+7. Praça da Bandeira (-2063, -3819) — pontuação 58
+8. Praça da Bandeira (-1499, -3657) — pontuação 58
+
 ## 1.22.0 — Fase 33: defeitos das vias — aterro no relevo, malha saneada e detector (28/10/2026)
 
 Relatórios do detector antes e depois em `docs/auditoria-vias/antes.json` e `depois.json` (contagens por categoria + 30 piores locais com x, z e bairro), prints da mesma câmera dos 20 piores locais do ANTES, de Vidigal, Santa Teresa, do cruzamento "do print" (pior local do detector) e de um viaduto em `docs/auditoria-vias/antes/` e `depois/`. Reprodução: `node tools/rodar-ssr.mjs tools/detectar-defeitos-vias.ts --rotulo=depois` (`npm run detectar-defeitos`) e `tools/prints-auditoria.ts`.

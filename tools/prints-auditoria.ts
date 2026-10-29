@@ -16,6 +16,7 @@ const arg = (n: string, d: string) => process.argv.find((a) => a.startsWith(`--$
 const ROTULO = arg('rotulo', 'antes');
 const PORTA = Number(arg('porta', '4198'));
 const ROOT = process.cwd();
+const URL_REMOTA = arg('url', ''); // opcional: tira os prints de um site já publicado em vez do dist/ local
 const FONTE = arg('piores', 'antes'); // de qual relatório vêm os 20 piores (sempre o ANTES, para comparar o mesmo lugar)
 
 interface Local { id: string; nome: string; x: number; z: number; dist?: number; alt?: number }
@@ -23,7 +24,9 @@ const relatorio = JSON.parse(readFileSync(join(ROOT, `docs/auditoria-vias/${FONT
 const KX = 111_320 * Math.cos((22.945 * Math.PI) / 180), KZ = 110_574;
 const xz = (lat: number, lon: number): [number, number] => [(lon + 43.195) * KX, -(lat + 22.945) * KZ];
 const [stx, stz] = xz(-22.9225, -43.1870);
-const locais: Local[] = [
+// --local=id:x:z:dist:alt (vários separados por vírgula) tira só esses lugares
+const SO_LOCAIS: Local[] = arg('local', '').split(',').filter(Boolean).map((s) => { const [id, x, z, dist, alt] = s.split(':'); return { id, nome: id, x: Number(x), z: Number(z), dist: dist ? Number(dist) : undefined, alt: alt ? Number(alt) : undefined }; });
+const locais: Local[] = SO_LOCAIS.length ? SO_LOCAIS : [
   { id: 'fixo-vidigal', nome: 'Vidigal', x: -4006, z: 5254, dist: 110, alt: 90 },
   { id: 'fixo-santa-teresa', nome: 'Santa Teresa', x: stx, z: stz, dist: 120, alt: 90 },
   { id: 'fixo-cruzamento-do-print', nome: 'Cruzamento em encosta (pior local do detector)', x: relatorio.piores_30[0].x, z: relatorio.piores_30[0].z, dist: 60, alt: 50 },
@@ -34,16 +37,16 @@ const locais: Local[] = [
 async function esperar(url: string) { for (let i = 0; i < 150; i++) { try { if ((await fetch(url)).ok) return; } catch { /* subindo */ } await new Promise((r) => setTimeout(r, 400)); } throw new Error('servidor não subiu'); }
 
 async function main() {
-  if (!existsSync(join(ROOT, 'dist/index.html'))) throw new Error('faça `npm run build` antes');
-  const srv: ChildProcess = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORTA), '--strictPort'], { stdio: 'ignore' });
+  if (!URL_REMOTA && !existsSync(join(ROOT, 'dist/index.html'))) throw new Error('faça `npm run build` antes');
+  const srv: ChildProcess | null = URL_REMOTA ? null : spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORTA), '--strictPort'], { stdio: 'ignore' });
   try {
-    await esperar(`http://localhost:${PORTA}/`);
+    if (!URL_REMOTA) await esperar(`http://localhost:${PORTA}/`);
     const browser = await chromium.launch({ headless: false, channel: 'chrome', args: ['--ignore-gpu-blocklist', '--use-angle=d3d11', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
     await ctx.addInitScript('window.__name = function (f) { return f; };');
     await ctx.addInitScript(() => { try { localStorage.setItem('nacao27:prefs', JSON.stringify({ qualidade: 'alta', tutorial: false })); } catch { /* sem storage */ } });
     const page = await ctx.newPage();
-    await page.goto(`http://localhost:${PORTA}/?jogar&modo=sandbox&medir`, { waitUntil: 'load' });
+    await page.goto(`${URL_REMOTA || `http://localhost:${PORTA}/`}?jogar&modo=sandbox&medir`, { waitUntil: 'load' });
     await page.waitForFunction(() => !!(window as unknown as { __n27cam?: unknown }).__n27cam, undefined, { timeout: 240000, polling: 500 });
     await page.waitForTimeout(10000);
     await page.evaluate(() => { const t = (window as unknown as { __n27tur: { hora: (h: number) => void } }).__n27tur; t.hora(11); });
@@ -61,7 +64,7 @@ async function main() {
       console.log(`[prints] ${ROTULO} ${l.id} ${l.nome}`);
     }
     await browser.close();
-  } finally { srv.kill(); }
+  } finally { srv?.kill(); }
   void execFileSync;
 }
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -18,7 +18,7 @@ import { mundo } from '../src/sim/bridge.ts';
 import { grafoReal, lotesFixos, terrenoReal } from '../src/world/cidadeReal.ts';
 import * as lotsMod from '../src/world/lots.ts';
 const { computeLots } = lotsMod;
-const estatLotes = (lotsMod as unknown as { estatLotes?: { descartadosPorDesnivel: number; comMuroDeArrimo: number; comBaseMaciça: number } }).estatLotes ?? { descartadosPorDesnivel: 0, comMuroDeArrimo: 0, comBaseMaciça: 0 };
+const estatLotes = (lotsMod as unknown as { estatLotes?: { descartadosPorDesnivel: number; comMuroDeArrimo: number; comBaseMaciça: number; removidosPorDesnivel?: number } }).estatLotes ?? { descartadosPorDesnivel: 0, comMuroDeArrimo: 0, comBaseMaciça: 0 };
 import { RASTER_RES } from '../src/world/constants.ts';
 import { Classe } from '../src/world/regrade.ts';
 import { calcadaVia, larguraVia, nodeDegree } from '../src/world/roads.ts';
@@ -221,8 +221,9 @@ for (const n of noPos) {
 // Regra da Fase 33 (lots.ts): base na cota mais alta; com mais de DESNIVEL_MAX de desnível, base 3 m acima do ponto mais baixo (muro de arrimo) e o
 // que sobra do lado de cima fica dentro do morro. Medimos sobre TODOS os prédios reais do OSM (152 mil), com o terreno já escavado.
 const nPred = c.predios.length / CAMPOS_PREDIO;
+const REMOVER = (lotsMod as unknown as { DESNIVEL_REMOVER?: number }).DESNIVEL_REMOVER ?? Infinity; // Fase 34: prédio real acima disso é removido
 const REGRA_NOVA = typeof (lotsMod as unknown as { DESNIVEL_MAX?: number }).DESNIVEL_MAX === 'number';
-let desnivelBruto3 = 0, comMuro = 0, comBase = 0, terrenoGraus8 = 0;
+let removidosPorDesnivel = 0, desnivelBruto3 = 0, comMuro = 0, comBase = 0, terrenoGraus8 = 0;
 for (let i = 0; i < nPred; i++) {
   const p = predio(c, i);
   const cs = Math.cos(p.angle), sn = Math.sin(p.angle);
@@ -231,6 +232,7 @@ for (let i = 0; i < nPred; i++) {
   const mn = Math.min(...hs), mx = Math.max(...hs);
   if (Math.min(hs[0], hs[1], hs[2], hs[3]) < 0.3) continue; // no mar/praia: fora do critério
   const desn = mx - mn;
+  if (desn > REMOVER) { removidosPorDesnivel++; continue; } // o gerador de lotes não o coloca no mapa (contado, não escondido)
   const sx = ((hs[1] + hs[3]) - (hs[0] + hs[2])) / 2 / Math.max(1, p.w), sz = ((hs[2] + hs[3]) - (hs[0] + hs[1])) / 2 / Math.max(1, p.d);
   if ((Math.atan(Math.hypot(sx, sz)) * 180) / Math.PI > LIMITES.predioGraus) terrenoGraus8++;
   if (desn > LIMITES.predioDesnivel) desnivelBruto3++;
@@ -298,7 +300,7 @@ const relatorio = {
   rotulo: ROTULO, data: new Date().toISOString(),
   tempos_ms: { terreno: Math.round(msTerreno), malhaDasVias: Math.round(msMalha), total: Math.round(performance.now() - t00) },
   predios_regra: REGRA_NOVA ? 'nova (Fase 33): base na cota mais alta, até 3 m sobre o ponto mais baixo' : 'antiga: base na cota mais baixa',
-  predios_regra_nova: { desnivelBruto_maior3m: desnivelBruto3, comMuroDeArrimo: comMuro, comBaseMaciça: comBase, terrenoMaior8Graus: terrenoGraus8, lotesTotal: lotes.length, lotesGerados, lotesGeradosDescartadosPorDesnivel: estatLotes.descartadosPorDesnivel, lotesFixosComMuro: estatLotes.comMuroDeArrimo, lotesComBaseMaciça: estatLotes.comBaseMaciça },
+  predios_regra_nova: { desnivelBruto_maior3m: desnivelBruto3, comMuroDeArrimo: comMuro, comBaseMaciça: comBase, terrenoMaior8Graus: terrenoGraus8, lotesTotal: lotes.length, lotesGerados, lotesGeradosDescartadosPorDesnivel: estatLotes.descartadosPorDesnivel, lotesFixosComMuro: estatLotes.comMuroDeArrimo, lotesComBaseMaciça: estatLotes.comBaseMaciça, prediosReaisRemovidosPorDesnivel: estatLotes.removidosPorDesnivel ?? 0, desnivelParaRemover_m: Number.isFinite(REMOVER) ? REMOVER : null },
   universo: { trechos: perfis.size, secoesDeRuaVerificadas: secoes, triangulosDeTaludeEMuro: trianguloTalude, predios: nPred, props, nos: noPos.length, pontasDeGrau1 },
   limites: LIMITES,
   contagem: total,

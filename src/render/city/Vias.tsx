@@ -14,7 +14,7 @@ import * as THREE from 'three';
 import { mundo, useGame } from '../../sim/bridge';
 import { calcadaVia, larguraVia, type RoadEdge } from '../../world/roads';
 import { roadBaseY, sampleHeight, sampleWaterDist, type Heightmap } from '../../world/terrain';
-import { alturaOriginal, Classe, regradeDe } from '../../world/regrade';
+import { Classe, regradeDe } from '../../world/regrade';
 import { ambiente } from './ambiente';
 import { CICLO_SEM, eixoSemaforo, faseSemaforo } from '../../sim/trafego/semaforo';
 import { trafegoEstado } from '../../sim/trafegoEstado';
@@ -191,18 +191,29 @@ function meioFioCircular(b: Buffers, x: number, y: number, z: number, r: number,
   }
 }
 
-function disco(b: Buffers, x: number, y: number, z: number, r: number, seg = 20) {
+/** `yBorda` (opcional): cota do asfalto vizinho em (px, pz); o disco acompanha a pista em vez de ficar um prato plano (em rampa de 40% um prato de 9 m de raio cobria a pista de um lado). */
+function disco(b: Buffers, x: number, y: number, z: number, r: number, seg = 20, yBorda?: (px: number, pz: number) => number) {
   const base = b.pos.length / 3;
   // uv pelas coordenadas do mundo (6 m por repetição): o asfalto do cruzamento tem o mesmo grão e o mesmo tom do leito
   b.pos.push(x, y, z); b.nor.push(0, 1, 0); b.uv.push(x / 6, z / 6);
   for (let i = 0; i <= seg; i++) {
     const a = (i / seg) * Math.PI * 2;
     const px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r;
-    b.pos.push(px, y, pz);
+    b.pos.push(px, yBorda ? yBorda(px, pz) : y, pz);
     b.nor.push(0, 1, 0);
     b.uv.push(px / 6, pz / 6);
   }
   for (let i = 0; i < seg; i++) b.idx.push(base, base + 2 + i, base + 1 + i);
+}
+
+/** Coroa de asfalto entre os raios r0 e r1 (Fase 34: o anel da rotatória; o OSM o parte em trechos curtos e o recorte do cruzamento deixa vãos de grama). `yEm` dá a cota de cada ponto. */
+function anel(b: Buffers, x: number, z: number, r0: number, r1: number, seg: number, yEm: (px: number, pz: number) => number) {
+  const base = b.pos.length / 3;
+  for (let i = 0; i <= seg; i++) {
+    const a = (i / seg) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+    for (const r of [r0, r1]) { const px = x + c * r, pz = z + sn * r; b.pos.push(px, yEm(px, pz), pz); b.nor.push(0, 1, 0); b.uv.push(px / 6, pz / 6); }
+  }
+  for (let i = 0; i < seg; i++) { const I0 = base + 2 * i, O0 = I0 + 1, I1 = I0 + 2, O1 = I0 + 3; b.idx.push(I0, O1, O0, I0, I1, O1); }
 }
 
 function indiceDoCorte(p: Perfil, s: number, doFim: boolean): number {
@@ -330,7 +341,7 @@ export function construir(hm: Heightmap): MalhaVias {
     }
     // Fase 20/21: muro de arrimo onde o terreno original difere da rua em mais de 4 m — do lado do morro (corte) ou do vale
     // (aterro). Acima de 5 m vira patamares de até 5 m com banquetas de grama de 2 m (cada patamar recua 2 m); guarda-corpo
-    // no topo (corte) ou na borda da pista (aterro). A parede fica logo depois da calçada e vai até o relevo ORIGINAL.
+    // no topo (corte) ou na borda da pista (aterro). A parede fica logo depois da calçada e vai até o relevo renderizado (Fase 34).
     if (regrade && p.classe && !p.nivel) {
       type PontoMuro = { x: number; z: number; nx: number; nz: number; via: number; terr: number; s: number; corte: boolean };
       for (const lado of [-1, 1]) {
@@ -343,7 +354,7 @@ export function construir(hm: Heightmap): MalhaVias {
           if (p.classe[i] === Classe.Muro) {
             const nx = -p.tz[i] * lado, nz = p.tx[i] * lado; // para fora da pista
             const x = p.x[i] + nx * (hw + sw + 0.35), z = p.z[i] + nz * (hw + sw + 0.35);
-            const terr = alturaOriginal(regrade, hm, x, z), via = p.y[i] + 0.17;
+            const terr = sampleHeight(hm, x, z), via = p.y[i] + 0.17; // Fase 34: relevo RENDERIZADO (o original deixava o muro de pé, como tela, onde o terreno já foi escavado)
             if (terr > via + 0.6 && terr - via < 40) atual = { x, z, nx, nz, via, terr: terr + 0.25, s: p.s[i], corte: true };
             else if (terr < via - 0.6 && via - terr < 40) atual = { x, z, nx, nz, via, terr: terr - 0.3, s: p.s[i], corte: false };
           }
@@ -451,6 +462,26 @@ export function construir(hm: Heightmap): MalhaVias {
     }
   }
 
+  // Fase 34: cota da pista em cada nó e em cada ponto de uma faixa de pedestres, lida dos PERFIS (não do relevo): em ponte, túnel e muro o
+  // relevo não acompanha a pista, e o disco do cruzamento / a zebra ficavam no chão, sob o viaduto ou dentro da boca do túnel
+  const yDoNo = new Map<number, number>();
+  const perfisDoNo = new Map<number, Perfil[]>();
+  const amostrasDePista = new Map<string, number[]>();
+  for (const p of perfis.values()) {
+    yDoNo.set(p.edge.a, p.y[0]); yDoNo.set(p.edge.b, p.y[p.n - 1]);
+    for (const id of [p.edge.a, p.edge.b]) (perfisDoNo.get(id) ?? perfisDoNo.set(id, []).get(id)!).push(p);
+    for (let i = 0; i < p.n; i++) { const k = `${Math.floor(p.x[i] / 8)},${Math.floor(p.z[i] / 8)}`; (amostrasDePista.get(k) ?? amostrasDePista.set(k, []).get(k)!).push(p.x[i], p.y[i], p.z[i], p.nivel ?? 0); }
+  }
+  const yDaPista = (x: number, z: number): number => {
+    let melhor = 1e9, y = NaN;
+    const ci = Math.floor(x / 8), cj = Math.floor(z / 8);
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+      const a2 = amostrasDePista.get(`${ci + di},${cj + dj}`); if (!a2) continue;
+      for (let k = 0; k < a2.length; k += 4) { const d = Math.hypot(a2[k] - x, a2[k + 2] - z); if (d < melhor) { melhor = d; y = a2[k + 1]; } }
+    }
+    return melhor < 7 ? y : roadBaseY(hm, x, z) - 0.05;
+  };
+
   // cruzamentos e emendas (grau e larguras por nó num passe só: o Rio tem 15 mil trechos)
   const porNo = new Map<number, { grau: number; hw: number; sw: number }>();
   for (const e of g.edges.values()) for (const id of [e.a, e.b]) {
@@ -463,12 +494,21 @@ export function construir(hm: Heightmap): MalhaVias {
     const r = porNo.get(n.id);
     const grau = r?.grau ?? 0, hwMax = r?.hw ?? 0, swMax = r?.sw ?? 0;
     if (!grau) continue;
-    const y = roadBaseY(hm, n.x, n.z);
+    const y = yDoNo.get(n.id) ?? roadBaseY(hm, n.x, n.z) - 0.05;
     const { calc, cruz } = bloco(n.x, n.z);
     // Fase 19: cruzamento é só a caixa de asfalto rente ao leito (antes: disco de calçada elevado, que parecia
     // rotatória no meio de avenida reta). Rotatória de verdade vem do OSM (`junction=roundabout`), abaixo.
     void calc; void swMax;
-    disco(cruz, n.x, y + 0.03, n.z, grau >= 3 ? hwMax + 1.5 : hwMax, grau >= 3 ? 28 : 20);
+    if (grau < 2) continue; // ponta de rua: sem disco (o prato ficava no ar, como uma barbatana, sobre o morro que cai)
+    const raio = grau >= 3 ? hwMax + 1.5 : hwMax;
+    // borda na cota da amostra de pista mais próxima (dos trechos que chegam ao nó), um fio abaixo do leito
+    const ps = perfisDoNo.get(n.id) ?? [];
+    const yBorda = (px: number, pz: number) => {
+      let melhor = 1e9, yy = y;
+      for (const p of ps) for (let i = 0; i < p.n; i++) { const d = Math.hypot(p.x[i] - px, p.z[i] - pz); if (d < melhor) { melhor = d; yy = p.y[i]; } }
+      return (melhor < raio + 4 ? yy : y) - 0.06;
+    };
+    disco(cruz, n.x, y - 0.06, n.z, raio, grau >= 3 ? 28 : 20, yBorda);
   }
 
   // rotatórias validadas (anel fechado de 8–40 m do OSM): ilha central em calçada, na cota média do anel
@@ -483,9 +523,13 @@ export function construir(hm: Heightmap): MalhaVias {
       }
     }
     if (!cont) continue;
-    const { calc } = bloco(rx, rz);
+    const { calc, cruz } = bloco(rx, rz);
     const raioIlha = rr - hwAnel - 0.4;
-    if (raioIlha > 1.5) disco(calc, rx, soma / cont + 0.17, rz, raioIlha, 32);
+    // Fase 34: o anel inteiro em asfalto (um fio abaixo do leito, que continua por cima com a pintura) e a ilha acompanhando a cota do anel; antes o anel
+    // ficava em arcos soltos com vãos de grama, e a ilha tinha um pedaço coberto pelo morro de um lado
+    const yAnel = (px: number, pz: number) => yDaPista(px, pz);
+    anel(cruz, rx, rz, Math.max(0.5, raioIlha), rr + hwAnel, 48, (px, pz) => yAnel(px, pz) - 0.07);
+    if (raioIlha > 1.5) disco(calc, rx, soma / cont + 0.17, rz, raioIlha, 32, (px, pz) => yAnel(px, pz) + 0.17);
   }
 
   // semáforos nos cruzamentos marcados e faixas de pedestre (nas esquinas e no meio das quadras)
@@ -523,7 +567,7 @@ export function construir(hm: Heightmap): MalhaVias {
   const ped = mundo.real?.vias.faixasPed ?? [];
   for (let k = 0; k + 2 < ped.length; k += 3) {
     const x = ped[k], z = ped[k + 1], ang = ped[k + 2] / 1000;
-    const y = roadBaseY(hm, x, z);
+    const y = yDaPista(x, z);
     q.setFromAxisAngle(eixoY, ang);
     m.compose(pos.set(x, y + 0.045, z), q, sc.set(8, 1, 3.2));
     bloco(x, z).zebras.push(m.clone());
@@ -551,7 +595,6 @@ export function construir(hm: Heightmap): MalhaVias {
     corridas.set(p.edge.id, cs);
     for (const [x, y] of cs) { if (x === 0) tunelNo.set(p.edge.a, (tunelNo.get(p.edge.a) ?? 0) + 1); if (y === p.n - 1) tunelNo.set(p.edge.b, (tunelNo.get(p.edge.b) ?? 0) + 1); }
   }
-  const regradePortal = regradeDe(hm.h);
   for (const [id, cs] of corridas) {
     const p = perfis.get(id)!;
     for (const [x0, x1] of cs) for (const fim of [0, 1]) {
@@ -567,7 +610,7 @@ export function construir(hm: Heightmap): MalhaVias {
       const ox = tx / tl, oz = tz / tl;
       void sg;
       const larg = larguraVia(p.edge) + 1.6;
-      const topo = (regradePortal ? alturaOriginal(regradePortal, hm, p.x[i] + ox * 2, p.z[i] + oz * 2) : sampleHeight(hm, p.x[i], p.z[i])) + 0.4;
+      const topo = sampleHeight(hm, p.x[i] + ox * 2, p.z[i] + oz * 2) + 0.4; // Fase 34: relevo renderizado (com o original a verga ficava de pé, como tela, sobre o terreno escavado)
       const alto = Math.max(5.6, Math.min(topo - p.y[i], 16));
       q.setFromAxisAngle(eixoY, Math.atan2(ox, oz));
       const dir = new THREE.Vector3(oz, 0, -ox); // à direita de quem sai

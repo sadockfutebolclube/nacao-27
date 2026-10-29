@@ -14,6 +14,7 @@ import { TURISMO } from '../../world/turismo';
 import { projetar } from '../../world/cidadeReal';
 import { carregarModelo } from '../modelos/carregar';
 import { carregarProp, Prop } from '../modelos/props';
+import { MEDIR } from '../../dev/medir';
 import { ambiente } from './ambiente';
 import { dadosDaOrla, type AmostraCosta } from './orlaDados';
 import { estadoPraia, lotacaoPraia, SOIS } from './Praia';
@@ -82,7 +83,7 @@ export function Orla({ hm }: { hm: Heightmap }) {
   const { camera } = useThree();
   const real = mundo.real;
   const dados = useMemo(() => (real ? dadosDaOrla(hm, real) : null), [hm, real]);
-  if (import.meta.env.DEV && dados) (window as unknown as { __n27orla: unknown }).__n27orla = dados;
+  if (MEDIR && dados) (window as unknown as { __n27orla: unknown }).__n27orla = dados;
   const [props, setProps] = useState<{ sol: Prop; cad: Prop; prancha: Prop; quiosque: Prop } | null>(null);
   const [barcos, setBarcos] = useState<{ prop: Prop; itens: { x: number; z: number; rot: number }[] }[]>([]);
 

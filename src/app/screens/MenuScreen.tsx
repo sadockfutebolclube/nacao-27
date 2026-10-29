@@ -83,7 +83,7 @@ export function MenuScreen() {
 
         <div className="mt-6 text-[11px] text-suave/70 leading-relaxed max-w-sm">
           Dados reais: IBGE, SICONFI/Tesouro, INEP, SNIS, FBSP, TSE; cidade do OpenStreetMap (© colaboradores do OSM).<br />
-          Personagens e grupos são fictícios. v1.3 · Fase 13
+          Personagens e grupos são fictícios. v{__APP_VERSAO__} · {__APP_FASE__}
         </div>
       </div>
 

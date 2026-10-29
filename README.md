@@ -4,7 +4,32 @@
 
 City-builder e simulador de governo no navegador, **focado no Rio de Janeiro** (desde a Fase 13): você governa o estado do RJ a partir da capital real — ruas, prédios e relevo do OpenStreetMap, orçamento real do SICONFI, Alerj, eleição e a cidade que cresce por demanda.
 
-**Estado atual: Fases 0 a 3 jogáveis** (pesquisa + dados reais, mapa 3D do Brasil e seleção, fatia vertical do city-builder, orçamento estadual real com LRF, mínimos e ciclo PPA/LDO/LOA). Ver [CHANGELOG.md](CHANGELOG.md).
+**Jogar agora:** https://sadockfutebolclube.github.io/nacao-27/ (build do `main`; a versão e a fase aparecem no rodapé do menu).
+
+## Status (v1.20.1 · Fase 31)
+
+Todas as fases abaixo estão jogáveis; o detalhe de cada uma está no [CHANGELOG.md](CHANGELOG.md) e as decisões em [DECISIONS.md](DECISIONS.md).
+
+| Fases | O que entrou |
+|---|---|
+| 0–3 | Pesquisa e dados reais, mapa 3D do Brasil, fatia vertical do city-builder, orçamento estadual real (SICONFI, LRF, mínimos, ciclo PPA/LDO/LOA) |
+| 4–5 | Serviços, segurança, transporte e favelas; política, personagens (11 secretários, Assembleia) e dados sociais reais |
+| 6–8 | Eventos, clima real, festas; eleição e fim de mandato; os 27 estados, trilha sonora e arquitetura regional |
+| 9–10 | Modo Presidente e nuvem (o Modo Presidente saiu na Fase 13); polimento, opções e conquistas |
+| 11–13 | Cidades reais do OpenStreetMap, visual realista (PBR, HDRI, Vista Google 3D opcional) e **foco só no Rio de Janeiro** |
+| 14–16 | Ruas fiéis, relevo e mar reais (Copernicus DEM), marcos, frota carioca, gente na praia |
+| 17–18 | Ônibus reais (GTFS) e Censo 2022; metrô, SuperVia, VLT, bonde, Corcovado |
+| 19–21 | Auditoria do relevo e das ruas, encostas (regrade, muros, pontes, túneis), o chão em 4 camadas, trilhos e luz com sombras em cascata |
+| 22–25 | Simulação em orçamento de tempo (geração do Rio em 22 s), pedestres dirigidos por dados, seleção por clique e fichas das entidades |
+| 26–28 | Facções, instituições e despacho de ocorrências; veículos especiais (ar, mar, emergência) com modelos reais; São Januário e rua de morro |
+| 29–31 | Tráfego microscópico no Worker (IDM, MOBIL), veículos reais e pessoas animadas na GPU, pontos turísticos com visitantes, orla e tour de câmera |
+
+### O que ainda não existe
+- **Mapa limitado a 12 × 12 km** (Centro, Zona Sul, Tijuca, Maracanã): Madureira, Méier, Penha, Ilha do Governador e o Galeão estão fora (expansão para o noroeste planejada, DECISIONS D-129). O Parque de Madureira e o miolo da Floresta da Tijuca só existem como ficha.
+- **Fase 30 incompleta**: prédios e casas (atlas de fachada, `roof:shape`, comunidades), pós-processamento (3–4 cascatas, bloom seletivo, GTAO), água (Fresnel e espuma), vegetação com vento e LOD da Tijuca, crianças, idosos e mulheres, bicicleta no trânsito.
+- **Fase 31**: Maracanã com a cobertura real, passageiros animados na roda-gigante, cachorro andando; a Candelária, o Theatro Municipal e a Biblioteca Nacional são representações simplificadas (sem interior).
+- **Sem multijogador** e sem Modo Presidente (removido na Fase 13). A nuvem (Supabase) é opcional e só guarda saves.
+- **Desempenho**: a linha de base de fps está em `docs/medicoes/` (ver "Medição"); em Copacabana e na encosta o jogo roda abaixo de 30 fps numa RTX 3060 com qualidade alta. Ainda não há orçamento de frame por cena.
 
 ## Como rodar
 
@@ -26,14 +51,26 @@ Outros comandos:
 |---|---|
 | `npm test` | Testes da simulação (Vitest): orçamento fecha todo mês, 20 anos sem NaN, save/load determinístico, grafo viário |
 | `npm run typecheck` | TypeScript estrito |
+| `npm run converter-modelos` | Converte os modelos baixados (`data/cache/modelos-origem/`) em GLB compacto em `assets/models/` |
 | `npm run build` | Build estático em `dist/` (GitHub Pages / Vercel) |
 | `npm run fetch-data` | Baixa de novo os dados do IBGE para `public/data/` (já vêm empacotados; o jogo não usa internet em runtime) |
 | `npm run fetch-fiscal` | Baixa RREO/RGF de 2024 das 27 UFs no SICONFI (Tesouro Nacional) para `public/data/fiscal/` |
 | `npm run fetch-clima` | Baixa as normais climatológicas 1991–2020 das 27 capitais (ERA5 via Open-Meteo) para `public/data/clima/` |
 | `npm run fetch-eleitorado` | Baixa o perfil do eleitorado 2022 do TSE (77 MB, em cache) e gera o eleitorado por município em `public/data/eleitorado/` |
+| `npm run medir-fps` | **Mede o fps no navegador de verdade** (Playwright + Chrome com GPU, janela visível): 5 cenas fixas, grava `docs/medicoes/AAAA-MM-DD.json`. Ver "Medição" |
+| `npm run medir-simulacao` | Mede o passo da simulação por fase (Node, sem navegador): `-- --dias=60 --orcamento=4` |
+| `npm run auditar-mapa` | Auditoria do relevo e das ruas (morro sobre asfalto, rampas, vãos, espetos) |
 | `npm run fetch-social` | Baixa mortalidade infantil, leitos SUS (DATASUS/TabNet) e desemprego, extrema pobreza e Gini (PNAD/SIDRA) para `public/data/social/` |
 
 > Os scripts chamam `node node_modules/...` diretamente porque a pasta do projeto tem `&` e parênteses no caminho, o que quebra os atalhos `.cmd` do npm no Windows.
+
+## Publicação (GitHub Pages)
+
+O workflow [.github/workflows/pages.yml](.github/workflows/pages.yml) compila (`vite build`) e publica `dist/` a cada push no `main`. O menu mostra a versão e a fase lidas do primeiro título do CHANGELOG (`vite.config.ts`), então o texto nunca fica para trás do código. O jogo roda sem servidor próprio: dados do Rio em `public/data/`.
+
+## Medição de desempenho
+
+`npm run medir-fps` abre o Chrome com GPU (ANGLE/D3D11), visível, e mede 5 cenas fixas (orla de Copacabana, Centro, favela na encosta, cruzamento com trânsito e o tour dos pontos turísticos): fps médio, p1/p50/p99/máximo do tempo de quadro, draw calls e triângulos por quadro. Opções: `--sem-vsync` (tira o teto de 60 fps), `--qualidade=alta|media|baixa`, `--seg=12`, `--canal=chrome|msedge|chromium`, `--build`. As fases seguintes comparam com a linha de base em `docs/medicoes/`. O painel de desempenho embutido do Claude não serve para isso (fica estrangulado em segundo plano).
 
 ## Controles
 
@@ -52,6 +89,12 @@ Outros comandos:
 | Palácio do Governo | G (ou botão Governo) |
 | Linha de transporte | clique = parada · Enter ou duplo clique conclui · Backspace desfaz |
 | Inspecionar favela | clique numa casa sem ferramenta |
+| Ficha de qualquer entidade (pessoa, carro, ônibus, casa, prédio, loja, ponto turístico) | clique sem ferramenta · duplo clique segue · "Travar câmera" prende · Esc fecha |
+| **Camada de território e facções** (Milícia, CV, ADA, TCP; painel de facções e ocorrências) | **T** |
+| **Tour automático dos pontos turísticos** (8 paradas de 7 s) | **Shift + T** (Esc, W/A/S/D ou o mouse encerram) |
+| Depuração do mapa: wireframe, normais, problemas das vias, pedestres | **F3** (F3 de novo: normais · de novo: desliga) |
+| Desempenho: passo da simulação, orçamento, fila e custo por fase | **F4** |
+| Opções (qualidade gráfica, acessibilidade, som) | Esc ou botão no menu |
 
 ## Como jogar (fatia atual)
 
@@ -154,13 +197,16 @@ src/data      esquemas zod, carregamento, nomes
 src/save      IndexedDB + arquivo .nacao
 data/ufs      traits.json (27 UFs) e indicadores curados — editáveis/modáveis
 scripts       fetch-data.ts (IBGE)
-tests         Vitest
+src/dev         ganchos de medição e páginas de desenvolvimento (galerias de modelos e poses)
+assets/models   modelos 3D (GLB) e assets/CREDITS.md
+docs            prints, medições (docs/medicoes) e comparações de modelos
+tests           Vitest
 ```
 
 Documentação: [RESEARCH.md](RESEARCH.md) · [DECISIONS.md](DECISIONS.md) · [SIMULATION.md](SIMULATION.md) · [ASSETS_LICENSES.md](ASSETS_LICENSES.md)
 
 Personagens, grupos e logradouros são fictícios ou genéricos. Tom: sátira aos vícios da política em geral, sem partidarismo.
 
-**Depuração:** F3 mapa (vias, relevo; slider de densidade de pedestres, dia da semana e mapa de calor); F4 desempenho (passo da simulação, orçamento, fila e custo por fase). `npm run medir-simulacao` mede a simulação.
+**Depuração:** (ver Controles) F3 mapa (vias, relevo; slider de densidade de pedestres, dia da semana e mapa de calor); F4 desempenho (passo da simulação, orçamento, fila e custo por fase). `npm run medir-simulacao` mede a simulação.
 
 **Seleção:** clique em pessoa, carro, ônibus, casa, prédio, estabelecimento ou ponto turístico abre a ficha; duplo clique segue; "Travar câmera" prende a câmera; Esc fecha.

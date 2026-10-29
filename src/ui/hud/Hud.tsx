@@ -183,7 +183,7 @@ function BarraFerramentas() {
       if (mapa[e.key.toLowerCase()]) setGrupo((x) => (x === mapa[e.key.toLowerCase()] ? null : mapa[e.key.toLowerCase()]));
       if (e.key.toLowerCase() === 'b') set({ ferramenta: { tipo: 'demolir' } });
       // T: liga/desliga o mapa de territórios das facções (e o painel de facções e instituições)
-      if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) { const c = useGame.getState().camada; set({ camada: c === 'territorio' ? 'nenhuma' : 'territorio' }); }
+      if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { const c = useGame.getState().camada; set({ camada: c === 'territorio' ? 'nenhuma' : 'territorio' }); }
       if (e.key === '[') set({ raioPincel: Math.max(12, useGame.getState().raioPincel - 6) });
       if (e.key === ']') set({ raioPincel: Math.min(140, useGame.getState().raioPincel + 6) });
       if (e.key === 'Escape') setGrupo(null);

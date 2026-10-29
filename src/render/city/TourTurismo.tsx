@@ -1,5 +1,5 @@
 /**
- * Tour automático de câmera pelos pontos turísticos (Fase 31): tecla T (ou `window.__n27tur.tour()` no dev) leva a câmera por 8 pontos,
+ * Tour automático de câmera pelos pontos turísticos (Fase 31): Shift+T (a tecla T sozinha é a camada de facções; ou `window.__n27tur.tour()` no dev) leva a câmera por 8 pontos,
  * 7 s em cada, girando devagar em volta do ponto. Em cada parada o contexto do turismo é travado num horário que mostra o ponto
  * em uso (praia ao meio-dia de sábado, jogo no Maracanã no domingo às 15h…); Esc, W/A/S/D ou o mouse encerram e destravam.
  */
@@ -43,7 +43,7 @@ export function TourTurismo({ hm }: { hm: Heightmap }) {
     const tecla = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       const k = e.key.toLowerCase();
-      if (k === 't' && !est.current.ativo) ligar();
+      if (k === 't' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && !est.current.ativo) ligar();
       else if (est.current.ativo && ['escape', 'w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) parar();
     };
     window.addEventListener('keydown', tecla);

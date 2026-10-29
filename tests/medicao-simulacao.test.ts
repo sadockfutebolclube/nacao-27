@@ -83,6 +83,8 @@ describe.skipIf(!process.env.MEDIR)('medição da simulação do Rio', () => {
       /** relógio máximo sustentável: 1× = 1 dia a cada 2 s; acima disso a fila cresce e dias são engolidos */
       velocidadeMaxima: +(2000 / cpuPorDia).toFixed(1),
       diasPulados: sim.diasPulados,
+      /** passos acima de 16 ms (o quadro de 60 fps), por fase em andamento: quantos e o pior */
+      acima16ms: (() => { const o: Record<string, { n: number; pior: number }> = {}; fatias.forEach((ms, i) => { if (ms > 16) { const e = (o[rotulos[i]] ??= { n: 0, pior: 0 }); e.n++; e.pior = Math.max(e.pior, +ms.toFixed(1)); } }); return o; })(),
       pioresQuadros: fatias.map((ms, i) => ({ ms: +ms.toFixed(1), fase: rotulos[i], dia: dias[i] })).sort((a, b) => b.ms - a.ms).slice(0, 8),
       fases: Object.fromEntries([...tempos].map(([k, v]) => [k, estat(v)]).sort((a, b) => (b[1] as { media: number }).media * (b[1] as { n: number }).n - (a[1] as { media: number }).media * (a[1] as { n: number }).n)),
     };

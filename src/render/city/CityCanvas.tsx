@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { useApp } from '../../app/store';
 import { DPR, useAutoQualidade, useNivel } from '../qualidade';
+import { MEDIR } from '../../dev/medir';
 import { Bloom, EffectComposer, N8AO, SMAA, TiltShift2, ToneMapping, Vignette, HueSaturation } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { Suspense, useRef } from 'react';
@@ -112,7 +113,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance', logarithmicDepthBuffer: false }}
       onCreated={(estado) => {
         // gancho de depuração só em desenvolvimento
-        if (import.meta.env.DEV) (window as unknown as { __n27: unknown }).__n27 = estado;
+        if (MEDIR) (window as unknown as { __n27: unknown }).__n27 = estado;
       }}
     >
       <Suspense fallback={null}>

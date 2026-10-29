@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { MapControls as MapControlsImpl } from 'three-stdlib';
 import { enviarFoco, useGame } from '../../sim/bridge';
+import { MEDIR } from '../../dev/medir';
 import { registro } from '../../entidades/registro';
 import { selecao } from '../../entidades/selecao';
 import { BUILD_HALF } from '../../world/constants';
@@ -49,7 +50,7 @@ export function CameraRig({ hm, inicio }: { hm: Heightmap; inicio: [number, numb
   useEffect(() => {
     controlsRef = ref.current;
     // gancho de depuração só em desenvolvimento (screenshots com câmera posicionada)
-    if (import.meta.env.DEV) (window as unknown as { __n27cam: unknown }).__n27cam = ref.current;
+    if (MEDIR) (window as unknown as { __n27cam: unknown }).__n27cam = ref.current;
     const down = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       teclas.current.add(e.key.toLowerCase());

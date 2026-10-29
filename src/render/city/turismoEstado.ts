@@ -4,6 +4,7 @@
  * `window.__n27tur.forcar = { hora, diaSemana, mes, chuva }` trava o contexto (dia de jogo, desfile, praia cheia) para tirar prints.
  */
 import { useGame } from '../../sim/bridge';
+import { MEDIR } from '../../dev/medir';
 import { projetar } from '../../world/cidadeReal';
 import type { Contexto, PontoTuristico } from '../../world/turismo';
 import { ambiente } from './ambiente';
@@ -21,7 +22,7 @@ export const turismoDebug: { hora: (h: number | null) => void;  ms: { visitantes
   tour: () => {}, tourParar: () => {}, tourIr: () => {}, tourAtivo: false, tourParada: '',
   forcar: null, visitantesDesenhados: 0, propsDesenhados: 0, pontosAtivos: [],
 };
-if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __n27tur: typeof turismoDebug }).__n27tur = turismoDebug;
+if (MEDIR && typeof window !== 'undefined') (window as unknown as { __n27tur: typeof turismoDebug }).__n27tur = turismoDebug;
 
 export function contextoTurismo(): Contexto {
   const st = useGame.getState().stats;

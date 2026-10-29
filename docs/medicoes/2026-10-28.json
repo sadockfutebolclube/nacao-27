@@ -1,0 +1,192 @@
+{
+  "data": "2026-10-29T01:49:37.750Z",
+  "versao": "1.20.1",
+  "commit": "ab1e288",
+  "build": "dist/ (vite preview)",
+  "qualidade": "alta",
+  "parametros": {
+    "segundosPorCena": 12,
+    "aquecimentoS": 5,
+    "semVsync": true,
+    "janela": "visível, 1600x900"
+  },
+  "maquina": {
+    "so": "win32 10.0.26300",
+    "cpu": "AMD Ryzen 7 5700G with Radeon Graphics         ",
+    "nucleos": 16,
+    "ramGB": 31,
+    "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x000024C7) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "tela": "1600x900@1",
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+    "chromium": "156.0.8078.48"
+  },
+  "cenas": [
+    {
+      "id": "orla-copacabana",
+      "nome": "Orla de Copacabana",
+      "quadros": 221,
+      "fps_medio": 17.11,
+      "frame_ms": {
+        "media": 58.43,
+        "p1": 1.52,
+        "p50": 27.38,
+        "p99": 964.27,
+        "max": 2284.21
+      },
+      "fps_p1_pior": 1.04,
+      "draw_calls": 650,
+      "triangulos": 14011541
+    },
+    {
+      "id": "centro",
+      "nome": "Centro (Cinelândia)",
+      "quadros": 326,
+      "fps_medio": 27.1,
+      "frame_ms": {
+        "media": 36.9,
+        "p1": 16.65,
+        "p50": 29.68,
+        "p99": 191.57,
+        "max": 237.63
+      },
+      "fps_p1_pior": 5.22,
+      "draw_calls": 848,
+      "triangulos": 13633383
+    },
+    {
+      "id": "favela-encosta",
+      "nome": "Favela na encosta (Vidigal)",
+      "quadros": 189,
+      "fps_medio": 15.24,
+      "frame_ms": {
+        "media": 65.63,
+        "p1": 17.19,
+        "p50": 27.63,
+        "p99": 860.13,
+        "max": 2401.71
+      },
+      "fps_p1_pior": 1.16,
+      "draw_calls": 533,
+      "triangulos": 11291266
+    },
+    {
+      "id": "cruzamento-transito",
+      "nome": "Cruzamento com trânsito (Rio Branco × Presidente Vargas)",
+      "quadros": 616,
+      "fps_medio": 51.06,
+      "frame_ms": {
+        "media": 19.58,
+        "p1": 0.36,
+        "p50": 18.66,
+        "p99": 36.11,
+        "max": 300.03
+      },
+      "fps_p1_pior": 27.69,
+      "draw_calls": 686,
+      "triangulos": 13525359
+    },
+    {
+      "id": "tour-turismo",
+      "nome": "Tour dos pontos turísticos (8 paradas de 7 s)",
+      "quadros": 880,
+      "fps_medio": 16.44,
+      "frame_ms": {
+        "media": 60.84,
+        "p1": 16.67,
+        "p50": 35.3,
+        "p99": 640.74,
+        "max": 3566.58
+      },
+      "fps_p1_pior": 1.56,
+      "draw_calls": 669,
+      "triangulos": 12524172,
+      "paradas": {
+        "Cristo Redentor": {
+          "quadros": 119,
+          "fps_medio": 15.43,
+          "frame_ms": {
+            "media": 64.8,
+            "p1": 1.4,
+            "p50": 35.07,
+            "p99": 640.74,
+            "max": 1984.96
+          },
+          "fps_p1_pior": 1.56,
+          "draw_calls": 801,
+          "triangulos": 11507865
+        },
+        "Pão de Açúcar e bondinho": {
+          "quadros": 164,
+          "fps_medio": 10.49,
+          "frame_ms": {
+            "media": 95.33,
+            "p1": 18.23,
+            "p50": 36.89,
+            "p99": 1301.97,
+            "max": 1396.98
+          },
+          "fps_p1_pior": 0.77,
+          "draw_calls": 513,
+          "triangulos": 10480839
+        },
+        "Maracanã em dia de jogo": {
+          "quadros": 171,
+          "fps_medio": 17.45,
+          "frame_ms": {
+            "media": 57.3,
+            "p1": 18.39,
+            "p50": 35.15,
+            "p99": 406.38,
+            "max": 1405.81
+          },
+          "fps_p1_pior": 2.46,
+          "draw_calls": 665,
+          "triangulos": 13728814
+        },
+        "Praia de Copacabana": {
+          "quadros": 200,
+          "fps_medio": 17.52,
+          "frame_ms": {
+            "media": 57.08,
+            "p1": 16.73,
+            "p50": 32.21,
+            "p99": 356.1,
+            "max": 3566.58
+          },
+          "fps_p1_pior": 2.81,
+          "draw_calls": 720,
+          "triangulos": 13553829
+        },
+        "Arcos da Lapa e bonde": {
+          "quadros": 189,
+          "fps_medio": 27,
+          "frame_ms": {
+            "media": 37.03,
+            "p1": 16.82,
+            "p50": 36.13,
+            "p99": 61.54,
+            "max": 64.43
+          },
+          "fps_p1_pior": 16.25,
+          "draw_calls": 670,
+          "triangulos": 12603049
+        },
+        "Roda-gigante Rio Star": {
+          "quadros": 37,
+          "fps_medio": 18.66,
+          "frame_ms": {
+            "media": 53.59,
+            "p1": 18.6,
+            "p50": 44.78,
+            "p99": 271.72,
+            "max": 271.72
+          },
+          "fps_p1_pior": 3.68,
+          "draw_calls": 681,
+          "triangulos": 13313739
+        }
+      }
+    }
+  ],
+  "erros_na_pagina": []
+}

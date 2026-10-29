@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## 1.20.1 — Fase 31: publicação, README e medição de fps (28/10/2026)
+
+### Por que o menu do site mostrava "v1.3 · Fase 13"
+- **O deploy não estava defasado.** O workflow (`.github/workflows/pages.yml`, branch `main`, `base: './'`) rodou com sucesso e o bundle publicado já contém a Fase 31 (Rio Star, Theatro Municipal, `roda-gigante`). A causa era o texto **"v1.3 · Fase 13" escrito à mão** em `MenuScreen.tsx` desde a Fase 13.
+- Correção: `vite.config.ts` lê o primeiro título do CHANGELOG e injeta `__APP_VERSAO__` e `__APP_FASE__`; o menu mostra "v${versão} · ${fase}". `tests/versao.test.ts` garante que o CHANGELOG e o `package.json` têm a mesma versão e que não volta texto escrito à mão.
+- **A tecla T colidia**: já era a camada de território e facções (`Hud.tsx`) e, desde a Fase 31, também iniciava o tour. Agora **T = facções** e **Shift+T = tour**.
+
+### Medição de fps confiável (`npm run medir-fps`)
+- `scripts/medir-fps.ts`: Playwright com o **Chrome instalado** (ANGLE/D3D11, janela visível, sem limitação de segundo plano, `--sem-vsync` opcional) mede o **build de produção** (`vite preview`) em 5 cenas fixas e grava `docs/medicoes/AAAA-MM-DD.json` + um print por cena. Os ganchos `window.__n27*` passaram a existir em produção com `?medir` na URL (`src/dev/medir.ts`). O Chromium baixado pelo Playwright foi bloqueado ao executar neste ambiente ("Permission denied"), por isso o padrão é `--canal=chrome`.
+
+### Linha de base (única rodada; `docs/medicoes/2026-10-28.json`)
+Rio real, v1.20.1 (código da Fase 31), qualidade **alta**, 1600×900, sem vsync, 5 s de aquecimento e 12 s por cena; **AMD Ryzen 7 5700G with Radeon Graphics, NVIDIA GeForce RTX 3060**, Chrome 156.0.8078.48.
+
+| cena | fps médio | tempo de quadro p1 / p50 / p99 / máx (ms) | draw calls | triângulos |
+|---|---|---|---|---|
+| Orla de Copacabana | 17.11 | 1.52 / 27.38 / 964.27 / 2284.21 | 650 | 14.0 M |
+| Centro (Cinelândia) | 27.1 | 16.65 / 29.68 / 191.57 / 237.63 | 848 | 13.6 M |
+| Favela na encosta (Vidigal) | 15.24 | 17.19 / 27.63 / 860.13 / 2401.71 | 533 | 11.3 M |
+| Cruzamento com trânsito (Rio Branco × Presidente Vargas) | 51.06 | 0.36 / 18.66 / 36.11 / 300.03 | 686 | 13.5 M |
+| Tour dos pontos turísticos (8 paradas de 7 s) | 16.44 | 16.67 / 35.3 / 640.74 / 3566.58 | 669 | 12.5 M |
+
+Tour por parada: Cristo Redentor 15.43 fps · Pão de Açúcar e bondinho 10.49 fps · Maracanã em dia de jogo 17.45 fps · Praia de Copacabana 17.52 fps · Arcos da Lapa e bonde 27 fps · Roda-gigante Rio Star 18.66 fps.
+- **O jogo roda abaixo de 30 fps numa RTX 3060 em 4 das 5 cenas** e tem **travadas de centenas de ms a segundos** (p99 de 190 a 960 ms; máximo de 2,3 a 3,6 s), não só quadros lentos: a mediana é ~27–35 ms. A causa das travadas **não foi investigada** (candidatos: snapshot do Worker, montagem de blocos, coleta de lixo, compilação de shader). O cruzamento com trânsito (51 fps) é o único bom.
+- Triângulos = soma de todas as passadas do quadro (sombras em cascata e pós-processamento incluídos), 11–14 M; draw calls 533–848.
+- Limites: uma rodada só; a janela do Chrome precisa ficar visível e sem outro programa pesado; o p1 de 0,4–1,5 ms do tempo de quadro é artefato do `--sem-vsync` (quadros emendados após uma travada).
+- As fases seguintes comparam com este arquivo: `npm run medir-fps -- --sem-vsync`.
+
+### Passo da simulação (só proposta; `docs/passo-simulacao-limites.md`)
+- Com orçamento de 4 ms: passo médio 5,2 ms, p99 13,4 ms, **máximo 25,7 ms**; **5 de 1.858 passos passam de 16 ms**, todos em duas fases que ainda rodam inteiras: **serviços sociais** (até 25,7 ms) e **território** (até 20,4 ms). `tests/medicao-simulacao.test.ts` agora também lista `acima16ms` por fase. Facções não têm medição própria.
+- Proposta (não implementada): fatiar as duas fases com `yield`, rodízio de 1/4 dos lotes por dia em serviços sociais, instrumentar facções, e um limite de 16 ms por passo no teste.
+
+### README
+- Reescrito o status (todas as fases 0–31 em tabela), o que ainda não existe, os controles (T, Shift+T, F3, F4, clique em entidades), os comandos novos e as seções de publicação e medição.
+
 ## 1.20.0 — Fase 31: pontos turísticos, visitantes e orla (28/10/2026)
 
 Prints do tour automático (8 pontos), do painel de clique e da Escadaria Selarón em `docs/turismo/`; comparação de modelos e lista do que ficou em TEMP em `docs/turismo-modelos.md`.

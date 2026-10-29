@@ -432,3 +432,9 @@ O eixo das praias em `pontos.json` é aproximado (lat/lon de duas ou três ponta
 
 ## D-141 · Quando modelar no código
 Nenhum candidato gratuito serviu para Cristo, cabine do bondinho, Candelária, Theatro, Biblioteca e Sambódromo (genéricos, sem a forma, ou com textura/licença fora da regra): foram modelados com as medidas reais, e a comparação está em `docs/turismo-modelos.md`. A roda-gigante usa o modelo de Arif porque só ele tem a roda separada do suporte.
+
+## D-142 · Rebaixo máximo do terreno sob a pista: 4 → 14 m
+O teto de 4 m por célula deixava 23 trechos com morro > 1 m sobre o asfalto (21 no pedido). Com 14 m ficou 1 (9 m deixava 2; 12 m, 1 com 1,5 m). Custo: trincheiras mais fundas (+30% de espetos). Em vez de subir a rua (limite de rampa) ou furar túnel, o chão cede.
+
+## D-143 · Talude e muro em patamares, parede máxima de 5 m
+Talude de aterro > 12 m vira até 3 lances com banquetas de 2 m; muro de arrimo vira até 3 patamares de 5 m e o resto talude de grama (1:1,5). O número de patamares sai do desnível medido até o pé do talude, não do bordo (falésias). Ponte e viaduto continuam com a lateral vertical do tabuleiro.

@@ -97,12 +97,56 @@ function faixa(b: Buffers, p: Perfil, i0: number, i1: number, d0: number, d1: nu
  */
 export const TALUDE_H_POR_V = 1.5;
 export const TALUDE_MIN_QUEDA = 2.2;
+/** Fase 32: queda total acima disto vira PATAMARES (até 3 lances de talude com banquetas de 2 m entre eles); cada lance tem no máximo ~8 m de altura, salvo se a queda passar de 24 m */
+export const TALUDE_QUEDA_PATAMAR = 12;
+export const TALUDE_LANCE_H = 8;
+export const TALUDE_BANQUETA = 2;
+/** muro de arrimo (Fase 32): no máximo 3 patamares, cada parede com até 5 m; acima de 15 m de desnível o resto é talude de grama */
+export const MURO_PATAMAR_H = 5;
+/** Patamares de um muro de arrimo: `hMax` é o maior desnível do par de seções, `h` o desnível desta seção. Até 3 patamares de ≤ 5 m; o resto (`resto`) vira talude de grama. */
+export function patamaresMuro(hMax: number, h: number): { np: number; hp: number; resto: number } {
+  const np = Math.max(1, Math.min(3, Math.ceil(hMax / MURO_PATAMAR_H)));
+  const hp = Math.min(MURO_PATAMAR_H, h / np);
+  return { np, hp, resto: Math.max(0, h - np * hp) };
+}
+const TAL_SEGS = 5; // talude, banqueta, talude, banqueta, talude
 /** dev: localStorage['n27:semTalude']='1' volta à face vertical em tudo (para comparar tempo e visual) */
 const SEM_TALUDE = (() => { try { return import.meta.env.DEV && localStorage.getItem('n27:semTalude') === '1'; } catch { return false; } })();
-function lateralAteTerreno(b: Buffers, tal: Buffers, p: Perfil, i0: number, i1: number, d: number, lado: number, hm: Heightmap, estat?: { taludes: number; vertical: number; maxQueda: number }) {
+
+/**
+ * Perfil do talude de aterro numa seção: lista de pontos (r = afastamento do bordo da calçada, y = cota) do bordo ao pé. Quedas de até
+ * `TALUDE_QUEDA_PATAMAR` m são um plano de 1 V : 1,5 H; acima disso, `n` lances (n = ⌈queda / 8⌉, no máximo 3) separados por banquetas planas de 2 m.
+ * Devolve também o nº de lances. Função pura (testável): `alturaTerreno(r)` dá a cota do terreno a r metros do bordo.
+ */
+export function perfilTalude(yTopo: number, queda: number, alturaTerreno: (r: number) => number): { pts: [number, number][]; lances: number } {
+  const inv = 1 / TALUDE_H_POR_V;
+  // a queda que vale é a do plano único até o terreno (a falésia pode cair muito depois do bordo, onde `queda` ainda é pequena)
+  let total = queda;
+  for (let rr = 0; rr < 70; rr += 1) { const ys = yTopo - rr * inv; if (ys <= alturaTerreno(rr) + 0.05) { total = Math.max(queda, yTopo - ys); break; } if (rr >= 69) total = Math.max(queda, yTopo - ys); }
+  const nl = total > TALUDE_QUEDA_PATAMAR ? Math.min(3, Math.ceil(total / TALUDE_LANCE_H)) : 1;
+  const hLance = nl > 1 ? total / nl : Infinity;
+  const pts: [number, number][] = [[0, yTopo]];
+  let r = 0, y = yTopo, lances = 0;
+  for (let k = 0; k < nl; k++) {
+    const y0 = y, r0 = r, ultimo = k === nl - 1;
+    let rr = r0;
+    for (; rr < 70; rr += 1) {
+      const ys = y0 - (rr - r0) * inv;
+      if (ys <= alturaTerreno(rr) + 0.05 || (!ultimo && y0 - ys >= hLance)) { y = ys; break; }
+    }
+    r = rr; lances++;
+    pts.push([r, y]);
+    if (y <= alturaTerreno(r) + 0.05) break;
+    if (!ultimo) { r += TALUDE_BANQUETA; pts.push([r, y]); }
+  }
+  return { pts, lances };
+}
+
+function lateralAteTerreno(b: Buffers, tal: Buffers, p: Perfil, i0: number, i1: number, d: number, lado: number, hm: Heightmap, estat?: { taludes: number; vertical: number; maxQueda: number; patamares?: number; maxLance?: number }) {
   let modoAtual: 0 | 1 | -1 = -1, base = 0, cont = 0, buf = b;
   const fecha = () => {
-    for (let k = 0; k < cont - 1; k++) { const a = base + k * 2, c = a + 2; buf.idx.push(a, a + 1, c, a + 1, c + 1, c); }
+    if (buf === tal) { const P = 2 * TAL_SEGS; for (let k = 0; k < cont - 1; k++) for (let j = 0; j < TAL_SEGS; j++) { const a = base + k * P + 2 * j, c = a + P; buf.idx.push(a, a + 1, c, a + 1, c + 1, c); } }
+    else for (let k = 0; k < cont - 1; k++) { const a = base + k * 2, c = a + 2; buf.idx.push(a, a + 1, c, a + 1, c + 1, c); }
     cont = 0;
   };
   const inv = 1 / TALUDE_H_POR_V, nl = Math.hypot(inv, 1);
@@ -116,17 +160,24 @@ function lateralAteTerreno(b: Buffers, tal: Buffers, p: Perfil, i0: number, i1: 
     if (modo !== modoAtual) { fecha(); modoAtual = modo; buf = modo ? tal : b; base = buf.pos.length / 3; }
     const topo = 0.17, v = p.s[i];
     if (modo === 1) {
-      // sobe do pé do talude (onde o plano encontra o terreno) ao bordo da calçada
       const ox = nx * lado, oz = nz * lado;
-      let r = 0;
-      for (; r < 40; r += 2.5) { const ys = p.y[i] + topo - r * inv; if (ys <= sampleHeight(hm, x + ox * r, z + oz * r) + 0.05) break; }
-      const yPe = p.y[i] + topo - r * inv;
-      const [ya, yb, ra, rb] = lado > 0 ? [p.y[i] + topo, yPe, 0, r] : [yPe, p.y[i] + topo, r, 0];
-      buf.pos.push(x + ox * ra, ya, z + oz * ra, x + ox * rb, yb, z + oz * rb);
+      const { pts, lances } = perfilTalude(p.y[i] + topo, queda, (rr) => sampleHeight(hm, x + ox * rr, z + oz * rr));
+      // 5 segmentos fixos por seção (os que sobram ficam degenerados no pé): cada um com seus 2 vértices e a própria normal
       const sx = (ox * inv) / nl, sz = (oz * inv) / nl, sy = 1 / nl;
-      buf.nor.push(sx, sy, sz, sx, sy, sz);
-      buf.uv.push(v / 3, 0, v / 3, r / 3);
-      if (estat) { estat.taludes++; estat.maxQueda = Math.max(estat.maxQueda, queda); }
+      for (let j = 0; j < TAL_SEGS; j++) {
+        const A = pts[Math.min(j, pts.length - 1)], B = pts[Math.min(j + 1, pts.length - 1)];
+        const banqueta = j % 2 === 1;
+        const [pa, pb] = lado > 0 ? [A, B] : [B, A];
+        buf.pos.push(x + ox * pa[0], pa[1], z + oz * pa[0], x + ox * pb[0], pb[1], z + oz * pb[0]);
+        if (banqueta) buf.nor.push(0, 1, 0, 0, 1, 0); else buf.nor.push(sx, sy, sz, sx, sy, sz);
+        buf.uv.push(v / 3, pa[0] / 3, v / 3, pb[0] / 3);
+      }
+      if (estat) {
+        estat.taludes++; estat.maxQueda = Math.max(estat.maxQueda, queda);
+        if (lances > 1) estat.patamares = (estat.patamares ?? 0) + 1;
+        let lance = 0; for (let j = 0; j + 1 < pts.length; j += 2) lance = Math.max(lance, pts[j][1] - pts[j + 1][1]);
+        estat.maxLance = Math.max(estat.maxLance ?? 0, lance);
+      }
     } else {
       const fundo = Math.max(-14, Math.min(-2.2, terreno - p.y[i] - 0.25));
       // lado > 0: (alto, baixo); lado < 0: (baixo, alto) — inverte o enrolamento para a face apontar sempre para fora
@@ -227,7 +278,7 @@ export function construir(hm: Heightmap): MalhaVias {
   const g = mundo.roads;
   const perfis = construirPerfis(g, hm);
   perfisAtuais = perfis;
-  estatLateral.taludes = 0; estatLateral.vertical = 0; estatLateral.maxQueda = 0;
+  estatLateral.taludes = 0; estatLateral.vertical = 0; estatLateral.maxQueda = 0; estatLateral.patamares = 0; estatLateral.maxLance = 0; estatLateral.maxParede = 0; estatLateral.muroTalude = 0;
   const blocos = new Map<string, Acum>();
   const bloco = (x: number, z: number) => {
     const k = `${Math.floor(x / BLOCO_VIAS)},${Math.floor(z / BLOCO_VIAS)}`;
@@ -314,9 +365,12 @@ export function construir(hm: Heightmap): MalhaVias {
           }
           if (atual && ant && atual.corte === ant.corte) { // corte e aterro não se ligam (a parede se torceria)
             const B = bloco(atual.x, atual.z);
+            // Fase 32: até 3 patamares de muro de ≤ 5 m com banquetas de 2 m; o que passa de 15 m de desnível vira talude de grama 1 V : 1,5 H acima do último patamar
             const H = Math.max(Math.abs(ant.terr - ant.via), Math.abs(atual.terr - atual.via));
-            const np = Math.max(1, Math.ceil(H / 5));
-            const nivelK = (pt: PontoMuro, k: number) => pt.via + (pt.terr - pt.via) * (k / np);
+            const np = patamaresMuro(H, H).np;
+            const hp = (pt: PontoMuro) => patamaresMuro(H, Math.abs(pt.terr - pt.via)).hp;
+            const nivelK = (pt: PontoMuro, k: number) => pt.via + Math.sign(pt.terr - pt.via) * hp(pt) * k;
+            estatLateral.maxParede = Math.max(estatLateral.maxParede, hp(ant), hp(atual));
             for (let k = 0; k < np; k++) {
               const off = k * 2, off2 = off + (k === np - 1 ? 2.5 : 2);
               const ax = ant.x + ant.nx * off, az = ant.z + ant.nz * off, bx = atual.x + atual.nx * off, bz = atual.z + atual.nz * off;
@@ -357,6 +411,26 @@ export function construir(hm: Heightmap): MalhaVias {
                   proximoBal = atual.s + 3;
                 }
               }
+            }
+          }
+          if (atual && ant && atual.corte === ant.corte) {
+            const B = bloco(atual.x, atual.z);
+            const Hm = Math.max(Math.abs(ant.terr - ant.via), Math.abs(atual.terr - atual.via));
+            const np = patamaresMuro(Hm, Hm).np;
+            const resto = (pt: PontoMuro) => patamaresMuro(Hm, Math.abs(pt.terr - pt.via)).resto;
+            const ra = resto(ant), rb = resto(atual);
+            if (ra > 0.3 || rb > 0.3) {
+              // do canto externo da última banqueta (np·2 m + 2 m) até o relevo, subindo (corte) ou descendo (aterro) a 1 V : 1,5 H
+              const off0 = (np - 1) * 2 + 2.5, sg = Math.sign(atual.terr - atual.via) || 1;
+              const yA0 = ant.via + sg * patamaresMuro(Hm, Math.abs(ant.terr - ant.via)).hp * np, yB0 = atual.via + sg * patamaresMuro(Hm, Math.abs(atual.terr - atual.via)).hp * np;
+              const Ra = ra * TALUDE_H_POR_V, Rb = rb * TALUDE_H_POR_V;
+              const b0 = B.banqueta.pos.length / 3;
+              B.banqueta.pos.push(ant.x + ant.nx * off0, yA0, ant.z + ant.nz * off0, ant.x + ant.nx * (off0 + Ra), ant.terr, ant.z + ant.nz * (off0 + Ra), atual.x + atual.nx * off0, yB0, atual.z + atual.nz * off0, atual.x + atual.nx * (off0 + Rb), atual.terr, atual.z + atual.nz * (off0 + Rb));
+              const fp = sg / TALUDE_H_POR_V, nl2 = Math.hypot(fp, 1);
+              for (let q4 = 0; q4 < 4; q4++) B.banqueta.nor.push((-fp * atual.nx) / nl2, 1 / nl2, (-fp * atual.nz) / nl2);
+              B.banqueta.uv.push(ant.s / 3, 0, ant.s / 3, Ra / 3, atual.s / 3, 0, atual.s / 3, Rb / 3);
+              B.banqueta.idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2);
+              estatLateral.muroTalude++;
             }
           }
           ant = atual;

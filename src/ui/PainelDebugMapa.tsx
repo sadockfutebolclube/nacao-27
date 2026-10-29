@@ -4,8 +4,9 @@ import { irPara } from '../render/city/Camera';
 import { NOMES_ESTADO, pedDebug, usePedDebug } from '../render/city/estadoPedestres';
 import { DENSIDADE_VERMELHA } from '../render/city/MapaCalorPedestres';
 
-const COR: Record<Problema['tipo'], string> = { morro: '#ff9a62', vao: '#6ab7ff', rampa: '#ffd45e', rotatoria: '#c79bff', solta: '#ff7aa8', predio: '#7ee0c0' };
-const ROTULO: Record<Problema['tipo'], string> = { morro: 'morro s/ asfalto', vao: 'vão', rampa: 'rampa', rotatoria: 'rotatória', solta: 'via solta', predio: 'prédio' };
+const COR: Record<Problema['tipo'], string> = { morro: '#ff9a62', vao: '#6ab7ff', rampa: '#ffd45e', rotatoria: '#c79bff', solta: '#ff7aa8', predio: '#7ee0c0', solucao: '#9ad66b' };
+const COR_SOL = { color: '#9ad66b' };
+const ROTULO: Record<Problema['tipo'], string> = { morro: 'morro s/ asfalto', vao: 'vão', rampa: 'rampa', rotatoria: 'rotatória', solta: 'via solta', predio: 'prédio', solucao: 'solução' };
 
 /** Pedestres (Fase 24): slider de densidade global, dia da semana, mapa de calor e o modelo agregado */
 function SecaoPedestres() {
@@ -54,7 +55,8 @@ export function PainelDebugMapa() {
       <div style={{ marginBottom: 4, opacity: 0.9 }}>
         <span style={{ color: COR.solta }}>{c.solta} vias soltas removidas</span> · <span style={{ color: COR.predio }}>prédios sobre a pista: {c.predioDeslocado} deslocados, {c.predioRemovido} removidos</span> · {c.minirrotatoria} minirrotatórias
       </div>
-      <div style={{ marginBottom: 4, opacity: 0.7 }}>tratados: {c.muro} com muro de arrimo (patamares ≤ 5 m) · {c.ponte} pontes · {c.tunel} túneis · {c.ruaDeMorro} ruas de morro (rampa até 40%) · {c.falesia} na falésia (cota do pé)</div>
+      <div style={{ marginBottom: 4, opacity: 0.7 }}>tratados: {c.muro} com muro de arrimo (até 3 patamares, maior parede {c.maiorParede.toFixed(1)} m, {c.muroTalude} seções com talude de grama acima) · {c.ponte} pontes · {c.tunel} túneis · {c.ruaDeMorro} ruas de morro (rampa até 40%) · {c.falesia} na falésia (cota do pé)</div>
+      <div style={{ marginBottom: 4, opacity: 0.85 }}>solução por trecho: <span style={COR_SOL}>{c.porSolucao.talude} talude</span> · {c.porSolucao.terraco} terraço · {c.porSolucao.muro} muro · {c.porSolucao.viaduto} viaduto · {c.porSolucao.tunel} túnel · {c.secoesPatamar} seções de talude em patamares (maior lance {c.maiorLance.toFixed(1)} m)</div>
       <div style={{ marginBottom: 6, opacity: 0.7 }}>solução da lateral: {c.taludes} amostras de talude de grama 1:1,5 · {c.lateralVertical} de face vertical (ponte/viaduto) · alturas máximas: aterro {c.maiorAterro.toFixed(1)} m · corte {c.maiorCorte.toFixed(1)} m · muro {c.maiorMuro.toFixed(1)} m · queda do bordo {c.maiorQueda.toFixed(1)} m</div>
       <div style={{ overflowY: 'auto' }}>
         {d.problemas.length === 0 && <div style={{ opacity: 0.7 }}>Nenhum problema encontrado.</div>}

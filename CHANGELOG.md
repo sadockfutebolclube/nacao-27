@@ -1,5 +1,38 @@
 # CHANGELOG
 
+## 1.21.0 — Fase 32: encostas, taludes em patamares e morro sobre o asfalto (28/10/2026)
+
+Prints antes/depois (mesma câmera) de Santa Teresa, Vidigal, Niemeyer, um viaduto e a orla em `docs/encostas-fase32/`, mais o muro de 3 patamares da Av. Presidente João Goulart. Medições: `npm run auditar-mapa` e F3.
+
+### O que já estava feito em fases anteriores (conferido, não refeito)
+Talude de grama 1:1,5 no aterro (Fase 28), viaduto só com vão contínuo ≥ 15 m (Fase 20), muro de concreto fosco com juntas e barbacãs, roughness 0,96 e sem reflexo (Fase 21), splat de 4 camadas — terra, grama, mato, rocha — por inclinação e OSM, rocha acima de 35° (Fase 21), pedra portuguesa só em calçadão/orla (Fase 21), via férrea com brita, dormentes e trilhos e plataforma só em estação (Fases 18 e 21), vias soltas removidas (5), prédios deslocados/removidos das pistas (5.752/1.188), minirrotatórias com ilha pintada (8), CSM de 2 cascatas + AO + hemisphere + ACES (Fase 21). Nada disso mudou.
+
+### Mudanças
+- **Morro sobre o asfalto** (`escavar.ts`): o rebaixo máximo por célula subiu de 4 para 14 m (o limite antigo deixava o morro acima da pista onde a encosta pedia mais). **Trechos com morro > 1 m: 23 → 1** (> 0,3 m: 57 → 1; > 1,5 m: 2 → 0; ruas enterradas: 217 → 8).
+- **Talude em patamares** (`Vias.tsx`, `perfilTalude`): quando o talude de aterro passa de 12 m de queda, vira até 3 lances de 1 V : 1,5 H com banquetas planas de 2 m (antes, um plano só de até 40 m, as "cortinas" verdes da Niemeyer). A queda é medida até o pé do talude, não só no bordo (a falésia cai depois). **1.974 seções de talude em patamares.**
+- **Muro de arrimo** (`patamaresMuro`): no máximo 3 patamares de ≤ 5 m com banquetas de 2 m; o que passa de 15 m de desnível vira talude de grama acima do último patamar (57 seções). **Maior parede vertical: 32,6 → 5,0 m.** O corte de 98 m do Dois Irmãos/Vidigal agora é 3 paredes de 5 m e o resto, talude.
+- **F3**: cada trecho mostra a solução (talude · terraço · muro · viaduto · túnel) e a altura máxima; contagens por solução (4.011 talude, 4 terraço, 90 muro, 340 viaduto, 98 túnel), maior parede, maior lance e seções em patamares; os 40 maiores aparecem na lista com botão "ir".
+
+### Medido
+| | antes | depois |
+|---|---|---|
+| trechos com morro > 1 m / > 0,3 m | 23 / 57 | 1 / 1 |
+| ruas enterradas | 217 | 8 |
+| maior parede vertical de muro | 32,6 m | 5,0 m |
+| trechos com muro de arrimo | 90 | 90 (57 com talude acima) |
+| seções de talude (grama) / de face vertical de ponte | 55.595 / 11.345 | 57.378 / 11.362 |
+| espetos de terreno (> 10 m da mediana) | 239 | **310 (piorou)** |
+| ruas flutuando / tortas | 20.220 / 6.927 | 20.594 / 7.555 (**piorou**) |
+| construção da malha das vias | 1.810 e 1.742 ms | 1.886 e 1.782 ms (+2 a 4%) |
+
+- **Efeito colateral**: rebaixar mais o terreno sob a pista cria trincheiras mais fundas ao lado das ruas: mais espetos (+30%) e um pouco mais de rua "torta". O maior espeto continua a (-4608, 5504), −28 m.
+- **FPS: inconclusivo.** Nos 5 pontos o painel embutido (estrangulado) deu 15,4/23,4/17,0/18,4/14,9 depois e 15,1/49,7/36,0/6,0/29,7 antes, com variação de 3× na mesma câmera: não dá para dizer que não caiu mais de 10%. A malha tem 3% mais amostras de talude e a construção demorou +2 a 4%. Medir no navegador do usuário.
+
+### Limites
+- "Nenhuma parede vertical acima de 5 m" vale para o muro de arrimo e o talude (agora com banquetas). A lateral vertical de **ponte e viaduto** (11.362 seções, até 14 m) continua: é a face do tabuleiro, não de aterro.
+- Taludes seguem com a textura de grama (a variação com terra por altura ficou para depois).
+- Ainda há um corte de 98 m: é o OSM cruzando o cume de um espigão de 30 m de resolução; o muro e o talude o escondem, mas o relevo de satélite não tem o traçado real da pista.
+- As imagens "antes" e "depois" têm clima diferente (chuva/dia) em alguns pontos; as mudanças de geometria são mais visíveis no F3 e no muro da João Goulart.
 ## 1.20.1 — Fase 31: publicação, README e medição de fps (28/10/2026)
 
 ### Por que o menu do site mostrava "v1.3 · Fase 13"

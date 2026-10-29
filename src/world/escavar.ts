@@ -18,7 +18,7 @@ const MARGEM = 1.5;
 const FOLGA = 0.35;
 /** abaixo disto (m) a célula é água ou praia: não se mexe */
 const COTA_MIN = 0.5;
-const REBAIXO_MAX = 4;
+const REBAIXO_MAX = 14;
 
 const sm = (e0: number, e1: number, x: number) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 

@@ -24,7 +24,7 @@ export interface Problema {
   solucao?: string; alturaMax?: number;
 }
 /** Fase 28: o que a lateral das vias virou na última construção (talude de grama × face vertical de ponte) e a maior queda do bordo ao chão (m) */
-export const estatLateral: { taludes: number; vertical: number; maxQueda: number; patamares: number; maxLance: number; maxParede: number; muroTalude: number } = { taludes: 0, vertical: 0, maxQueda: 0, patamares: 0, maxLance: 0, maxParede: 0, muroTalude: 0 };
+export const estatLateral: { taludes: number; vertical: number; maxQueda: number; patamares: number; maxLance: number; maxParede: number; muroTalude: number; foraDePonte: number; lascasRemovidas: number; normaisViradas: number } = { taludes: 0, vertical: 0, maxQueda: 0, patamares: 0, maxLance: 0, maxParede: 0, muroTalude: 0, foraDePonte: 0, lascasRemovidas: 0, normaisViradas: 0 };
 export interface Contagem {
   morro: number; vao: number; rampa: number; rotatoria: number; trechos: number; muro: number; ponte: number; tunel: number;
   /** Fase 21: vias soltas que o gerador tirou, prédios deslocados e removidos por invadir a pista, minirrotatórias */
@@ -36,6 +36,8 @@ export interface Contagem {
   porSolucao: { talude: number; terraco: number; muro: number; viaduto: number; tunel: number }; secoesPatamar: number; maiorLance: number;
   /** maior parede vertical de muro de arrimo desenhada (m) e seções de muro que terminam em talude de grama */
   maiorParede: number; muroTalude: number;
+  /** Fase 33: aterro no relevo (células levantadas, maior altura), lateral vertical fora de ponte e a saneada da malha de talude/muro */
+  aterroCelulas: number; aterroMax: number; lateralForaDePonte: number; lascasRemovidas: number; normaisViradas: number;
 }
 export interface EstadoDebug {
   /** 0 desligado · 1 wireframe + painel · 2 também as normais do terreno */
@@ -44,7 +46,7 @@ export interface EstadoDebug {
   contagem: Contagem;
 }
 
-const vazia = (): Contagem => ({ morro: 0, vao: 0, rampa: 0, rotatoria: 0, trechos: 0, muro: 0, ponte: 0, tunel: 0, solta: 0, predioDeslocado: 0, predioRemovido: 0, minirrotatoria: 0, ruaDeMorro: 0, falesia: 0, taludes: 0, lateralVertical: 0, maiorAterro: 0, maiorCorte: 0, maiorMuro: 0, maiorQueda: 0, porSolucao: { talude: 0, terraco: 0, muro: 0, viaduto: 0, tunel: 0 }, secoesPatamar: 0, maiorLance: 0, maiorParede: 0, muroTalude: 0 });
+const vazia = (): Contagem => ({ morro: 0, vao: 0, rampa: 0, rotatoria: 0, trechos: 0, muro: 0, ponte: 0, tunel: 0, solta: 0, predioDeslocado: 0, predioRemovido: 0, minirrotatoria: 0, ruaDeMorro: 0, falesia: 0, taludes: 0, lateralVertical: 0, maiorAterro: 0, maiorCorte: 0, maiorMuro: 0, maiorQueda: 0, porSolucao: { talude: 0, terraco: 0, muro: 0, viaduto: 0, tunel: 0 }, secoesPatamar: 0, maiorLance: 0, maiorParede: 0, muroTalude: 0, aterroCelulas: 0, aterroMax: 0, lateralForaDePonte: 0, lascasRemovidas: 0, normaisViradas: 0 });
 let estado: EstadoDebug = { modo: 0, problemas: [], contagem: vazia() };
 const ouvintes = new Set<() => void>();
 const avisar = () => ouvintes.forEach((f) => f());
@@ -75,8 +77,9 @@ export function diagnosticarVias(perfis: Map<number, Perfil>, hm: Heightmap, des
   contagem.predioRemovido = removidos?.prediosSobreVias ?? 0;
   contagem.predioDeslocado = removidos?.prediosDeslocados ?? 0;
   const reg = regradeDe(hm.h);
+  if (reg?.aterro) { contagem.aterroCelulas = reg.aterro.celulas; contagem.aterroMax = reg.aterro.maxAltura; }
   if (reg) { const r = reg.resumo; contagem.ruaDeMorro = r.trechosDeMorro; contagem.falesia = r.trechosComFalesia; contagem.maiorAterro = r.maxAterro; contagem.maiorCorte = r.maxCorte; contagem.maiorMuro = r.maxMuro; }
-  contagem.taludes = estatLateral.taludes; contagem.lateralVertical = estatLateral.vertical; contagem.maiorQueda = estatLateral.maxQueda; contagem.secoesPatamar = estatLateral.patamares; contagem.maiorLance = estatLateral.maxLance; contagem.maiorParede = estatLateral.maxParede; contagem.muroTalude = estatLateral.muroTalude;
+  contagem.taludes = estatLateral.taludes; contagem.lateralVertical = estatLateral.vertical; contagem.maiorQueda = estatLateral.maxQueda; contagem.secoesPatamar = estatLateral.patamares; contagem.maiorLance = estatLateral.maxLance; contagem.maiorParede = estatLateral.maxParede; contagem.muroTalude = estatLateral.muroTalude; contagem.lateralForaDePonte = estatLateral.foraDePonte; contagem.lascasRemovidas = estatLateral.lascasRemovidas; contagem.normaisViradas = estatLateral.normaisViradas;
   const solucoes: Problema[] = [];
   for (const p of perfis.values()) {
     if (p.nivel === 1 || p.nivel === -1) {

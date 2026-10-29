@@ -85,8 +85,22 @@ export function rasterizeRoads(g: RoadGraph, raster: Int32Array) {
 /** Código no raster para casas de ocupação informal (bloqueiam lotes, mas não umas às outras). */
 export const RASTER_INFORMAL = -3;
 
+/**
+ * Prédios em encosta (Fase 33): a planta nunca é inclinada. O desnível sob ela até `DESNIVEL_MAX` (3 m) é vencido por uma base maciça ("pilotis até o
+ * terreno": o prédio sobe da cota mais baixa e a base fica na mais alta, ver `plintoDoLote`); acima disso a base é REBAIXADA para 3 m acima do ponto mais
+ * baixo (o lado de cima entra no morro, como num muro de arrimo) nos prédios reais do OSM, e os lotes gerados que passam do limite são descartados.
+ */
+export const DESNIVEL_MAX = 3;
+export const estatLotes = { comMuroDeArrimo: 0, descartadosPorDesnivel: 0, comBaseMaciça: 0 };
+
+/** Altura (m) da base maciça sob o prédio: da cota da base até o ponto mais baixo do terreno sob a planta. */
+export function plintoDoLote(hm: Heightmap, x: number, z: number, angle: number, w: number, d: number, baseY: number): number {
+  return Math.max(0, baseY - Math.min(...cornerHeights(hm, { x, z, angle, w, d })));
+}
+
 export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], raster: Int32Array, informais: Footprint[] = [], fixos: (Footprint & { edge: number; ref: number })[] = []): LotGeom[] {
   raster.fill(0);
+  estatLotes.comMuroDeArrimo = 0; estatLotes.descartadosPorDesnivel = 0; estatLotes.comBaseMaciça = 0;
   rasterizeRoads(g, raster);
   for (const b of blockers) forRectCells(b, (idx) => { raster[idx] = -2; });
   for (const b of informais) forRectCells(b, (idx) => { if (raster[idx] === 0) raster[idx] = RASTER_INFORMAL; });
@@ -101,7 +115,10 @@ export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], 
     if (Math.min(...hs) < 0.3 && hs[4] < 0.6) continue;
     const id = lots.length + 1;
     forRectCells(f, (idx) => { if (raster[idx] === 0) raster[idx] = id; });
-    lots.push({ edge: f.edge, side: 1, x: f.x, z: f.z, angle: f.angle, w: f.w, d: f.d, baseY: Math.max(0.3, Math.min(...hs)), real: f.ref });
+    const minR = Math.min(...hs), maxR = Math.max(...hs);
+    // base na cota mais alta; passando de 3 m de desnível, rebaixada para 3 m sobre o ponto mais baixo (muro de arrimo no lado de cima)
+    if (maxR - minR > DESNIVEL_MAX) estatLotes.comMuroDeArrimo++; else if (maxR - minR > 0.4) estatLotes.comBaseMaciça++;
+    lots.push({ edge: f.edge, side: 1, x: f.x, z: f.z, angle: f.angle, w: f.w, d: f.d, baseY: Math.max(0.3, Math.min(maxR, minR + DESNIVEL_MAX)), real: f.ref });
   }
   const edges = [...g.edges.values()].sort((a, b) => a.id - b.id);
   for (const e of edges) {
@@ -125,13 +142,15 @@ export function computeLots(g: RoadGraph, hm: Heightmap, blockers: Footprint[], 
           // terreno: seco e sem encosta forte
           const hs = cornerHeights(hm, f);
           const minH = Math.min(...hs), maxH = Math.max(...hs);
-          if (minH < 0.9 || maxH - minH > 7) continue;
+          if (minH < 0.9) continue;
+          if (maxH - minH > DESNIVEL_MAX) { estatLotes.descartadosPorDesnivel++; continue; }
           let livre = true;
           forRectCells(f, (idx) => { if (raster[idx] !== 0) { livre = false; return false; } });
           if (!livre) continue;
           const id = lots.length + 1;
           forRectCells(f, (idx) => { raster[idx] = id; });
-          lots.push({ edge: e.id, side, x: lx, z: lz, angle, w: f.w, d: depth, baseY: minH });
+          if (maxH - minH > 0.4) estatLotes.comBaseMaciça++;
+          lots.push({ edge: e.id, side, x: lx, z: lz, angle, w: f.w, d: depth, baseY: maxH });
           break;
         }
       }

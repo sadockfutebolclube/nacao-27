@@ -1,0 +1,453 @@
+{
+ "rotulo": "antes",
+ "data": "2026-10-29T02:28:50.594Z",
+ "tempos_ms": {
+  "terreno": 2396,
+  "malhaDasVias": 2240,
+  "total": 12608
+ },
+ "predios_regra": "antiga: base na cota mais baixa",
+ "predios_regra_nova": {
+  "desnivelBruto_maior3m": 52132,
+  "comMuroDeArrimo": 52132,
+  "comBaseMaciça": 87619,
+  "terrenoMaior8Graus": 64849,
+  "lotesTotal": 139259,
+  "lotesGerados": 18400,
+  "lotesGeradosDescartadosPorDesnivel": 0,
+  "lotesFixosComMuro": 0,
+  "lotesComBaseMaciça": 0
+ },
+ "universo": {
+  "trechos": 14973,
+  "secoesDeRuaVerificadas": 142638,
+  "triangulosDeTaludeEMuro": 113300,
+  "predios": 152698,
+  "props": 50392,
+  "nos": 12482,
+  "pontasDeGrau1": 1151
+ },
+ "limites": {
+  "areaMin": 0.5,
+  "aspectoMax": 15,
+  "vizinhoMax": 8,
+  "morroAoLado": 0.8,
+  "quedaLateral": 2.5,
+  "pontaDe": 2,
+  "pontaAte": 10,
+  "saltoNo": 1.5,
+  "predioGraus": 8,
+  "predioDesnivel": 3,
+  "propDesvio": 0.3
+ },
+ "contagem": {
+  "lascas": 1417,
+  "normaisInvertidas": 2455,
+  "verticesIsolados": 112,
+  "taludesSobrepostos": 79679,
+  "morroAoLado": 65,
+  "quedaLateral": 23647,
+  "pontasQuaseConectadas": 9,
+  "saltosNoNo": 0,
+  "cruzamentosSemNo": 2,
+  "prediosInclinados": 0,
+  "prediosEnfiados": 52132,
+  "propsForaDaSuperficie": 252
+ },
+ "piores_30": [
+  {
+   "posto": 1,
+   "x": -3541,
+   "z": 4850,
+   "bairro": "Leblon",
+   "pontuacao": 3890,
+   "defeitos": {
+    "normaisInvertidas": 48,
+    "lascas": 20,
+    "taludesSobrepostos": 946,
+    "quedaLateral": 19
+   }
+  },
+  {
+   "posto": 2,
+   "x": -5381,
+   "z": -3905,
+   "bairro": "São Francisco Xavier",
+   "pontuacao": 3611,
+   "defeitos": {
+    "lascas": 7,
+    "normaisInvertidas": 38,
+    "taludesSobrepostos": 887,
+    "quedaLateral": 8,
+    "prediosEnfiados": 2
+   }
+  },
+  {
+   "posto": 3,
+   "x": -1704,
+   "z": 781,
+   "bairro": "Humaitá",
+   "pontuacao": 3563,
+   "defeitos": {
+    "normaisInvertidas": 56,
+    "lascas": 9,
+    "taludesSobrepostos": 867,
+    "quedaLateral": 10,
+    "morroAoLado": 3,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 4,
+   "x": 1424,
+   "z": -2093,
+   "bairro": "Catete",
+   "pontuacao": 3296,
+   "defeitos": {
+    "lascas": 1,
+    "normaisInvertidas": 18,
+    "taludesSobrepostos": 809,
+    "quedaLateral": 20,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 5,
+   "x": -1729,
+   "z": 779,
+   "bairro": "Humaitá",
+   "pontuacao": 3020,
+   "defeitos": {
+    "lascas": 17,
+    "normaisInvertidas": 41,
+    "taludesSobrepostos": 739,
+    "quedaLateral": 3
+   }
+  },
+  {
+   "posto": 6,
+   "x": -3535,
+   "z": 4827,
+   "bairro": "Leblon",
+   "pontuacao": 3009,
+   "defeitos": {
+    "normaisInvertidas": 20,
+    "lascas": 4,
+    "taludesSobrepostos": 739,
+    "quedaLateral": 14,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 7,
+   "x": 1421,
+   "z": -2068,
+   "bairro": "Catete",
+   "pontuacao": 2556,
+   "defeitos": {
+    "lascas": 10,
+    "normaisInvertidas": 2,
+    "taludesSobrepostos": 622,
+    "quedaLateral": 28
+   }
+  },
+  {
+   "posto": 8,
+   "x": -381,
+   "z": -1259,
+   "bairro": "Cosme Velho",
+   "pontuacao": 2384,
+   "defeitos": {
+    "lascas": 19,
+    "normaisInvertidas": 14,
+    "taludesSobrepostos": 587,
+    "prediosEnfiados": 3
+   }
+  },
+  {
+   "posto": 9,
+   "x": -3979,
+   "z": 5222,
+   "bairro": "Vidigal",
+   "pontuacao": 2345,
+   "defeitos": {
+    "taludesSobrepostos": 578,
+    "quedaLateral": 16,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 10,
+   "x": -141,
+   "z": 3941,
+   "bairro": "Ipanema",
+   "pontuacao": 2319,
+   "defeitos": {
+    "lascas": 7,
+    "normaisInvertidas": 11,
+    "taludesSobrepostos": 568,
+    "quedaLateral": 13,
+    "prediosEnfiados": 3
+   }
+  },
+  {
+   "posto": 11,
+   "x": -6024,
+   "z": 5220,
+   "bairro": "Rocinha",
+   "pontuacao": 2282,
+   "defeitos": {
+    "taludesSobrepostos": 560,
+    "quedaLateral": 21
+   }
+  },
+  {
+   "posto": 12,
+   "x": 1380,
+   "z": -2026,
+   "bairro": "Catete",
+   "pontuacao": 2271,
+   "defeitos": {
+    "normaisInvertidas": 9,
+    "lascas": 4,
+    "taludesSobrepostos": 556,
+    "quedaLateral": 16,
+    "prediosEnfiados": 2
+   }
+  },
+  {
+   "posto": 13,
+   "x": -5866,
+   "z": 5060,
+   "bairro": "Rocinha",
+   "pontuacao": 2141,
+   "defeitos": {
+    "normaisInvertidas": 8,
+    "lascas": 3,
+    "taludesSobrepostos": 523,
+    "quedaLateral": 14,
+    "prediosEnfiados": 10
+   }
+  },
+  {
+   "posto": 14,
+   "x": 1384,
+   "z": -2056,
+   "bairro": "Catete",
+   "pontuacao": 2064,
+   "defeitos": {
+    "lascas": 4,
+    "taludesSobrepostos": 512,
+    "quedaLateral": 4,
+    "prediosEnfiados": 4
+   }
+  },
+  {
+   "posto": 15,
+   "x": -3986,
+   "z": 5255,
+   "bairro": "Vidigal",
+   "pontuacao": 1979,
+   "defeitos": {
+    "normaisInvertidas": 10,
+    "lascas": 7,
+    "taludesSobrepostos": 484,
+    "quedaLateral": 13
+   }
+  },
+  {
+   "posto": 16,
+   "x": -1063,
+   "z": 4614,
+   "bairro": "Ipanema",
+   "pontuacao": 1944,
+   "defeitos": {
+    "lascas": 2,
+    "taludesSobrepostos": 483,
+    "quedaLateral": 5
+   }
+  },
+  {
+   "posto": 17,
+   "x": -3451,
+   "z": -1699,
+   "bairro": "Tijuca",
+   "pontuacao": 1911,
+   "defeitos": {
+    "lascas": 10,
+    "normaisInvertidas": 23,
+    "taludesSobrepostos": 462,
+    "quedaLateral": 14,
+    "prediosEnfiados": 2
+   }
+  },
+  {
+   "posto": 18,
+   "x": 169,
+   "z": 3852,
+   "bairro": "Ipanema",
+   "pontuacao": 1798,
+   "defeitos": {
+    "normaisInvertidas": 4,
+    "lascas": 3,
+    "taludesSobrepostos": 440,
+    "quedaLateral": 10,
+    "prediosEnfiados": 11
+   }
+  },
+  {
+   "posto": 19,
+   "x": 745,
+   "z": -587,
+   "bairro": "Laranjeiras",
+   "pontuacao": 1790,
+   "defeitos": {
+    "normaisInvertidas": 4,
+    "lascas": 4,
+    "taludesSobrepostos": 435,
+    "quedaLateral": 21
+   }
+  },
+  {
+   "posto": 20,
+   "x": 1447,
+   "z": -2063,
+   "bairro": "Catete",
+   "pontuacao": 1789,
+   "defeitos": {
+    "lascas": 5,
+    "normaisInvertidas": 5,
+    "taludesSobrepostos": 436,
+    "quedaLateral": 17,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 21,
+   "x": -1499,
+   "z": -3621,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 1788,
+   "defeitos": {
+    "taludesSobrepostos": 434,
+    "quedaLateral": 26
+   }
+  },
+  {
+   "posto": 22,
+   "x": 145,
+   "z": 3825,
+   "bairro": "Ipanema",
+   "pontuacao": 1753,
+   "defeitos": {
+    "lascas": 8,
+    "normaisInvertidas": 8,
+    "taludesSobrepostos": 424,
+    "quedaLateral": 16,
+    "prediosEnfiados": 9
+   }
+  },
+  {
+   "posto": 23,
+   "x": 255,
+   "z": 3824,
+   "bairro": "Ipanema",
+   "pontuacao": 1701,
+   "defeitos": {
+    "lascas": 8,
+    "normaisInvertidas": 6,
+    "taludesSobrepostos": 413,
+    "quedaLateral": 12,
+    "prediosEnfiados": 11
+   }
+  },
+  {
+   "posto": 24,
+   "x": -1729,
+   "z": 811,
+   "bairro": "Humaitá",
+   "pontuacao": 1618,
+   "defeitos": {
+    "lascas": 2,
+    "normaisInvertidas": 26,
+    "verticesIsolados": 3,
+    "taludesSobrepostos": 396
+   }
+  },
+  {
+   "posto": 25,
+   "x": -369,
+   "z": 2215,
+   "bairro": "Lagoa",
+   "pontuacao": 1568,
+   "defeitos": {
+    "normaisInvertidas": 27,
+    "lascas": 10,
+    "taludesSobrepostos": 375,
+    "quedaLateral": 15,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 26,
+   "x": -1489,
+   "z": -3654,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 1538,
+   "defeitos": {
+    "taludesSobrepostos": 370,
+    "quedaLateral": 29
+   }
+  },
+  {
+   "posto": 27,
+   "x": 149,
+   "z": 3853,
+   "bairro": "Ipanema",
+   "pontuacao": 1537,
+   "defeitos": {
+    "lascas": 11,
+    "normaisInvertidas": 19,
+    "taludesSobrepostos": 369,
+    "quedaLateral": 12,
+    "prediosEnfiados": 7
+   }
+  },
+  {
+   "posto": 28,
+   "x": 1773,
+   "z": 1297,
+   "bairro": "Urca",
+   "pontuacao": 1486,
+   "defeitos": {
+    "taludesSobrepostos": 362,
+    "quedaLateral": 19
+   }
+  },
+  {
+   "posto": 29,
+   "x": -5804,
+   "z": -940,
+   "bairro": "Andaraí",
+   "pontuacao": 1480,
+   "defeitos": {
+    "normaisInvertidas": 14,
+    "taludesSobrepostos": 359,
+    "quedaLateral": 15
+   }
+  },
+  {
+   "posto": 30,
+   "x": -6056,
+   "z": 5230,
+   "bairro": "Rocinha",
+   "pontuacao": 1456,
+   "defeitos": {
+    "normaisInvertidas": 3,
+    "taludesSobrepostos": 348,
+    "quedaLateral": 30,
+    "prediosEnfiados": 1
+   }
+  }
+ ]
+}

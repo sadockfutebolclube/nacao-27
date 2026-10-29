@@ -17,7 +17,7 @@ import { CAMPOS_PREDIO, contorno, predio, retangulo, type CidadeReal } from '../
 import { arquetipoPorId } from '../../sim/catalog';
 import { mundo, useGame, type Camada } from '../../sim/bridge';
 import { FLAG, LOT_STATE_STRIDE } from '../../sim/protocol';
-import { LOT_STRIDE } from '../../world/lots';
+import { LOT_STRIDE, plintoDoLote } from '../../world/lots';
 import { useApp } from '../../app/store';
 import { useNivel } from '../qualidade';
 import { CAMADA, CAMADAS, carregarBiblioteca, type Biblioteca } from '../materiais/biblioteca';
@@ -277,7 +277,7 @@ float extraE = aInfo.w;
 // telhado inclinado/oitão só nas casas baixas; anexo da laje some durante a obra
 if ((parteE == 1.0 || parteE == 2.0) && (flagsE & 4) != 0) extraE = min(extraE, 0.0);
 if (parteE >= 3.0 && (flagsE & 2) != 0) extraE = 0.0;
-float yE = position.y > 0.5 ? e0.x + extraE : -1.5;
+float yE = position.y > 0.5 ? e0.x + extraE : -1.5 - e1.w; // e1.w = base maciça (Fase 33): a parede desce até o ponto mais baixo do terreno sob a planta
 if (e0.x <= 0.0) yE = -80.0;
 transformed = vec3(position.x, e0.y + yE, position.z);`;
 
@@ -537,6 +537,7 @@ export function PrediosReais() {
       const k = ((ref / POR_LINHA) | 0) * POR_LINHA * 2 * 4 + (ref % POR_LINHA) * 2 * 4;
       d[k] = obra ? Math.max(1.2, H * Math.min(1, prog * 1.15)) : H;
       d[k + 1] = L[lo + 5];
+      d[k + 7] = mundo.hm ? plintoDoLote(mundo.hm, L[lo], L[lo + 1], L[lo + 2], L[lo + 3], L[lo + 4], L[lo + 5]) : 0;
       d[k + 2] = (flags & FLAG.ABANDONADO ? 1 : 0) | (obra ? 2 : 0) | (obra || andares > 3 ? 4 : 0);
       d[k + 3] = look;
       if (ativa) {

@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { arquetipoPorId, Zone, ZONES } from '../../sim/catalog';
 import { mundo, useGame, type Camada } from '../../sim/bridge';
 import { FLAG, LOT_STATE_STRIDE } from '../../sim/protocol';
-import { LOT_STRIDE } from '../../world/lots';
+import { LOT_STRIDE, plintoDoLote } from '../../world/lots';
 import { sampleHeight, type Heightmap } from '../../world/terrain';
 import { criarMaterialFachada } from '../shaders/fachada';
 import { ambiente } from './ambiente';
@@ -280,7 +280,9 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean, centro: [n
     const H = andares * a.peDireito + (a.estilo === 'galpao' ? 0 : 0.8);
     const frente = real ? d / 2 : d / 2 - a.recuo;
     const lz = real ? 0 : frente - D / 2;
-    const y0 = baseY - 0.6;
+    // Fase 33: base maciça até o ponto mais baixo do terreno sob a planta (a planta nunca é inclinada)
+    const pl = mundo.hm ? plintoDoLote(mundo.hm, x, z, ang, w, d, baseY) : 0;
+    const y0 = baseY - 0.6 - pl;
     const seed = (look * 1000) % 97;
 
     // cor base
@@ -301,7 +303,7 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean, centro: [n
 
     if (prog < 1) {
       const hObra = Math.max(1.2, H * Math.min(1, prog * 1.15));
-      push('corpo', 0, y0, lz, W, hObra + 0.6, D, ang, x, z, camadaAtiva ? cor : '#9a958c');
+      push('corpo', 0, y0, lz, W, hObra + 0.6 + pl, D, ang, x, z, camadaAtiva ? cor : '#9a958c');
       out.corpo.fac!.push(4, a.peDireito, seed, 0);
       if (andares >= 8 && look < 0.6 && !camadaAtiva) {
         // grua de torre
@@ -313,10 +315,10 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean, centro: [n
     }
 
     const loja = a.zone === Zone.Comercial && a.level <= 2 ? 1 : 0;
-    push('corpo', 0, y0, lz, W, H + 0.6, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
+    push('corpo', 0, y0, lz, W, H + 0.6 + pl, D, ang, x, z, abandonado && !camadaAtiva ? cor.multiplyScalar(0.6) : cor);
     const estiloNum = a.estilo === 'casa' ? 0 : a.estilo === 'predio' ? 1 : a.estilo === 'vidro' ? 2 : 3;
     out.corpo.fac!.push(estiloNum, a.peDireito, seed, abandonado ? -1 : loja);
-    const topo = y0 + H + 0.6;
+    const topo = y0 + H + 0.6 + pl;
 
     if (camadaAtiva) continue;
 
@@ -353,11 +355,11 @@ function montar(camada: Camada, alto: boolean, reaisProntos: boolean, centro: [n
     }
     // toldo de loja
     if (loja && a.level === 1) {
-      push('toldo', 0, y0 + 3.3, frente + 0.8, W * 0.9, 0.18, 1.7, ang, x, z, TOLDOS[Math.floor(look * 60) % TOLDOS.length]);
+      push('toldo', 0, y0 + pl + 3.3, frente + 0.8, W * 0.9, 0.18, 1.7, ang, x, z, TOLDOS[Math.floor(look * 60) % TOLDOS.length]);
     }
     // chaminé de fábrica
     if (a.zone === Zone.Industrial && a.level === 2) {
-      push('chamine', W / 2 - 2.4, y0, lz - D / 2 + 2.4, 2.0, H + 16, 2.0, ang, x, z, '#8a5a44');
+      push('chamine', W / 2 - 2.4, y0 + pl, lz - D / 2 + 2.4, 2.0, H + 16, 2.0, ang, x, z, '#8a5a44');
     }
   }
   return out;

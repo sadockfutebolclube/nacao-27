@@ -1,5 +1,67 @@
 # CHANGELOG
 
+## 1.22.0 — Fase 33: defeitos das vias — aterro no relevo, malha saneada e detector (28/10/2026)
+
+Relatórios do detector antes e depois em `docs/auditoria-vias/antes.json` e `depois.json` (contagens por categoria + 30 piores locais com x, z e bairro), prints da mesma câmera dos 20 piores locais do ANTES, de Vidigal, Santa Teresa, do cruzamento "do print" (pior local do detector) e de um viaduto em `docs/auditoria-vias/antes/` e `depois/`. Reprodução: `node tools/rodar-ssr.mjs tools/detectar-defeitos-vias.ts --rotulo=depois` (`npm run detectar-defeitos`) e `tools/prints-auditoria.ts`.
+
+### Causa raiz (hipótese confirmada)
+- O talude da Fase 28 era uma **faixa de malha por trecho de rua**, desenhada dos dois lados de cada amostra. Onde duas ruas (ou duas pontas do mesmo cotovelo/grampo) se aproximam, as faixas se cruzam sem se fundir: **79.679 pontos de sobreposição** de superfícies no detector (mesma grade de 0,75 m), cunhas verdes de ângulo agudo e planos brancos soltos.
+- Em cotovelos do OSM (tangente que inverte ~180° em 3 m) as linhas de deslocamento viram um leque: **1.417 lascas** (área < 0,5 m² ou aspecto > 15) e **2.455 triângulos com normal para baixo**.
+
+### Mudanças
+- **Aterro como terreno** (`escavar.ts`): em vez de faixa por trecho, a cota de cada amostra de rua é pintada no heightmap com talude 1 V : 1,5 H (`nivel = alvo − (d − núcleo)/1,5`), fusão por máximo (a influência mais alta ganha, sem cunha), no máximo 60 m, ignora muro, ponte, túnel e água. O verde vem do splat de inclinação. `PESO_TETO` (0,05) limita o rebaixo de teto/piso a vértices com peso bilinear relevante (sem isso o teto baixava o núcleo e a rua flutuava até 3 m).
+- **Malha lateral** (`Vias.tsx`): só a face vertical (queda < 2,2 m ou sem terreno) e o muro de arrimo em ≤ 3 patamares de 5 m; corte de descontinuidade nos cotovelos, banquetas puladas onde o deslocamento vira leque, painéis de talude entre âncoras, e `sanearMalha` (remove lascas, vira enrolamento contrário à normal) em todos os blocos.
+- **Nós**: já havia uma cota por nó (`regrade.ts`, 25% avenidas / 40% ruas de morro) — conferido: **0 saltos > 1,5 m**. **Camadas**: ponte/túnel/viaduto seguem as regras das Fases 20 e 28 (vão ≥ 15 m com pilares, túnel com portal); o aterro não é gerado sob eles.
+- **Prédios em encosta**: modelo nunca inclina (só guinada). Lotes do OSM: base na menor cota + 3 m com **base maciça** (`plintoDoLote`) até o ponto mais baixo sob a planta (muro de arrimo implícito); lotes gerados com desnível > 3 m são descartados (contagem em `estatLotes`).
+- **Postes e props**: conferidos contra a superfície final (pista, calçada ou terreno), nunca no talude.
+- **F3**: camada "defeitos" (`DefeitosVias.tsx`) com os 30 piores locais; contagens de aterro, lascas e normais removidas no painel.
+
+### Medido (mesmo detector, código da Fase 32 → Fase 33)
+| categoria | antes | depois |
+|---|---|---|
+| lascas | 1.417 | 0 |
+| normais invertidas | 2.455 | 0 |
+| taludes sobrepostos | 79.679 | 376 |
+| vértices isolados | 112 | 4 |
+| queda lateral > 2,5 m (amostras) | 23.647 | 16.230 |
+| morro ao lado da pista > 0,8 m | 65 | 262 |
+| pontas quase conectadas (2–10 m) | 9 | 9 |
+| saltos de cota > 1,5 m em nós | 0 | 0 |
+| cruzamentos sem nó em cotas diferentes | 2 | 2 |
+| prédios inclinados | 0 | 0 |
+| prédios com desnível > 3 m sob a planta | 52.132 | 18.780 |
+| props fora da superfície | 252 (0.50%) | 281 (0.56%) |
+
+`npm run auditar-mapa` (Fase 32 → 33): ruas flutuando 20.594 → 14.549; ruas enterradas 8 → **39** (piorou); espetos de terreno 310 → **377** (piorou); ruas tortas 7.555 → 7.063; trechos com morro > 1 m sobre o asfalto 1 → 1. Tempo do terreno: 2396 → 7053 ms (**+4.7 s na geração**, uma vez); malha das vias 2240 → 1969 ms.
+
+### FPS (`npm run medir-fps -- --sem-vsync`, `docs/medicoes/fase33.json` × linha de base `2026-10-28.json`)
+| cena | fps base | fps Fase 33 | quadro p50 (ms) | quadro máx (ms) |
+|---|---|---|---|---|
+| Orla de Copacabana | 17.11 | 58.99 | 27.38 → 14.64 | 2284.21 → 84.81 |
+| Centro (Cinelândia) | 27.1 | 53.44 | 29.68 → 16.54 | 237.63 → 97.9 |
+| Favela na encosta (Vidigal) | 15.24 | 59.63 | 27.63 → 14.21 | 2401.71 → 95.19 |
+| Cruzamento com trânsito (Rio Branco × Presidente Vargas) | 51.06 | 53.22 | 18.66 → 15.83 | 300.03 → 99.99 |
+| Tour dos pontos turísticos (8 paradas de 7 s) | 16.44 | 52.47 | 35.3 → 16.51 | 3566.58 → 294.44 |
+
+- **Meta (fps dentro de 5% da linha de base): cumprida, mas a comparação é desigual.** Na cena limpa da linha de base (cruzamento, 51,06 fps, sem travadas) a Fase 33 deu 53,22 fps (+4%). Nas outras quatro a linha de base tinha travadas de 0,2 a 3,6 s e 15–27 fps; agora 52–60 fps e máximo de 85–294 ms. **Isso não é ganho da Fase 33**: triângulos e chamadas de desenho são praticamente os mesmos (11,8–14,3 M), e a rodada da linha de base provavelmente pegou a máquina ocupada. A linha de base deve ser refeita; a causa das travadas antigas continua não investigada.
+- Custo real da fase: **geração do terreno +4,7 s** (2,4 → 7,1 s, uma vez ao carregar o Rio), medido pelo detector; a malha das vias ficou 12% mais rápida (2.240 → 1.969 ms).
+
+### Limites que sobraram (nada escondido)
+- **Queda lateral**: 16.230 amostras ainda têm queda > 2,5 m ao lado da pista (eram 23.647). O heightmap tem passo de 10,67 m; ruas em encosta íngreme não cabem num talude 1:1,5 numa grade desse tamanho e caem na face vertical. Seria preciso grade mais fina ou muro contínuo.
+- **Prédios com desnível > 3 m**: 18.780 dos 152.698 (relevo do DEM de 30 m); continuam com base maciça visível em vez de removidos (prédios reais do OSM não se apagam).
+- 2 cruzamentos sem nó em cotas diferentes e 9 pontas quase conectadas (dados do OSM); 4 vértices isolados e 376 sobreposições de talude restantes; 262 amostras com morro ao lado da pista (**piorou** de 65: o aterro sobe a cota ao redor e a encosta fica acima de algumas calçadas).
+- **Props**: 151 flutuando e 130 enterrados (mediana do desvio 0,82 m).
+- Janelas da fachada podem aparecer na base maciça. A geração do terreno ficou mais lenta (acima).
+- Os 30 piores locais restantes estão em `docs/auditoria-vias/depois.json`; os 8 primeiros:
+1. Vidigal (-4586, 5515) — pontuação 306
+2. Vidigal (-4587, 5525) — pontuação 191
+3. São Francisco Xavier (-5389, -3907) — pontuação 179
+4. Botafogo (1755, 1308) — pontuação 166
+5. Ipanema (97, 3869) — pontuação 149
+6. Humaitá (-1670, 727) — pontuação 77
+7. Praça da Bandeira (-2338, -4149) — pontuação 72
+8. Maracanã (-3140, -3781) — pontuação 68
+
 ## 1.21.0 — Fase 32: encostas, taludes em patamares e morro sobre o asfalto (28/10/2026)
 
 Prints antes/depois (mesma câmera) de Santa Teresa, Vidigal, Niemeyer, um viaduto e a orla em `docs/encostas-fase32/`, mais o muro de 3 patamares da Av. Presidente João Goulart. Medições: `npm run auditar-mapa` e F3.

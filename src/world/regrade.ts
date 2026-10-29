@@ -14,6 +14,8 @@ import { edgeEnds, sampleByLength, type RoadGraph } from './roads';
 import { limitarRampa, suavizarPerfil } from './relevo';
 import { roadBaseY, type Heightmap } from './terrain';
 
+/** Talude de aterro (Fase 33: vira relevo, não faixa de malha): 1 V : 1,5 H, o máximo que o terreno em torno de uma rua aceita */
+export const TALUDE_H_POR_V = 1.5;
 export const GRADE_ALVO = 0.25;
 export const GRADE_TETO = 0.3;
 /** Rua de morro (Fase 28): onde o relevo pede mais que o teto entre os dois nós de uma RUA (não avenida), o trecho ganha rampa de até 40%, como as
@@ -71,6 +73,8 @@ export interface Regrade {
   nos: Map<number, number>;
   trechos: Map<number, PerfilRegrade>;
   resumo: ResumoRegrade;
+  /** Fase 33: aterro feito no relevo (talude 1:1,5 em torno das ruas acima do chão): células levantadas e a maior altura (m) */
+  aterro?: { celulas: number; maxAltura: number };
 }
 
 const registro = new WeakMap<Float32Array, Regrade>();

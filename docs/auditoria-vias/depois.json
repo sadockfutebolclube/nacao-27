@@ -1,0 +1,380 @@
+{
+ "rotulo": "depois",
+ "data": "2026-10-29T02:38:13.240Z",
+ "tempos_ms": {
+  "terreno": 7053,
+  "malhaDasVias": 1969,
+  "total": 14328
+ },
+ "predios_regra": "nova (Fase 33): base na cota mais alta, até 3 m sobre o ponto mais baixo",
+ "predios_regra_nova": {
+  "desnivelBruto_maior3m": 51904,
+  "comMuroDeArrimo": 51904,
+  "comBaseMaciça": 87909,
+  "terrenoMaior8Graus": 64693,
+  "lotesTotal": 133572,
+  "lotesGerados": 12713,
+  "lotesGeradosDescartadosPorDesnivel": 102459,
+  "lotesFixosComMuro": 42447,
+  "lotesComBaseMaciça": 80164
+ },
+ "universo": {
+  "trechos": 14973,
+  "secoesDeRuaVerificadas": 142638,
+  "triangulosDeTaludeEMuro": 6163,
+  "predios": 152698,
+  "props": 50392,
+  "nos": 12482,
+  "pontasDeGrau1": 1151
+ },
+ "limites": {
+  "areaMin": 0.5,
+  "aspectoMax": 15,
+  "vizinhoMax": 8,
+  "morroAoLado": 0.8,
+  "quedaLateral": 2.5,
+  "pontaDe": 2,
+  "pontaAte": 10,
+  "saltoNo": 1.5,
+  "predioGraus": 8,
+  "predioDesnivel": 3,
+  "propDesvio": 0.3
+ },
+ "contagem": {
+  "lascas": 0,
+  "normaisInvertidas": 0,
+  "verticesIsolados": 4,
+  "taludesSobrepostos": 376,
+  "morroAoLado": 262,
+  "quedaLateral": 16230,
+  "pontasQuaseConectadas": 9,
+  "saltosNoNo": 0,
+  "cruzamentosSemNo": 2,
+  "prediosInclinados": 0,
+  "prediosEnfiados": 18780,
+  "propsForaDaSuperficie": 281
+ },
+ "piores_30": [
+  {
+   "posto": 1,
+   "x": -4586,
+   "z": 5515,
+   "bairro": "Vidigal",
+   "pontuacao": 306,
+   "defeitos": {
+    "verticesIsolados": 1,
+    "taludesSobrepostos": 74,
+    "prediosEnfiados": 8
+   }
+  },
+  {
+   "posto": 2,
+   "x": -4587,
+   "z": 5525,
+   "bairro": "Vidigal",
+   "pontuacao": 191,
+   "defeitos": {
+    "taludesSobrepostos": 46,
+    "prediosEnfiados": 7
+   }
+  },
+  {
+   "posto": 3,
+   "x": -5389,
+   "z": -3907,
+   "bairro": "São Francisco Xavier",
+   "pontuacao": 179,
+   "defeitos": {
+    "taludesSobrepostos": 41,
+    "morroAoLado": 1,
+    "quedaLateral": 5,
+    "prediosEnfiados": 2
+   }
+  },
+  {
+   "posto": 4,
+   "x": 1755,
+   "z": 1308,
+   "bairro": "Botafogo",
+   "pontuacao": 166,
+   "defeitos": {
+    "taludesSobrepostos": 40,
+    "quedaLateral": 3
+   }
+  },
+  {
+   "posto": 5,
+   "x": 97,
+   "z": 3869,
+   "bairro": "Ipanema",
+   "pontuacao": 149,
+   "defeitos": {
+    "taludesSobrepostos": 35,
+    "quedaLateral": 1,
+    "prediosEnfiados": 7
+   }
+  },
+  {
+   "posto": 6,
+   "x": -1670,
+   "z": 727,
+   "bairro": "Humaitá",
+   "pontuacao": 77,
+   "defeitos": {
+    "taludesSobrepostos": 19,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 7,
+   "x": -2338,
+   "z": -4149,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 72,
+   "defeitos": {
+    "quedaLateral": 36
+   }
+  },
+  {
+   "posto": 8,
+   "x": -3140,
+   "z": -3781,
+   "bairro": "Maracanã",
+   "pontuacao": 68,
+   "defeitos": {
+    "quedaLateral": 33,
+    "propsForaDaSuperficie": 1
+   }
+  },
+  {
+   "posto": 9,
+   "x": -2147,
+   "z": -4943,
+   "bairro": "São Cristóvão",
+   "pontuacao": 62,
+   "defeitos": {
+    "quedaLateral": 31
+   }
+  },
+  {
+   "posto": 10,
+   "x": -2019,
+   "z": -5028,
+   "bairro": "São Cristóvão",
+   "pontuacao": 60,
+   "defeitos": {
+    "quedaLateral": 30
+   }
+  },
+  {
+   "posto": 11,
+   "x": -2063,
+   "z": -3819,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 58,
+   "defeitos": {
+    "quedaLateral": 27,
+    "propsForaDaSuperficie": 2
+   }
+  },
+  {
+   "posto": 12,
+   "x": -1499,
+   "z": -3657,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 58,
+   "defeitos": {
+    "quedaLateral": 29
+   }
+  },
+  {
+   "posto": 13,
+   "x": -3943,
+   "z": 3617,
+   "bairro": "Gávea",
+   "pontuacao": 57,
+   "defeitos": {
+    "quedaLateral": 27,
+    "prediosEnfiados": 3
+   }
+  },
+  {
+   "posto": 14,
+   "x": 1419,
+   "z": -2064,
+   "bairro": "Catete",
+   "pontuacao": 56,
+   "defeitos": {
+    "quedaLateral": 28
+   }
+  },
+  {
+   "posto": 15,
+   "x": -6062,
+   "z": 5226,
+   "bairro": "Rocinha",
+   "pontuacao": 53,
+   "defeitos": {
+    "quedaLateral": 26,
+    "prediosEnfiados": 1
+   }
+  },
+  {
+   "posto": 16,
+   "x": -1500,
+   "z": -3620,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 52,
+   "defeitos": {
+    "quedaLateral": 26
+   }
+  },
+  {
+   "posto": 17,
+   "x": -3970,
+   "z": 3555,
+   "bairro": "Gávea",
+   "pontuacao": 50,
+   "defeitos": {
+    "taludesSobrepostos": 11,
+    "quedaLateral": 3
+   }
+  },
+  {
+   "posto": 18,
+   "x": -2099,
+   "z": -3782,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 50,
+   "defeitos": {
+    "quedaLateral": 25
+   }
+  },
+  {
+   "posto": 19,
+   "x": -3267,
+   "z": -3545,
+   "bairro": "Maracanã",
+   "pontuacao": 50,
+   "defeitos": {
+    "quedaLateral": 25
+   }
+  },
+  {
+   "posto": 20,
+   "x": -2174,
+   "z": -4940,
+   "bairro": "São Cristóvão",
+   "pontuacao": 50,
+   "defeitos": {
+    "quedaLateral": 25
+   }
+  },
+  {
+   "posto": 21,
+   "x": -1701,
+   "z": -5221,
+   "bairro": "Santo Cristo",
+   "pontuacao": 48,
+   "defeitos": {
+    "quedaLateral": 24
+   }
+  },
+  {
+   "posto": 22,
+   "x": -3256,
+   "z": -3576,
+   "bairro": "Maracanã",
+   "pontuacao": 48,
+   "defeitos": {
+    "quedaLateral": 24
+   }
+  },
+  {
+   "posto": 23,
+   "x": 657,
+   "z": 101,
+   "bairro": "Botafogo",
+   "pontuacao": 47,
+   "defeitos": {
+    "taludesSobrepostos": 7,
+    "quedaLateral": 8,
+    "prediosEnfiados": 3
+   }
+  },
+  {
+   "posto": 24,
+   "x": -1493,
+   "z": -3700,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 46,
+   "defeitos": {
+    "quedaLateral": 23
+   }
+  },
+  {
+   "posto": 25,
+   "x": -3459,
+   "z": -3822,
+   "bairro": "Maracanã",
+   "pontuacao": 46,
+   "defeitos": {
+    "quedaLateral": 22,
+    "propsForaDaSuperficie": 1
+   }
+  },
+  {
+   "posto": 26,
+   "x": -2096,
+   "z": -3810,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 44,
+   "defeitos": {
+    "quedaLateral": 21,
+    "propsForaDaSuperficie": 1
+   }
+  },
+  {
+   "posto": 27,
+   "x": -1505,
+   "z": -3580,
+   "bairro": "Praça da Bandeira",
+   "pontuacao": 44,
+   "defeitos": {
+    "quedaLateral": 22
+   }
+  },
+  {
+   "posto": 28,
+   "x": -3092,
+   "z": 3538,
+   "bairro": "Leblon",
+   "pontuacao": 44,
+   "defeitos": {
+    "quedaLateral": 22
+   }
+  },
+  {
+   "posto": 29,
+   "x": -2698,
+   "z": -3818,
+   "bairro": "Maracanã",
+   "pontuacao": 44,
+   "defeitos": {
+    "quedaLateral": 22
+   }
+  },
+  {
+   "posto": 30,
+   "x": -5613,
+   "z": -1619,
+   "bairro": "Andaraí",
+   "pontuacao": 42,
+   "defeitos": {
+    "quedaLateral": 17,
+    "cruzamentosSemNo": 1,
+    "prediosEnfiados": 2
+   }
+  }
+ ]
+}

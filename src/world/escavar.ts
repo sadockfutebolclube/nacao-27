@@ -10,7 +10,7 @@
  * contra `h` para o desenho das vias.
  */
 import { HM_RES, HM_STEP, HM_VERTS, MAP_SIZE } from './constants';
-import { regradarVias, registrarRegrade, Classe, type Regrade } from './regrade';
+import { regradarVias, registrarRegrade, Classe, TALUDE_H_POR_V, type Regrade } from './regrade';
 import { calcadaVia, edgeEnds, larguraVia, sampleByLength, type RoadGraph } from './roads';
 
 const BLEND = 8;
@@ -19,6 +19,11 @@ const FOLGA = 0.35;
 /** abaixo disto (m) a célula é água ou praia: não se mexe */
 const COTA_MIN = 0.5;
 const REBAIXO_MAX = 14;
+/** peso bilinear mínimo do vértice num ponto da rua para o teto e o piso valerem (Fase 33) */
+const PESO_TETO = 0.05;
+/** Aterro (Fase 33): o terreno sobe em torno de cada rua que está acima dele, em talude de 1 V : 1,5 H, até no máximo tantos metros para fora do núcleo */
+const ATERRO_ALCANCE = 70;
+const ATERRO_MAX = 60;
 
 const sm = (e0: number, e1: number, x: number) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 
@@ -32,6 +37,8 @@ export function escavarVias(h: Float32Array, g: RoadGraph): ResumoEscavacao {
   // cada célula obedece à rua que a puxa com mais força (peso maior; empate: a mais perto): a média entre ruas vizinhas de cotas
   // diferentes deixava o morro ~1 m acima do eixo das duas
   const alvoDe = new Float32Array(h.length), wmax = new Float32Array(h.length), dmin = new Float32Array(h.length).fill(1e9);
+  // aterro: nível que o talude de qualquer rua pede para a célula (união das ruas: vale o mais alto); -1e9 = nenhum
+  const aterro = new Float32Array(h.length).fill(-1e9);
   let trechos = 0;
   for (const e of g.edges.values()) {
     const t = reg.trechos.get(e.id);
@@ -53,6 +60,23 @@ export function escavarVias(h: Float32Array, g: RoadGraph): ResumoEscavacao {
       const nucleo = nucleoN, raio = muro ? nucleoN + 4 : raioN;
       const raioC2 = (raio / HM_STEP) ** 2;
       const alvo = t.y[s] - FOLGA;
+      if (!muro) {
+        // talude de aterro: a célula a d m do eixo (além do núcleo) pede alvo − (d − núcleo) / 1,5; muro de arrimo (corte ou aterro > 4 m) não aterra: o muro cobre
+        const Ra = Math.ceil((nucleo + ATERRO_ALCANCE) / HM_STEP) + 1, fa = (pts[s].x + half) / HM_STEP, fb = (pts[s].z + half) / HM_STEP, ca = Math.round(fa), cb = Math.round(fb);
+        for (let dj = -Ra; dj <= Ra; dj++) {
+          const j = cb + dj;
+          if (j < 0 || j > HM_RES) continue;
+          for (let di = -Ra; di <= Ra; di++) {
+            const i = ca + di;
+            if (i < 0 || i > HM_RES) continue;
+            const d = Math.hypot(i - fa, j - fb) * HM_STEP;
+            if (d > nucleo + ATERRO_ALCANCE) continue;
+            const k = j * HM_VERTS + i;
+            const nivel = alvo - Math.max(0, d - nucleo) / TALUDE_H_POR_V;
+            if (nivel > aterro[k] && nivel > h0[k] + 0.1) aterro[k] = nivel;
+          }
+        }
+      }
       const fi = (pts[s].x + half) / HM_STEP, fj = (pts[s].z + half) / HM_STEP;
       const ci = Math.round(fi), cj = Math.round(fj);
       for (let dj = -R; dj <= R; dj++) {
@@ -73,16 +97,20 @@ export function escavarVias(h: Float32Array, g: RoadGraph): ResumoEscavacao {
       }
     }
   }
-  let celulas = 0, maxCorte = 0, maxAterro = 0;
+  let celulas = 0, maxCorte = 0, maxAterro = 0, celulasAterro = 0, maxAlturaAterro = 0;
   for (let k = 0; k < h.length; k++) {
+    // base: o relevo original ou o aterro que o talude de alguma rua pede (nunca em água/praia nem acima de ATERRO_MAX m sobre o original)
+    let base = h0[k];
+    if (aterro[k] > base + 0.1 && h0[k] >= COTA_MIN) { base = Math.min(aterro[k], h0[k] + ATERRO_MAX); celulasAterro++; maxAlturaAterro = Math.max(maxAlturaAterro, base - h0[k]); h[k] = base; }
     if (wmax[k] <= 0) continue;
     const alvo = alvoDe[k];
-    const novo = h0[k] + (alvo - h0[k]) * wmax[k];
+    const novo = base + (alvo - base) * wmax[k];
     h[k] = novo;
     celulas++;
     maxCorte = Math.max(maxCorte, h0[k] - novo); maxAterro = Math.max(maxAterro, novo - h0[k]);
   }
   celulas += rebaixarSobreAsfalto(h, h0, g, reg);
+  reg.aterro = { celulas: celulasAterro, maxAltura: maxAlturaAterro };
   return { trechos, celulas, maxCorte, maxAterro, regrade: reg.resumo };
 }
 
@@ -109,9 +137,13 @@ function rebaixarSobreAsfalto(h: Float32Array, h0: Float32Array, g: RoadGraph, r
       for (const d of [-hw, 0, hw]) {
         const fi = (pts[s].x + (nx / l) * d + half) / HM_STEP, fj = (pts[s].z + (nz / l) * d + half) / HM_STEP;
         const i0 = Math.floor(fi), j0 = Math.floor(fj);
+        const fx = fi - i0, fy = fj - j0;
         for (let dj = 0; dj <= 1; dj++) for (let di = 0; di <= 1; di++) {
           const i = i0 + di, j = j0 + dj;
           if (i < 0 || j < 0 || i > HM_RES || j > HM_RES) continue;
+          // Fase 33: só os vértices que de fato pesam neste ponto (peso bilinear ≥ 0,3) recebem o teto e o piso; o mínimo sobre os 4 vértices de qualquer ponto
+          // puxava o vértice de cima de uma ladeira para a cota do ponto mais baixo e deixava a rua flutuando até 3 m sobre o relevo
+          if ((di ? fx : 1 - fx) * (dj ? fy : 1 - fy) < PESO_TETO) continue;
           const k = j * HM_VERTS + i;
           if (h0[k] < COTA_MIN) continue;
           if (t.y[s] - 0.3 < teto[k]) teto[k] = t.y[s] - 0.3;

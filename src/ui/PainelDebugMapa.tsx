@@ -3,6 +3,8 @@ import { debugMapa, useDebugMapa, type Problema } from '../render/city/estadoDeb
 import { irPara } from '../render/city/Camera';
 import { NOMES_ESTADO, pedDebug, usePedDebug } from '../render/city/estadoPedestres';
 import { DENSIDADE_VERMELHA } from '../render/city/MapaCalorPedestres';
+import { camadaDefeitos, CORES_DEFEITO, ROTULO_DEFEITO } from '../render/city/DefeitosVias';
+import { useEffect, useState } from 'react';
 
 const COR: Record<Problema['tipo'], string> = { morro: '#ff9a62', vao: '#6ab7ff', rampa: '#ffd45e', rotatoria: '#c79bff', solta: '#ff7aa8', predio: '#7ee0c0', solucao: '#9ad66b' };
 const COR_SOL = { color: '#9ad66b' };
@@ -36,6 +38,22 @@ function SecaoPedestres() {
   );
 }
 
+/** Camada de defeitos (Fase 33): caixa para ligar as colunas do detector no mapa e a contagem por categoria do último relatório */
+function SecaoDefeitos() {
+  const [lig, setLig] = useState(camadaDefeitos.ligada);
+  const [cont, setCont] = useState<Record<string, number> | null>(null);
+  useEffect(() => { fetch('./data/debug/defeitos-vias.json').then((r) => r.json()).then((j: { contagem: Record<string, number> }) => setCont(j.contagem)).catch(() => setCont(null)); }, []);
+  return (
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.14)', marginTop: 6, paddingTop: 6 }}>
+      <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input type="checkbox" checked={lig} onChange={(e) => { camadaDefeitos.ligar(e.target.checked); setLig(e.target.checked); }} /> <b>defeitos</b> (colunas no mapa; relatório do detector)
+      </label>
+      {cont && <div style={{ opacity: 0.85, marginTop: 4, lineHeight: 1.5 }}>{Object.entries(cont).map(([k, v]) => <span key={k} style={{ marginRight: 8 }}><span style={{ color: CORES_DEFEITO[k] }}>■</span> {ROTULO_DEFEITO[k] ?? k} {v.toLocaleString('pt-BR')}</span>)}</div>}
+      {!cont && <div style={{ opacity: 0.6, marginTop: 4 }}>sem relatório: rode npm run detectar-defeitos</div>}
+    </div>
+  );
+}
+
 export function PainelDebugMapa() {
   const d = useDebugMapa();
   if (!d.modo) return null;
@@ -57,7 +75,7 @@ export function PainelDebugMapa() {
       </div>
       <div style={{ marginBottom: 4, opacity: 0.7 }}>tratados: {c.muro} com muro de arrimo (até 3 patamares, maior parede {c.maiorParede.toFixed(1)} m, {c.muroTalude} seções com talude de grama acima) · {c.ponte} pontes · {c.tunel} túneis · {c.ruaDeMorro} ruas de morro (rampa até 40%) · {c.falesia} na falésia (cota do pé)</div>
       <div style={{ marginBottom: 4, opacity: 0.85 }}>solução por trecho: <span style={COR_SOL}>{c.porSolucao.talude} talude</span> · {c.porSolucao.terraco} terraço · {c.porSolucao.muro} muro · {c.porSolucao.viaduto} viaduto · {c.porSolucao.tunel} túnel · {c.secoesPatamar} seções de talude em patamares (maior lance {c.maiorLance.toFixed(1)} m)</div>
-      <div style={{ marginBottom: 6, opacity: 0.7 }}>solução da lateral: {c.taludes} amostras de talude de grama 1:1,5 · {c.lateralVertical} de face vertical (ponte/viaduto) · alturas máximas: aterro {c.maiorAterro.toFixed(1)} m · corte {c.maiorCorte.toFixed(1)} m · muro {c.maiorMuro.toFixed(1)} m · queda do bordo {c.maiorQueda.toFixed(1)} m</div>
+      <div style={{ marginBottom: 6, opacity: 0.7 }}>lateral: aterro no RELEVO (talude 1 V : 1,5 H, união das ruas) em {c.aterroCelulas.toLocaleString('pt-BR')} células, até {c.aterroMax.toFixed(0)} m · face vertical {c.lateralVertical.toLocaleString('pt-BR')} amostras ({c.lateralForaDePonte.toLocaleString('pt-BR')} fora de ponte, onde o aterro não alcançou) · malha de muro: {c.lascasRemovidas} lascas removidas, {c.normaisViradas} normais viradas · alturas máximas: aterro {c.maiorAterro.toFixed(1)} m · corte {c.maiorCorte.toFixed(1)} m · muro {c.maiorMuro.toFixed(1)} m · queda do bordo {c.maiorQueda.toFixed(1)} m</div>
       <div style={{ overflowY: 'auto' }}>
         {d.problemas.length === 0 && <div style={{ opacity: 0.7 }}>Nenhum problema encontrado.</div>}
         {d.problemas.slice(0, 150).map((p, i) => (
@@ -70,6 +88,7 @@ export function PainelDebugMapa() {
           </div>
         ))}
       </div>
+      <SecaoDefeitos />
       <SecaoPedestres />
       <div style={{ marginTop: 6, opacity: 0.6 }}>F3 alterna: wireframe → wireframe + normais → desligado · % = inclinação máxima do trecho</div>
     </div>

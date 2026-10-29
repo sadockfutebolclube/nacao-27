@@ -19,6 +19,7 @@ import { ambiente } from './ambiente';
 import { CICLO_SEM, eixoSemaforo, faseSemaforo } from '../../sim/trafego/semaforo';
 import { trafegoEstado } from '../../sim/trafegoEstado';
 import { estatLateral } from './estadoDebug';
+import { TALUDE_H_POR_V } from '../../world/regrade';
 import { clima } from './climaVisual';
 import { amostrarPerfil, construirPerfis, type Perfil } from './perfilVias';
 import orla from '../../data/orla.json';
@@ -65,6 +66,44 @@ function geometria(b: Buffers): THREE.BufferGeometry {
   return g;
 }
 
+/**
+ * Quad (v0 v1 v2 v3 = a_baixo, a_alto, b_baixo, b_alto) com o enrolamento escolhido pela NORMAL pretendida, calculado das posições: nada de depender do sinal
+ * de uma tangente 2D (o que deixava a frente de metade dos painéis do muro virada para dentro; o detector da Fase 33 contou 279).
+ */
+function quadComNormal(b: Buffers, r0: number, nx: number, ny: number, nz: number) {
+  const P = b.pos, o0 = r0 * 3, o1 = o0 + 3, o2 = o0 + 6;
+  const ux = P[o1] - P[o0], uy = P[o1 + 1] - P[o0 + 1], uz = P[o1 + 2] - P[o0 + 2], vx = P[o2] - P[o0], vy = P[o2 + 1] - P[o0 + 1], vz = P[o2 + 2] - P[o0 + 2];
+  const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+  if (cx * nx + cy * ny + cz * nz >= 0) b.idx.push(r0, r0 + 1, r0 + 2, r0 + 1, r0 + 3, r0 + 2);
+  else b.idx.push(r0, r0 + 2, r0 + 1, r0 + 1, r0 + 2, r0 + 3);
+}
+
+/** Limites do saneamento de malha de talude e muro (os mesmos do detector, tools/detectar-defeitos-vias.ts) */
+export const LASCA_AREA_MIN = 0.5;
+export const LASCA_ASPECTO_MAX = 15;
+
+/**
+ * Saneamento (Fase 33): tira os triângulos que seriam lascas (área < 0,5 m² ou maior aresta > 15× a altura) e vira o enrolamento dos que ficaram com a frente
+ * contra a normal gravada. Devolve quantos de cada. Roda uma vez por buffer, na montagem; os números vão para o F3.
+ */
+export function sanearMalha(b: Buffers): { lascas: number; viradas: number } {
+  const P = b.pos, N = b.nor, I = b.idx, saida: number[] = [];
+  let lascas = 0, viradas = 0;
+  for (let t = 0; t + 2 < I.length; t += 3) {
+    const a = I[t] * 3, c = I[t + 1] * 3, d = I[t + 2] * 3;
+    const ux = P[c] - P[a], uy = P[c + 1] - P[a + 1], uz = P[c + 2] - P[a + 2], vx = P[d] - P[a], vy = P[d + 1] - P[a + 1], vz = P[d + 2] - P[a + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const dobro = Math.hypot(nx, ny, nz);
+    if (dobro < 1e-9) continue; // degenerado: some
+    const maior = Math.max(Math.hypot(ux, uy, uz), Math.hypot(vx, vy, vz), Math.hypot(P[d] - P[c], P[d + 1] - P[c + 1], P[d + 2] - P[c + 2]));
+    if (dobro / 2 < LASCA_AREA_MIN || maior / (dobro / maior) > LASCA_ASPECTO_MAX) { lascas++; continue; }
+    const dot = nx * (N[a] + N[c] + N[d]) + ny * (N[a + 1] + N[c + 1] + N[d + 1]) + nz * (N[a + 2] + N[c + 2] + N[d + 2]);
+    if (dot < 0) { saida.push(I[t], I[t + 2], I[t + 1]); viradas++; } else saida.push(I[t], I[t + 1], I[t + 2]);
+  }
+  b.idx = saida;
+  return { lascas, viradas };
+}
+
 /** Faixa (ribbon) entre deslocamentos laterais d0→d1, com alturas relativas y0/y1. */
 function faixa(b: Buffers, p: Perfil, i0: number, i1: number, d0: number, d1: number, y0: number, y1: number, u0: number, u1: number, vEscala: number, normalLateral = 0) {
   const base = b.pos.length / 3;
@@ -95,12 +134,9 @@ function faixa(b: Buffers, p: Perfil, i0: number, i1: number, d0: number, d1: nu
  * que desce do bordo da calçada e vai até encontrar o terreno (no máximo 40 m para fora), no buffer das banquetas (material de grama).
  * Cada trecho contínuo de amostras do mesmo modo vira uma faixa; a face fica voltada para fora.
  */
-export const TALUDE_H_POR_V = 1.5;
+export { TALUDE_H_POR_V };
+/** Queda (m) do bordo da calçada ao terreno a partir da qual uma lateral FORA de ponte é um defeito (o relevo já deveria ter subido em talude) */
 export const TALUDE_MIN_QUEDA = 2.2;
-/** Fase 32: queda total acima disto vira PATAMARES (até 3 lances de talude com banquetas de 2 m entre eles); cada lance tem no máximo ~8 m de altura, salvo se a queda passar de 24 m */
-export const TALUDE_QUEDA_PATAMAR = 12;
-export const TALUDE_LANCE_H = 8;
-export const TALUDE_BANQUETA = 2;
 /** muro de arrimo (Fase 32): no máximo 3 patamares, cada parede com até 5 m; acima de 15 m de desnível o resto é talude de grama */
 export const MURO_PATAMAR_H = 5;
 /** Patamares de um muro de arrimo: `hMax` é o maior desnível do par de seções, `h` o desnível desta seção. Até 3 patamares de ≤ 5 m; o resto (`resto`) vira talude de grama. */
@@ -109,84 +145,31 @@ export function patamaresMuro(hMax: number, h: number): { np: number; hp: number
   const hp = Math.min(MURO_PATAMAR_H, h / np);
   return { np, hp, resto: Math.max(0, h - np * hp) };
 }
-const TAL_SEGS = 5; // talude, banqueta, talude, banqueta, talude
-/** dev: localStorage['n27:semTalude']='1' volta à face vertical em tudo (para comparar tempo e visual) */
-const SEM_TALUDE = (() => { try { return import.meta.env.DEV && localStorage.getItem('n27:semTalude') === '1'; } catch { return false; } })();
 
 /**
- * Perfil do talude de aterro numa seção: lista de pontos (r = afastamento do bordo da calçada, y = cota) do bordo ao pé. Quedas de até
- * `TALUDE_QUEDA_PATAMAR` m são um plano de 1 V : 1,5 H; acima disso, `n` lances (n = ⌈queda / 8⌉, no máximo 3) separados por banquetas planas de 2 m.
- * Devolve também o nº de lances. Função pura (testável): `alturaTerreno(r)` dá a cota do terreno a r metros do bordo.
+ * Lateral da pista. Fase 33: o TALUDE DE ATERRO saiu da malha das vias (era uma faixa por trecho, que se sobrepunha em cruzamentos, retornos e ruas
+ * paralelas): agora é relevo — `escavar.ts` levanta o terreno em torno de cada rua acima do chão, em 1 V : 1,5 H e com a união das ruas, e o verde vem do
+ * splat de inclinação. Aqui sobra a face vertical do TABULEIRO de ponte e viaduto (2,2 a 14 m) e, onde o aterro não cobriu (queda ainda acima de
+ * `TALUDE_MIN_QUEDA` fora de ponte), a mesma face vertical, que o detector conta como defeito.
  */
-export function perfilTalude(yTopo: number, queda: number, alturaTerreno: (r: number) => number): { pts: [number, number][]; lances: number } {
-  const inv = 1 / TALUDE_H_POR_V;
-  // a queda que vale é a do plano único até o terreno (a falésia pode cair muito depois do bordo, onde `queda` ainda é pequena)
-  let total = queda;
-  for (let rr = 0; rr < 70; rr += 1) { const ys = yTopo - rr * inv; if (ys <= alturaTerreno(rr) + 0.05) { total = Math.max(queda, yTopo - ys); break; } if (rr >= 69) total = Math.max(queda, yTopo - ys); }
-  const nl = total > TALUDE_QUEDA_PATAMAR ? Math.min(3, Math.ceil(total / TALUDE_LANCE_H)) : 1;
-  const hLance = nl > 1 ? total / nl : Infinity;
-  const pts: [number, number][] = [[0, yTopo]];
-  let r = 0, y = yTopo, lances = 0;
-  for (let k = 0; k < nl; k++) {
-    const y0 = y, r0 = r, ultimo = k === nl - 1;
-    let rr = r0;
-    for (; rr < 70; rr += 1) {
-      const ys = y0 - (rr - r0) * inv;
-      if (ys <= alturaTerreno(rr) + 0.05 || (!ultimo && y0 - ys >= hLance)) { y = ys; break; }
-    }
-    r = rr; lances++;
-    pts.push([r, y]);
-    if (y <= alturaTerreno(r) + 0.05) break;
-    if (!ultimo) { r += TALUDE_BANQUETA; pts.push([r, y]); }
-  }
-  return { pts, lances };
-}
-
-function lateralAteTerreno(b: Buffers, tal: Buffers, p: Perfil, i0: number, i1: number, d: number, lado: number, hm: Heightmap, estat?: { taludes: number; vertical: number; maxQueda: number; patamares?: number; maxLance?: number }) {
-  let modoAtual: 0 | 1 | -1 = -1, base = 0, cont = 0, buf = b;
-  const fecha = () => {
-    if (buf === tal) { const P = 2 * TAL_SEGS; for (let k = 0; k < cont - 1; k++) for (let j = 0; j < TAL_SEGS; j++) { const a = base + k * P + 2 * j, c = a + P; buf.idx.push(a, a + 1, c, a + 1, c + 1, c); } }
-    else for (let k = 0; k < cont - 1; k++) { const a = base + k * 2, c = a + 2; buf.idx.push(a, a + 1, c, a + 1, c + 1, c); }
-    cont = 0;
-  };
-  const inv = 1 / TALUDE_H_POR_V, nl = Math.hypot(inv, 1);
+function lateralAteTerreno(b: Buffers, p: Perfil, i0: number, i1: number, d: number, lado: number, hm: Heightmap, estat?: { taludes: number; vertical: number; maxQueda: number; foraDePonte?: number }) {
+  let base = 0, cont = 0;
+  const fecha = () => { for (let k = 0; k < cont - 1; k++) { const a = base + k * 2, c = a + 2; b.idx.push(a, a + 1, c, a + 1, c + 1, c); } cont = 0; };
+  base = b.pos.length / 3;
   for (let i = i0; i <= i1; i++) {
     const nx = -p.tz[i], nz = p.tx[i];
     const x = p.x[i] + nx * d, z = p.z[i] + nz * d;
     const terreno = sampleHeight(hm, x, z);
     const queda = p.y[i] + 0.17 - terreno;
     const ponte = p.nivel === 1 || p.classe?.[i] === Classe.Ponte;
-    const modo: 0 | 1 = !SEM_TALUDE && !ponte && queda > TALUDE_MIN_QUEDA + 0.25 ? 1 : 0;
-    if (modo !== modoAtual) { fecha(); modoAtual = modo; buf = modo ? tal : b; base = buf.pos.length / 3; }
     const topo = 0.17, v = p.s[i];
-    if (modo === 1) {
-      const ox = nx * lado, oz = nz * lado;
-      const { pts, lances } = perfilTalude(p.y[i] + topo, queda, (rr) => sampleHeight(hm, x + ox * rr, z + oz * rr));
-      // 5 segmentos fixos por seção (os que sobram ficam degenerados no pé): cada um com seus 2 vértices e a própria normal
-      const sx = (ox * inv) / nl, sz = (oz * inv) / nl, sy = 1 / nl;
-      for (let j = 0; j < TAL_SEGS; j++) {
-        const A = pts[Math.min(j, pts.length - 1)], B = pts[Math.min(j + 1, pts.length - 1)];
-        const banqueta = j % 2 === 1;
-        const [pa, pb] = lado > 0 ? [A, B] : [B, A];
-        buf.pos.push(x + ox * pa[0], pa[1], z + oz * pa[0], x + ox * pb[0], pb[1], z + oz * pb[0]);
-        if (banqueta) buf.nor.push(0, 1, 0, 0, 1, 0); else buf.nor.push(sx, sy, sz, sx, sy, sz);
-        buf.uv.push(v / 3, pa[0] / 3, v / 3, pb[0] / 3);
-      }
-      if (estat) {
-        estat.taludes++; estat.maxQueda = Math.max(estat.maxQueda, queda);
-        if (lances > 1) estat.patamares = (estat.patamares ?? 0) + 1;
-        let lance = 0; for (let j = 0; j + 1 < pts.length; j += 2) lance = Math.max(lance, pts[j][1] - pts[j + 1][1]);
-        estat.maxLance = Math.max(estat.maxLance ?? 0, lance);
-      }
-    } else {
-      const fundo = Math.max(-14, Math.min(-2.2, terreno - p.y[i] - 0.25));
-      // lado > 0: (alto, baixo); lado < 0: (baixo, alto) — inverte o enrolamento para a face apontar sempre para fora
-      const [y0, y1] = lado > 0 ? [topo, fundo] : [fundo, topo];
-      buf.pos.push(x, p.y[i] + y0, z, x, p.y[i] + y1, z);
-      buf.nor.push(nx * lado, 0, nz * lado, nx * lado, 0, nz * lado);
-      buf.uv.push(0, v, 0, v);
-      if (estat && queda > TALUDE_MIN_QUEDA + 0.25) { estat.vertical++; estat.maxQueda = Math.max(estat.maxQueda, queda); }
-    }
+    const fundo = Math.max(-14, Math.min(-2.2, terreno - p.y[i] - 0.25));
+    // lado > 0: (alto, baixo); lado < 0: (baixo, alto) — inverte o enrolamento para a face apontar sempre para fora
+    const [y0, y1] = lado > 0 ? [topo, fundo] : [fundo, topo];
+    b.pos.push(x, p.y[i] + y0, z, x, p.y[i] + y1, z);
+    b.nor.push(nx * lado, 0, nz * lado, nx * lado, 0, nz * lado);
+    b.uv.push(0, v, 0, v);
+    if (estat && queda > TALUDE_MIN_QUEDA + 0.25) { estat.vertical++; estat.maxQueda = Math.max(estat.maxQueda, queda); if (!ponte) estat.foraDePonte = (estat.foraDePonte ?? 0) + 1; }
     cont++;
   }
   fecha();
@@ -278,7 +261,7 @@ export function construir(hm: Heightmap): MalhaVias {
   const g = mundo.roads;
   const perfis = construirPerfis(g, hm);
   perfisAtuais = perfis;
-  estatLateral.taludes = 0; estatLateral.vertical = 0; estatLateral.maxQueda = 0; estatLateral.patamares = 0; estatLateral.maxLance = 0; estatLateral.maxParede = 0; estatLateral.muroTalude = 0;
+  estatLateral.taludes = 0; estatLateral.vertical = 0; estatLateral.maxQueda = 0; estatLateral.patamares = 0; estatLateral.maxLance = 0; estatLateral.maxParede = 0; estatLateral.muroTalude = 0; estatLateral.foraDePonte = 0;
   const blocos = new Map<string, Acum>();
   const bloco = (x: number, z: number) => {
     const k = `${Math.floor(x / BLOCO_VIAS)},${Math.floor(z / BLOCO_VIAS)}`;
@@ -289,7 +272,7 @@ export function construir(hm: Heightmap): MalhaVias {
 
   for (const p of perfis.values()) {
     const meio = p.n >> 1;
-    const { leitos, calc, calcadao, lat, banqueta, postes, pilares, palmeiras } = bloco(p.x[meio], p.z[meio]);
+    const { leitos, calc, calcadao, lat, postes, pilares, palmeiras } = bloco(p.x[meio], p.z[meio]);
     const regrade = regradeDe(hm.h);
     const hw = larguraVia(p.edge) / 2, sw = calcadaVia(p.edge);
     const i0 = indiceDoCorte(p, p.cortaA, false), i1 = indiceDoCorte(p, p.cortaB, true);
@@ -315,7 +298,7 @@ export function construir(hm: Heightmap): MalhaVias {
       if (lado > 0) faixa(destino, p, sa, sb, dIn, dOut, 0.17, 0.17, 0, 1, escalaV);
       else faixa(destino, p, sa, sb, dOut, dIn, 0.17, 0.17, 0, 1, escalaV);
       // talude / lateral da ponte até abaixo do chão (face voltada para fora)
-      lateralAteTerreno(lat, banqueta, p, sa, sb, dOut, lado, hm, estatLateral);
+      lateralAteTerreno(lat, p, sa, sb, dOut, lado, hm, estatLateral);
     }
     // postes
     const passo = 30;
@@ -354,6 +337,7 @@ export function construir(hm: Heightmap): MalhaVias {
         const d = lado * (hw + sw + 0.35);
         let ant = null as PontoMuro | null;
         let proximoBal = 0;
+        let ancora = null as PontoMuro | null;
         for (let i = i0; i <= i1; i++) {
           let atual = null as PontoMuro | null;
           if (p.classe[i] === Classe.Muro) {
@@ -363,6 +347,10 @@ export function construir(hm: Heightmap): MalhaVias {
             if (terr > via + 0.6 && terr - via < 40) atual = { x, z, nx, nz, via, terr: terr + 0.25, s: p.s[i], corte: true };
             else if (terr < via - 0.6 && via - terr < 40) atual = { x, z, nx, nz, via, terr: terr - 0.3, s: p.s[i], corte: false };
           }
+          // quina do traçado (retorno fechado do OSM: a tangente gira ~180° em 3 m): os pontos deslocados de duas amostras vizinhas ficam em lados opostos da pista, a 8–25 m um do
+          // outro, e o painel atravessaria a rua. Descontinuidade: o muro para aqui e recomeça na amostra seguinte (a causa das lascas e das cunhas nos retornos)
+          if (atual && ant && Math.hypot(atual.x - ant.x, atual.z - ant.z) > 1.8 * (p.s[i] - p.s[i - 1]) + 1.0) { ant = null; ancora = null; }
+          if (atual && ant && atual.corte === ant.corte && Math.hypot(atual.x - ant.x, atual.z - ant.z) < 1.2) { ant = atual; continue; } // painel mais curto que 1,2 m seria uma lasca
           if (atual && ant && atual.corte === ant.corte) { // corte e aterro não se ligam (a parede se torceria)
             const B = bloco(atual.x, atual.z);
             // Fase 32: até 3 patamares de muro de ≤ 5 m com banquetas de 2 m; o que passa de 15 m de desnível vira talude de grama 1 V : 1,5 H acima do último patamar
@@ -382,18 +370,17 @@ export function construir(hm: Heightmap): MalhaVias {
               for (let q4 = 0; q4 < 4; q4++) B.muro.nor.push(fnx, 0, fnz);
               B.muro.uv.push(ant.s / 3, ya0 / 2.5, ant.s / 3, ya1 / 2.5, atual.s / 3, yb0 / 2.5, atual.s / 3, yb1 / 2.5);
               // frente do triângulo (anti-horário) = a normal pretendida: tangente t = (b − a); a frente de (v0, v1, v2) olha para (tz, −tx)
-              const tgx = bx - ax, tgz = bz - az;
-              if (fnx * tgz - fnz * tgx >= 0) B.muro.idx.push(r0, r0 + 1, r0 + 2, r0 + 1, r0 + 3, r0 + 2);
-              else B.muro.idx.push(r0, r0 + 2, r0 + 1, r0 + 1, r0 + 2, r0 + 3);
+              quadComNormal(B.muro, r0, fnx, 0, fnz);
               // banqueta de grama no alto do patamar (corte) ou no pé dele (aterro): 2 m de largura, no nível seguinte
               const cx0 = ant.x + ant.nx * off2, cz0 = ant.z + ant.nz * off2, dx0 = atual.x + atual.nx * off2, dz0 = atual.z + atual.nz * off2;
+              // retorno fechado: as linhas deslocadas se abrem em leque (ou se cruzam) e o painel viraria uma lasca de 15–30 m; sem banqueta nesse trecho
+              const dRef = Math.hypot(atual.x - ant.x, atual.z - ant.z);
+              if (Math.hypot(cx0 - dx0, cz0 - dz0) > 2.5 * dRef + 1.5) continue;
               const b0 = B.banqueta.pos.length / 3;
               B.banqueta.pos.push(ax, ya1 + 0.01, az, cx0, ya1 + 0.01, cz0, bx, yb1 + 0.01, bz, dx0, yb1 + 0.01, dz0);
               for (let q4 = 0; q4 < 4; q4++) B.banqueta.nor.push(0, 1, 0);
               B.banqueta.uv.push(ant.s / 2, 0, ant.s / 2, 1, atual.s / 2, 0, atual.s / 2, 1);
-              // topo da banqueta: a frente olha para cima quando (para fora × tangente).y > 0
-              if (atual.nz * tgx - atual.nx * tgz >= 0) B.banqueta.idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2);
-              else B.banqueta.idx.push(b0, b0 + 2, b0 + 1, b0 + 1, b0 + 2, b0 + 3);
+              quadComNormal(B.banqueta, b0, 0, 1, 0);
               // guarda-corpo: no alto do último patamar do corte; na borda da pista, no aterro
               if ((atual.corte && k === np - 1) || (!atual.corte && k === 0)) {
                 const gy = (atual.corte ? yb1 : yb0), gya = (atual.corte ? ya1 : ya0);
@@ -401,8 +388,7 @@ export function construir(hm: Heightmap): MalhaVias {
                 B.guarda.pos.push(ax, gya + 0.8, az, ax, gya + 1.0, az, bx, gy + 0.8, bz, bx, gy + 1.0, bz);
                 for (let q4 = 0; q4 < 4; q4++) B.guarda.nor.push(fnx, 0, fnz);
                 B.guarda.uv.push(0, 0, 0, 1, 1, 0, 1, 1);
-                if (fnx * tgz - fnz * tgx >= 0) B.guarda.idx.push(gb, gb + 1, gb + 2, gb + 1, gb + 3, gb + 2);
-                else B.guarda.idx.push(gb, gb + 2, gb + 1, gb + 1, gb + 2, gb + 3);
+                quadComNormal(B.guarda, gb, fnx, 0, fnz);
                 if (atual.s >= proximoBal) {
                   pos.set(bx, gy, bz);
                   q.setFromAxisAngle(eixoY, Math.atan2(p.tx[i], p.tz[i]));
@@ -413,24 +399,35 @@ export function construir(hm: Heightmap): MalhaVias {
               }
             }
           }
-          if (atual && ant && atual.corte === ant.corte) {
+          // talude de grama acima do último patamar: um painel só entre ÂNCORAS espaçadas em pelo menos 40% da largura do talude (um painel de 14 m de largura por
+          // 2 m de comprimento seria uma lasca) — a âncora anda com o muro e é zerada quando o muro acaba ou troca de corte para aterro
+          if (!atual || (ant && atual.corte !== ant.corte)) ancora = null;
+          else if (ant && atual.corte === ant.corte) {
+            if (!ancora) ancora = ant;
             const B = bloco(atual.x, atual.z);
-            const Hm = Math.max(Math.abs(ant.terr - ant.via), Math.abs(atual.terr - atual.via));
+            const Hm = Math.max(Math.abs(ancora.terr - ancora.via), Math.abs(atual.terr - atual.via));
             const np = patamaresMuro(Hm, Hm).np;
             const resto = (pt: PontoMuro) => patamaresMuro(Hm, Math.abs(pt.terr - pt.via)).resto;
-            const ra = resto(ant), rb = resto(atual);
-            if (ra > 0.3 || rb > 0.3) {
-              // do canto externo da última banqueta (np·2 m + 2 m) até o relevo, subindo (corte) ou descendo (aterro) a 1 V : 1,5 H
+            const ra = resto(ancora), rb = resto(atual);
+            const Rmax = Math.max(ra, rb) * TALUDE_H_POR_V;
+            // painel só quando há talude de verdade e a âncora está longe o bastante
+            if (Rmax > 1.2 && Math.hypot(atual.x - ancora.x, atual.z - ancora.z) >= Math.max(3, 0.4 * Rmax)) {
               const off0 = (np - 1) * 2 + 2.5, sg = Math.sign(atual.terr - atual.via) || 1;
-              const yA0 = ant.via + sg * patamaresMuro(Hm, Math.abs(ant.terr - ant.via)).hp * np, yB0 = atual.via + sg * patamaresMuro(Hm, Math.abs(atual.terr - atual.via)).hp * np;
-              const Ra = ra * TALUDE_H_POR_V, Rb = rb * TALUDE_H_POR_V;
-              const b0 = B.banqueta.pos.length / 3;
-              B.banqueta.pos.push(ant.x + ant.nx * off0, yA0, ant.z + ant.nz * off0, ant.x + ant.nx * (off0 + Ra), ant.terr, ant.z + ant.nz * (off0 + Ra), atual.x + atual.nx * off0, yB0, atual.z + atual.nz * off0, atual.x + atual.nx * (off0 + Rb), atual.terr, atual.z + atual.nz * (off0 + Rb));
-              const fp = sg / TALUDE_H_POR_V, nl2 = Math.hypot(fp, 1);
-              for (let q4 = 0; q4 < 4; q4++) B.banqueta.nor.push((-fp * atual.nx) / nl2, 1 / nl2, (-fp * atual.nz) / nl2);
-              B.banqueta.uv.push(ant.s / 3, 0, ant.s / 3, Ra / 3, atual.s / 3, 0, atual.s / 3, Rb / 3);
-              B.banqueta.idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2);
-              estatLateral.muroTalude++;
+              const yA0 = ancora.via + sg * patamaresMuro(Hm, Math.abs(ancora.terr - ancora.via)).hp * np, yB0 = atual.via + sg * patamaresMuro(Hm, Math.abs(atual.terr - atual.via)).hp * np;
+              const Ra = Math.max(ra * TALUDE_H_POR_V, 0.35 * Rmax), Rb = Math.max(rb * TALUDE_H_POR_V, 0.35 * Rmax);
+              // retorno fechado: a linha de topo do talude abre em leque; sem talude nesse trecho
+              const dRef2 = Math.hypot(atual.x - ancora.x, atual.z - ancora.z);
+              const leque = Math.hypot(ancora.x + ancora.nx * (off0 + Ra) - atual.x - atual.nx * (off0 + Rb), ancora.z + ancora.nz * (off0 + Ra) - atual.z - atual.nz * (off0 + Rb)) > 2.5 * dRef2 + (Ra + Rb) * 0.25 + 1.5;
+              if (!leque) {
+                const b0 = B.banqueta.pos.length / 3;
+                B.banqueta.pos.push(ancora.x + ancora.nx * off0, yA0, ancora.z + ancora.nz * off0, ancora.x + ancora.nx * (off0 + Ra), ancora.terr, ancora.z + ancora.nz * (off0 + Ra), atual.x + atual.nx * off0, yB0, atual.z + atual.nz * off0, atual.x + atual.nx * (off0 + Rb), atual.terr, atual.z + atual.nz * (off0 + Rb));
+                const fp = sg / TALUDE_H_POR_V, nl2 = Math.hypot(fp, 1);
+                for (let q4 = 0; q4 < 4; q4++) B.banqueta.nor.push((-fp * atual.nx) / nl2, 1 / nl2, (-fp * atual.nz) / nl2);
+                B.banqueta.uv.push(ancora.s / 3, 0, ancora.s / 3, Ra / 3, atual.s / 3, 0, atual.s / 3, Rb / 3);
+                quadComNormal(B.banqueta, b0, (-fp * atual.nx) / nl2, 1 / nl2, (-fp * atual.nz) / nl2);
+                estatLateral.muroTalude++;
+              }
+              ancora = atual;
             }
           }
           ant = atual;
@@ -597,6 +594,8 @@ export function construir(hm: Heightmap): MalhaVias {
     meioFioCircular(B.calc, mx, yi, mz, ri, 0.12);
   }
 
+  estatLateral.lascasRemovidas = 0; estatLateral.normaisViradas = 0;
+  for (const b of blocos.values()) for (const buf of [b.banqueta, b.muro]) { const r = sanearMalha(buf); estatLateral.lascasRemovidas += r.lascas; estatLateral.normaisViradas += r.viradas; }
   const malha = [...blocos].map(([chave, b]) => {
     const [bx, bz] = chave.split(',').map(Number);
     return {
@@ -607,7 +606,7 @@ export function construir(hm: Heightmap): MalhaVias {
       postes: b.postes, pilares: b.pilares, palmeiras: b.palmeiras, zebras: b.zebras, hastesSem: b.hastesSem, lampSem: b.lampSem,
     };
   });
-  if (import.meta.env.DEV) console.info(`[vias] malha construída em ${(performance.now() - t0).toFixed(0)} ms · ${estatLateral.taludes} amostras de talude de grama, ${estatLateral.vertical} de face vertical`);
+  if (import.meta.env?.DEV) console.info(`[vias] malha construída em ${(performance.now() - t0).toFixed(0)} ms · ${estatLateral.taludes} amostras de talude de grama, ${estatLateral.vertical} de face vertical`);
   return malha;
 }
 

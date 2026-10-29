@@ -27,6 +27,7 @@ import { Onibus } from './Onibus';
 import { Trilhos } from './Trilhos';
 import { Caminhos } from './Caminhos';
 import { DebugMapa } from './DebugMapa';
+import { DefeitosVias } from './DefeitosVias';
 import { Equipamentos } from './Equipamentos';
 import { Ferramentas } from './Ferramentas';
 import { Terreno } from './Terreno';
@@ -139,6 +140,7 @@ export function CityCanvas({ hm, latitude, inicio }: { hm: Heightmap; latitude: 
         {liga('Onibus') && <Onibus hm={hm} />}
         {liga('Trilhos') && <Trilhos hm={hm} />}
         <DebugMapa hm={hm} />
+        <DefeitosVias hm={hm} />
         <MapaCalorPedestres hm={hm} />
         <Selecao />
         <Ocorrencias hm={hm} />
